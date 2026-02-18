@@ -192,7 +192,9 @@ export default function Home() {
           <span className="hero-title-media">MEDIA</span>
         </h1>
         <div className="hero-divider" />
-        <h2 data-testid="text-hero-subtitle">The Home of AI Music</h2>
+        <h2 className="hero-subtitle" data-testid="text-hero-subtitle">
+          The Home of <span className="hero-sub-ai">AI</span> <span className="hero-sub-music">Music</span>
+        </h2>
 
         <div className="hero-badges">
           <span className="hero-badge badge-cyan">Trending Tracks</span>

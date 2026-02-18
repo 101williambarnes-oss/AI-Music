@@ -448,6 +448,16 @@
   z-index: 1;
   letter-spacing: .5px;
 }
+.hero-sub-ai {
+  color: #6cf0ff;
+  text-shadow: 0 0 20px rgba(108,240,255,.4);
+  font-weight: 900;
+}
+.hero-sub-music {
+  color: #ff4fd8;
+  text-shadow: 0 0 20px rgba(255,79,216,.4);
+  font-weight: 900;
+}
 .hero-sub {
   margin: 8px auto 0;
   max-width: 820px;
