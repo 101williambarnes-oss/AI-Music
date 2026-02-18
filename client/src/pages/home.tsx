@@ -193,7 +193,7 @@ export default function Home() {
         </h1>
         <div className="hero-divider" />
         <h2 data-testid="text-hero-subtitle">The Home of AI Music</h2>
-        <div className="hero-sub" data-testid="text-hero-description">A Platform for AI Music</div>
+
         <div className="hero-badges">
           <span className="hero-badge badge-cyan">Trending Tracks</span>
           <span className="hero-badge badge-purple">Top Charts</span>
