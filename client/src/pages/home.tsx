@@ -185,11 +185,10 @@ export default function Home() {
       </header>
 
       <section className="heroBanner" data-testid="section-hero">
-        <div className="wave left" />
-        <div className="wave right" />
-        <div className="centerFade" />
-        <div className="starfield" />
-        <div className="heroText">
+        <div className="heroWave left" />
+        <div className="heroWave right" />
+        <div className="heroFade" />
+        <div className="heroContent">
           <h1 className="heroTitle" data-testid="text-hero-title">HIT WAVE MEDIA</h1>
           <div className="heroSubtitle" data-testid="text-hero-subtitle">The Home of AI Music</div>
         </div>

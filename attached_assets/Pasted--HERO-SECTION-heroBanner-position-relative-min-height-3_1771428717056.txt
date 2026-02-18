@@ -1,0 +1,93 @@
+/* ===== HERO SECTION ===== */
+.heroBanner {
+  position: relative;
+  min-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 80px 20px;
+  background:
+    radial-gradient(1200px 600px at 50% 45%, rgba(160,107,255,.18), transparent 62%),
+    radial-gradient(900px 500px at 50% 55%, rgba(108,240,255,.14), transparent 60%),
+    linear-gradient(180deg, #050615, #06081d);
+  border-bottom: 1px solid rgba(108,240,255,.12);
+}
+
+/* Star field */
+.heroBanner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,.6) 50%, transparent 52%),
+    radial-gradient(1px 1px at 20% 70%, rgba(255,255,255,.5) 50%, transparent 52%),
+    radial-gradient(1px 1px at 35% 30%, rgba(255,255,255,.6) 50%, transparent 52%),
+    radial-gradient(1px 1px at 50% 60%, rgba(255,255,255,.5) 50%, transparent 52%),
+    radial-gradient(1px 1px at 70% 40%, rgba(255,255,255,.6) 50%, transparent 52%),
+    radial-gradient(1px 1px at 85% 55%, rgba(255,255,255,.5) 50%, transparent 52%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Side waves */
+.heroWave {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.heroWave.left {
+  left: -10%;
+  background:
+    radial-gradient(700px 420px at 30% 55%, rgba(108,240,255,.35), transparent 70%),
+    radial-gradient(820px 520px at 35% 65%, rgba(160,107,255,.28), transparent 72%),
+    radial-gradient(720px 520px at 25% 40%, rgba(255,79,216,.18), transparent 70%);
+  transform: skewX(-6deg);
+}
+
+.heroWave.right {
+  right: -10%;
+  background:
+    radial-gradient(700px 420px at 70% 55%, rgba(108,240,255,.35), transparent 70%),
+    radial-gradient(820px 520px at 65% 65%, rgba(160,107,255,.28), transparent 72%),
+    radial-gradient(720px 520px at 75% 40%, rgba(255,79,216,.18), transparent 70%);
+  transform: skewX(6deg);
+}
+
+/* Center fade for readability */
+.heroFade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(700px 340px at 50% 55%, rgba(0,0,0,.5), transparent 70%);
+  pointer-events: none;
+}
+
+/* Text */
+.heroContent {
+  position: relative;
+  text-align: center;
+  z-index: 2;
+}
+
+.heroTitle {
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-size: clamp(36px, 5vw, 64px);
+  color: #6cf0ff;
+  text-shadow:
+    0 0 14px rgba(108,240,255,.4),
+    0 0 36px rgba(108,240,255,.2);
+}
+
+.heroSubtitle {
+  margin-top: 12px;
+  font-size: clamp(16px, 2.2vw, 26px);
+  color: rgba(120,220,255,.9);
+  text-shadow: 0 0 16px rgba(160,107,255,.15);
+}
