@@ -184,22 +184,14 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="hero" data-testid="section-hero">
-        <div className="hero-glow" />
-        <h1 className="hero-title" data-testid="text-hero-title">
-          <span className="hero-title-hit">HIT</span>{" "}
-          <span className="hero-title-wave">WAVE</span>{" "}
-          <span className="hero-title-media">MEDIA</span>
-        </h1>
-        <div className="hero-divider" />
-        <h2 className="hero-subtitle hero-subtitle-red" data-testid="text-hero-subtitle">
-          The Home of AI Music
-        </h2>
-
-        <div className="hero-badges">
-          <span className="hero-badge badge-cyan">Trending Tracks</span>
-          <span className="hero-badge badge-purple">Top Charts</span>
-          <span className="hero-badge badge-pink">New Creators</span>
+      <section className="heroBanner" data-testid="section-hero">
+        <div className="wave left" />
+        <div className="wave right" />
+        <div className="centerFade" />
+        <div className="starfield" />
+        <div className="heroText">
+          <h1 className="heroTitle" data-testid="text-hero-title">HIT WAVE MEDIA</h1>
+          <div className="heroSubtitle" data-testid="text-hero-subtitle">The Home of AI Music</div>
         </div>
       </section>
 
