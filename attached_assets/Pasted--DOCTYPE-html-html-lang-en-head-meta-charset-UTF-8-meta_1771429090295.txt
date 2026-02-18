@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hit Wave Media</title>
+
+<style>
+:root{
+  --cyan:#6cf0ff;
+  --blue:#3aa0ff;
+  --purple:#9b6bff;
+  --bg1:#050615;
+  --bg2:#070a1f;
+  --text:#eaf0ff;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:#000;
+  color:var(--text);
+}
+
+/* ===== TOP BAR ===== */
+.topbar{
+  position:absolute;
+  top:0; left:0; right:0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px 28px;
+  z-index:10;
+}
+
+.logo{
+  font-weight:900;
+  letter-spacing:2px;
+  color:var(--cyan);
+  font-size:20px;
+}
+
+.actions{
+  display:flex;
+  gap:12px;
+}
+
+.actions .login{
+  padding:8px 14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.25);
+  background:transparent;
+  color:#fff;
+}
+
+.actions .signup{
+  padding:8px 16px;
+  border-radius:18px;
+  border:none;
+  background:linear-gradient(90deg, #2b7cff, #38e0ff);
+  color:#fff;
+  font-weight:700;
+}
+
+/* ===== HERO ===== */
+.hero{
+  position:relative;
+  min-height:420px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  background:
+    radial-gradient(1200px 600px at 50% 50%, rgba(108,240,255,.12), transparent 60%),
+    linear-gradient(180deg, var(--bg1), var(--bg2));
+}
+
+/* Star field */
+.hero::before{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(1px 1px at 10% 20%, #fff 50%, transparent 52%),
+    radial-gradient(1px 1px at 20% 70%, #fff 50%, transparent 52%),
+    radial-gradient(1px 1px at 35% 30%, #fff 50%, transparent 52%),
+    radial-gradient(1px 1px at 50% 60%, #fff 50%, transparent 52%),
+    radial-gradient(1px 1px at 70% 40%, #fff 50%, transparent 52%),
+    radial-gradient(1px 1px at 85% 55%, #fff 50%, transparent 52%);
+  opacity:.6;
+  pointer-events:none;
+}
+
+/* Side waves */
+.wave{
+  position:absolute;
+  top:0; bottom:0;
+  width:50%;
+  pointer-events:none;
+  mix-blend-mode:screen;
+}
+
+.wave.left{
+  left:-10%;
+  background:
+    radial-gradient(700px 500px at 30% 55%, rgba(108,240,255,.45), transparent 70%),
+    radial-gradient(800px 520px at 35% 65%, rgba(155,107,255,.35), transparent 72%),
+    radial-gradient(700px 520px at 25% 40%, rgba(255,120,220,.25), transparent 70%);
+  transform: skewX(-8deg);
+}
+
+.wave.right{
+  right:-10%;
+  background:
+    radial-gradient(700px 500px at 70% 55%, rgba(108,240,255,.45), transparent 70%),
+    radial-gradient(800px 520px at 65% 65%, rgba(155,107,255,.35), transparent 72%),
+    radial-gradient(700px 520px at 75% 40%, rgba(255,120,220,.25), transparent 70%);
+  transform: skewX(8deg);
+}
+
+/* Center fade for readability */
+.centerFade{
+  position:absolute;
+  inset:0;
+  background: radial-gradient(700px 350px at 50% 55%, rgba(0,0,0,.55), transparent 70%);
+}
+
+/* Text */
+.heroContent{
+  position:relative;
+  text-align:center;
+  z-index:2;
+}
+
+.heroTitle{
+  margin:0;
+  font-size:clamp(36px, 5vw, 64px);
+  font-weight:900;
+  letter-spacing:2px;
+  color:var(--cyan);
+  text-shadow:
+    0 0 18px rgba(108,240,255,.6),
+    0 0 40px rgba(108,240,255,.3);
+}
+
+.heroSubtitle{
+  margin-top:12px;
+  font-size:clamp(16px, 2.2vw, 26px);
+  color:#7be6ff;
+  text-shadow: 0 0 16px rgba(155,107,255,.25);
+}
+
+/* Bottom nav text */
+.heroNav{
+  position:absolute;
+  bottom:26px;
+  left:0; right:0;
+  display:flex;
+  justify-content:center;
+  gap:48px;
+  font-size:16px;
+  opacity:.9;
+}
+.heroNav span{
+  cursor:pointer;
+}
+.heroNav span::after{
+  content:"";
+  display:block;
+  height:2px;
+  margin-top:6px;
+  background:linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity:.6;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">HIT WAVE MEDIA</div>
+  <div class="actions">
+    <button class="login">Creators Login</button>
+    <button class="signup">Sign Up</button>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="wave left"></div>
+  <div class="wave right"></div>
+  <div class="centerFade"></div>
+
+  <div class="heroContent">
+    <h1 class="heroTitle">HIT WAVE MEDIA</h1>
+    <div class="heroSubtitle">The Home of AI Music</div>
+  </div>
+
+  <div class="heroNav">
+    <span>Trending Now</span>
+    <span>New Songs of the Week</span>
+    <span>Top 25 This Week</span>
+  </div>
+</section>
+
+</body>
+</html>

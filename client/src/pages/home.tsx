@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
 import { type Track, type Creator } from "@shared/schema";
 
 const GENRE_GROUPS = [
@@ -158,39 +157,28 @@ export default function Home() {
     <div className="hwm-app">
       <div className="bg-lines" />
 
-      <header className="hwm-header" data-testid="header-main">
-        <div className="brand">
-          <div className="brand-name" data-testid="text-brand-name">HIT WAVE MEDIA</div>
-          <div className="brand-tag" data-testid="text-brand-tagline">The Home of AI Music</div>
+      <section className="hero" data-testid="section-hero">
+        <div className="topbar" data-testid="header-main">
+          <div className="logo" data-testid="text-brand-name">HIT WAVE MEDIA</div>
+          <div className="topbar-actions">
+            <button className="topbar-login" data-testid="link-creators-login">Creators Login</button>
+            <button className="topbar-signup" data-testid="button-sign-up">Sign Up</button>
+          </div>
         </div>
 
-        <div className="search-wrap">
-          <label className="search-box">
-            <Search className="search-icon" style={{ width: 18, height: 18, opacity: 0.75, color: "rgba(234,240,255,.8)", flexShrink: 0 }} />
-            <input
-              type="search"
-              placeholder="Search tracks, creators, genres..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search tracks, creators, and genres"
-              data-testid="input-search"
-            />
-          </label>
-        </div>
-
-        <div className="auth">
-          <a href="#" className="auth-link" data-testid="link-creators-login">Creators Login</a>
-          <button className="auth-btn" data-testid="button-sign-up">Sign Up</button>
-        </div>
-      </header>
-
-      <section className="heroBanner" data-testid="section-hero">
         <div className="heroWave left" />
         <div className="heroWave right" />
-        <div className="heroFade" />
+        <div className="centerFade" />
+
         <div className="heroContent">
           <h1 className="heroTitle" data-testid="text-hero-title">HIT WAVE MEDIA</h1>
           <div className="heroSubtitle" data-testid="text-hero-subtitle">The Home of AI Music</div>
+        </div>
+
+        <div className="heroNav" data-testid="nav-hero">
+          <span data-testid="link-trending">Trending Now</span>
+          <span data-testid="link-new-songs">New Songs of the Week</span>
+          <span data-testid="link-top25">Top 25 This Week</span>
         </div>
       </section>
 
