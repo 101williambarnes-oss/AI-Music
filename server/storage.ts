@@ -1,38 +1,47 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre } from "@shared/schema";
+import { tracks, creators, genres } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, asc } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getTracks(category: string): Promise<Track[]>;
+  getCreators(): Promise<Creator[]>;
+  getGenres(): Promise<Genre[]>;
+  insertTrack(track: InsertTrack): Promise<Track>;
+  insertCreator(creator: InsertCreator): Promise<Creator>;
+  insertGenre(genre: InsertGenre): Promise<Genre>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async getTracks(category: string): Promise<Track[]> {
+    if (category === "top25") {
+      return db.select().from(tracks).where(eq(tracks.category, "top25")).orderBy(asc(tracks.rank));
+    }
+    return db.select().from(tracks).where(eq(tracks.category, category)).orderBy(desc(tracks.plays));
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getCreators(): Promise<Creator[]> {
+    return db.select().from(creators).orderBy(desc(creators.trackCount));
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async getGenres(): Promise<Genre[]> {
+    return db.select().from(genres);
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async insertTrack(track: InsertTrack): Promise<Track> {
+    const [result] = await db.insert(tracks).values(track).returning();
+    return result;
+  }
+
+  async insertCreator(creator: InsertCreator): Promise<Creator> {
+    const [result] = await db.insert(creators).values(creator).returning();
+    return result;
+  }
+
+  async insertGenre(genre: InsertGenre): Promise<Genre> {
+    const [result] = await db.insert(genres).values(genre).returning();
+    return result;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
