@@ -449,13 +449,13 @@
   letter-spacing: .5px;
 }
 .hero-sub-ai {
-  color: #6cf0ff;
-  text-shadow: 0 0 20px rgba(108,240,255,.4);
+  color: #ff2020;
+  text-shadow: 0 0 20px rgba(255,32,32,.5), 0 0 40px rgba(255,32,32,.25);
   font-weight: 900;
 }
 .hero-sub-music {
-  color: #ff4fd8;
-  text-shadow: 0 0 20px rgba(255,79,216,.4);
+  color: #ff2020;
+  text-shadow: 0 0 20px rgba(255,32,32,.5), 0 0 40px rgba(255,32,32,.25);
   font-weight: 900;
 }
 .hero-sub {
