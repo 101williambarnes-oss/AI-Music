@@ -607,16 +607,16 @@
 }
 
 .creators-grid {
-  padding: 10px 10px 12px;
-  max-height: 240px;
+  padding: 8px 10px 10px;
+  max-height: 220px;
   overflow: auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .creator {
-  padding: 10px;
-  border-radius: 14px;
+  padding: 8px 10px;
+  border-radius: 10px;
   border: 1px solid rgba(108,240,255,.08);
   background: rgba(15,20,40,.28);
   display: flex;
@@ -624,22 +624,22 @@
   align-items: center;
 }
 .avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, rgba(255,79,216,.65), rgba(160,107,255,.35) 55%, rgba(108,240,255,.20));
   border: 1px solid rgba(255,79,216,.20);
   flex-shrink: 0;
 }
 .cname {
-  font-weight: 950;
-  font-size: 13.5px;
-  line-height: 1.1;
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.2;
 }
 .ctext {
-  color: rgba(170,182,232,.85);
-  font-size: 12px;
-  margin-top: 3px;
+  color: rgba(170,182,232,.75);
+  font-size: 11.5px;
+  margin-top: 2px;
 }
 
 .hwm-app ::-webkit-scrollbar {
