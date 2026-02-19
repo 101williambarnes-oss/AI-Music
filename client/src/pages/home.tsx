@@ -6,28 +6,40 @@ import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_177146079707
 
 const GENRE_GROUPS = [
   {
-    name: "Electronic",
-    genres: ["EDM", "House", "Techno", "Trance", "Drum & Bass", "Dubstep", "Future Bass", "Synthwave", "Chillstep"],
-  },
-  {
-    name: "Hip Hop & R&B",
-    genres: ["Hip Hop", "Rap", "Trap", "R&B", "Neo-Soul"],
-  },
-  {
-    name: "Pop & More",
+    name: "Pop",
     genres: ["Pop", "Dance Pop", "Indie Pop", "Electro Pop"],
   },
   {
-    name: "Rock & Metal",
+    name: "Hip Hop",
+    genres: ["Hip Hop", "Rap", "Trap"],
+  },
+  {
+    name: "EDM",
+    genres: ["EDM", "House", "Techno", "Trance", "Drum & Bass", "Dubstep", "Future Bass"],
+  },
+  {
+    name: "Rock",
     genres: ["Rock", "Alt Rock", "Metal", "Industrial"],
   },
   {
-    name: "Chill & Instrumental",
-    genres: ["Lo-Fi", "Ambient", "Instrumental", "Cinematic", "Piano"],
+    name: "Country",
+    genres: ["Country", "Blues", "Americana"],
   },
   {
-    name: "Roots & Other",
-    genres: ["Country", "Blues", "Jazz", "Reggae", "Experimental"],
+    name: "Cinematic",
+    genres: ["Cinematic", "Orchestral", "Epic", "Soundtrack"],
+  },
+  {
+    name: "Lo-Fi",
+    genres: ["Lo-Fi", "Chillhop", "Study Beats"],
+  },
+  {
+    name: "R&B",
+    genres: ["R&B", "Neo-Soul", "Soul"],
+  },
+  {
+    name: "Experimental",
+    genres: ["Experimental", "Ambient", "Glitch", "Synthwave"],
   },
 ];
 
