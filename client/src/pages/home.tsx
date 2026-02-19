@@ -173,9 +173,9 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="heroContent">
-          <h1 className="heroTitle" data-testid="text-hero-title">HIT WAVE MEDIA</h1>
-          <div className="heroSubtitle" data-testid="text-hero-subtitle">The Home of AI Music</div>
+        <div className="heroContent" aria-hidden="true">
+          <h1 className="heroTitle sr-only" data-testid="text-hero-title">HIT WAVE MEDIA</h1>
+          <div className="heroSubtitle sr-only" data-testid="text-hero-subtitle">The Home of AI Music</div>
         </div>
 
         <div className="heroNav" data-testid="nav-hero">
