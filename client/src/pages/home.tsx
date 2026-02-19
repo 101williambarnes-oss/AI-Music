@@ -172,17 +172,20 @@ export default function Home() {
           <div className="logo" data-testid="text-brand-name">HIT WAVE MEDIA</div>
         </div>
         <div className="topbar-center">
-          <label className="search-box">
-            <Search className="search-icon" style={{ width: 16, height: 16, opacity: 0.6, flexShrink: 0 }} />
-            <input
-              type="search"
-              placeholder="Search tracks, creators, genres..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search tracks, creators, and genres"
-              data-testid="input-search"
-            />
-          </label>
+          <div className="search-wrap">
+            <label className="search-box">
+              <Search className="search-icon" style={{ width: 16, height: 16, opacity: 0.6, flexShrink: 0 }} />
+              <input
+                type="search"
+                placeholder="Search tracks, creators, genres..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search tracks, creators, and genres"
+                data-testid="input-search"
+              />
+            </label>
+            <div className="search-tagline" data-testid="text-tagline">Search and listen. No account required.</div>
+          </div>
         </div>
         <div className="topbar-actions">
           <button className="topbar-login" data-testid="link-creators-login">Creators Login</button>
