@@ -168,7 +168,7 @@ export default function Home() {
       <div className="bg-lines" />
 
       <section className="hero" data-testid="section-hero" style={{ backgroundImage: `url(${heroBg})` }}>
-        <div className="topbar" data-testid="header-main">
+        <div className="topbar" data-testid="header-main" style={{ visibility: "hidden" }}>
           <div className="topbar-left">
             <button className="topbar-menu" data-testid="button-menu" aria-label="Menu">
               <Menu size={22} />
@@ -186,7 +186,7 @@ export default function Home() {
           <div className="heroSubtitle sr-only" data-testid="text-hero-subtitle">The Home of AI Music</div>
         </div>
 
-        <div className="heroNav" data-testid="nav-hero">
+        <div className="heroNav sr-only" aria-hidden="true" data-testid="nav-hero">
           <span data-testid="link-trending">Trending Now</span>
           <span data-testid="link-new-songs">New Songs of the Week</span>
           <span data-testid="link-top25">Top 25 This Week</span>
