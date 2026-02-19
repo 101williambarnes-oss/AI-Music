@@ -425,15 +425,16 @@
 
 .heroNav {
   position: absolute;
-  bottom: 28px;
+  bottom: 0;
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
-  gap: 48px;
-  font-size: 16px;
-  opacity: .9;
-  z-index: 2;
+  gap: 40px;
+  font-size: 15px;
+  z-index: 3;
+  padding: 14px 0 16px;
+  background: linear-gradient(180deg, transparent 0%, rgba(5,6,21,.85) 40%, #050615 100%);
 }
 .heroNav span {
   cursor: pointer;
