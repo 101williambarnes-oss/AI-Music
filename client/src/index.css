@@ -390,13 +390,13 @@
 
 .hero {
   position: relative;
-  min-height: 360px;
+  min-height: 440px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   background-size: cover;
-  background-position: center top;
+  background-position: center;
   background-repeat: no-repeat;
   background-color: #050615;
 }
