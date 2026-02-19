@@ -306,6 +306,20 @@
   padding: 16px 28px;
   z-index: 10;
 }
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topbar-menu {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
 .logo {
   font-weight: 900;
   letter-spacing: 2px;
@@ -343,57 +357,10 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background:
-    radial-gradient(1200px 600px at 50% 50%, rgba(108,240,255,.12), transparent 60%),
-    linear-gradient(180deg, #050615, #070a1f);
-}
-
-.hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(1px 1px at 10% 20%, #fff 50%, transparent 52%),
-    radial-gradient(1px 1px at 20% 70%, #fff 50%, transparent 52%),
-    radial-gradient(1px 1px at 35% 30%, #fff 50%, transparent 52%),
-    radial-gradient(1px 1px at 50% 60%, #fff 50%, transparent 52%),
-    radial-gradient(1px 1px at 70% 40%, #fff 50%, transparent 52%),
-    radial-gradient(1px 1px at 85% 55%, #fff 50%, transparent 52%);
-  opacity: .6;
-  pointer-events: none;
-}
-
-.heroWave {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 38%;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  opacity: 0.9;
-}
-.heroWave.left {
-  left: -18%;
-  background:
-    radial-gradient(700px 500px at 10% 55%, rgba(108,240,255,.55), transparent 70%),
-    radial-gradient(800px 520px at 15% 65%, rgba(155,107,255,.40), transparent 72%),
-    radial-gradient(700px 520px at 12% 40%, rgba(255,120,220,.28), transparent 70%);
-  transform: skewX(-10deg);
-}
-.heroWave.right {
-  right: -18%;
-  background:
-    radial-gradient(700px 500px at 90% 55%, rgba(108,240,255,.55), transparent 70%),
-    radial-gradient(800px 520px at 85% 65%, rgba(155,107,255,.40), transparent 72%),
-    radial-gradient(700px 520px at 88% 40%, rgba(255,120,220,.28), transparent 70%);
-  transform: skewX(10deg);
-}
-
-.centerFade {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(520px 280px at 50% 55%, rgba(0,0,0,.75), transparent 70%);
-  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #050615;
 }
 
 .heroContent {
