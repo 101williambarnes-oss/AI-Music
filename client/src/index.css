@@ -295,40 +295,64 @@
   mix-blend-mode: screen;
 }
 
-.topbar {
-  position: absolute;
+.site-topbar {
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 28px;
-  z-index: 10;
+  gap: 16px;
+  padding: 12px 24px;
+  background: rgba(5,6,21,.85);
+  border-bottom: 1px solid rgba(108,240,255,.12);
+  backdrop-filter: blur(12px);
 }
 .topbar-left {
   display: flex;
   align-items: center;
   gap: 12px;
-}
-.topbar-menu {
-  background: transparent;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
+  flex-shrink: 0;
 }
 .logo {
   font-weight: 900;
   letter-spacing: 2px;
   color: #6cf0ff;
   font-size: 20px;
+  white-space: nowrap;
+}
+.topbar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+.search-box {
+  width: min(520px, 100%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(15,20,40,.6);
+  border: 1px solid rgba(108,240,255,.18);
+  cursor: text;
+}
+.search-box input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #EAF0FF;
+  font-size: 14px;
+}
+.search-box input::placeholder {
+  color: rgba(170,182,232,.6);
 }
 .topbar-actions {
   display: flex;
   gap: 12px;
+  flex-shrink: 0;
 }
 .topbar-login {
   padding: 8px 16px;
@@ -338,6 +362,7 @@
   color: #fff;
   font-size: 14px;
   cursor: pointer;
+  white-space: nowrap;
 }
 .topbar-signup {
   padding: 8px 18px;
@@ -348,6 +373,7 @@
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .hero {

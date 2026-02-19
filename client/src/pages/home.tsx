@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
-import { Menu } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_1771460797070.png";
 
 const GENRE_GROUPS = [
@@ -167,20 +167,30 @@ export default function Home() {
     <div className="hwm-app">
       <div className="bg-lines" />
 
-      <section className="hero" data-testid="section-hero" style={{ backgroundImage: `url(${heroBg})` }}>
-        <div className="topbar" data-testid="header-main" style={{ visibility: "hidden" }}>
-          <div className="topbar-left">
-            <button className="topbar-menu" data-testid="button-menu" aria-label="Menu">
-              <Menu size={22} />
-            </button>
-            <div className="logo" data-testid="text-brand-name">HIT WAVE MEDIA</div>
-          </div>
-          <div className="topbar-actions">
-            <button className="topbar-login" data-testid="link-creators-login">Creators Login</button>
-            <button className="topbar-signup" data-testid="button-sign-up">Sign Up</button>
-          </div>
+      <header className="site-topbar" data-testid="header-main">
+        <div className="topbar-left">
+          <div className="logo" data-testid="text-brand-name">HIT WAVE MEDIA</div>
         </div>
+        <div className="topbar-center">
+          <label className="search-box">
+            <Search className="search-icon" style={{ width: 16, height: 16, opacity: 0.6, flexShrink: 0 }} />
+            <input
+              type="search"
+              placeholder="Search tracks, creators, genres..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search tracks, creators, and genres"
+              data-testid="input-search"
+            />
+          </label>
+        </div>
+        <div className="topbar-actions">
+          <button className="topbar-login" data-testid="link-creators-login">Creators Login</button>
+          <button className="topbar-signup" data-testid="button-sign-up">Sign Up</button>
+        </div>
+      </header>
 
+      <section className="hero" data-testid="section-hero" style={{ backgroundImage: `url(${heroBg})` }}>
         <div className="heroContent" aria-hidden="true">
           <h1 className="heroTitle sr-only" data-testid="text-hero-title">HIT WAVE MEDIA</h1>
           <div className="heroSubtitle sr-only" data-testid="text-hero-subtitle">The Home of AI Music</div>
