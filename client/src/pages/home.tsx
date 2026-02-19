@@ -187,26 +187,21 @@ export default function Home() {
 
       <div className="wrap" data-testid="section-content">
         <div className="grid-layout">
-          <aside className="panel sidebar-panel" data-testid="sidebar-genres">
-            <div className="ph">
-              <h3 data-testid="panel-header-genres">Explore Sounds</h3>
-              <div className="mini">Genres</div>
-            </div>
-            <nav className="genres" aria-label="Genre navigation" data-testid="nav-genres">
+          <aside className="explore-sounds" data-testid="sidebar-genres">
+            <h3 className="explore-title" data-testid="panel-header-genres">Explore Sounds</h3>
+            <nav aria-label="Genre navigation" data-testid="nav-genres">
               {GENRE_GROUPS.map((group) => (
                 <div
                   key={group.name}
                   className="genre-group"
                   data-testid={`genre-group-${group.name.toLowerCase().replace(/[^a-z]/g, "-")}`}
                 >
-                  <div className="genre-group-title">
-                    {group.name} <span style={{ opacity: 0.7 }}>&#9662;</span>
-                  </div>
-                  <div className="genre-items">
+                  <div className="group-title">{group.name}</div>
+                  <ul>
                     {group.genres.map((genre) => (
-                      <div
+                      <li
                         key={genre}
-                        className={`genre-item${activeGenre === genre ? " active" : ""}`}
+                        className={activeGenre === genre ? "active" : ""}
                         onClick={() => setActiveGenre(genre)}
                         role="button"
                         tabIndex={0}
@@ -215,9 +210,9 @@ export default function Home() {
                         data-testid={`button-genre-${genre.toLowerCase().replace(/[^a-z]/g, "-")}`}
                       >
                         {genre}
-                      </div>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               ))}
             </nav>
