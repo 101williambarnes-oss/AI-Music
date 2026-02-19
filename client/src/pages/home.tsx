@@ -203,9 +203,6 @@ export default function Home() {
         </div>
 
         <div className="heroNav" data-testid="nav-hero">
-          <span data-testid="link-trending">Trending Now</span>
-          <span data-testid="link-new-songs">New Songs of the Week</span>
-          <span data-testid="link-top25">Top 25 This Week</span>
           <span data-testid="link-creators">New Creators of the Week</span>
         </div>
       </section>
