@@ -89,10 +89,6 @@ function TrackList({
 }) {
   return (
     <section className="panel">
-      <div className="ph">
-        <h3 data-testid={`panel-header-${testId}`}>{title}</h3>
-        {subtitle && <div className="mini">{subtitle}</div>}
-      </div>
       <div className={`list${tall ? " tall" : ""}`} data-testid={`list-${testId}`}>
         {isLoading ? (
           [1, 2, 3, 4].map((i) => (
