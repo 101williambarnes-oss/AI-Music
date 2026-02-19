@@ -606,6 +606,18 @@
   font-size: 14px;
 }
 
+.section-header {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(108,240,255,.10);
+}
+.section-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #6cf0ff;
+  letter-spacing: .5px;
+}
+
 .creators-grid {
   padding: 8px 10px 10px;
   max-height: 220px;
