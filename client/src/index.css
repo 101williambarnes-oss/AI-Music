@@ -392,7 +392,7 @@
 .centerFade {
   position: absolute;
   inset: 0;
-  background: radial-gradient(700px 350px at 50% 55%, rgba(0,0,0,.55), transparent 70%);
+  background: radial-gradient(520px 280px at 50% 55%, rgba(0,0,0,.75), transparent 70%);
   pointer-events: none;
 }
 
