@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { Upload as UploadIcon, Music, Image as ImageIcon } from "lucide-react";
+import { Upload as UploadIcon } from "lucide-react";
 
-const AUDIO_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
-const COVER_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm", ".mov"];
-const ALL_ACCEPT = [...AUDIO_EXTS, ...COVER_EXTS].join(",");
+const ALLOWED_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".mp4", ".webm", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
+const ACCEPT = ALLOWED_EXTS.join(",");
 
 export default function Upload() {
   const [title, setTitle] = useState("");
@@ -16,9 +15,8 @@ export default function Upload() {
   const [loading, setLoading] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
@@ -52,56 +50,30 @@ export default function Upload() {
     );
   }
 
-  function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const fileList = e.target.files;
-    if (!fileList || fileList.length === 0) return;
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = e.target.files?.[0] || null;
+    if (!selected) return;
 
-    let newAudio: File | null = null;
-    let newCover: File | null = null;
-    if (coverPreview) URL.revokeObjectURL(coverPreview);
-    setCoverPreview(null);
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(null);
 
-    for (let i = 0; i < fileList.length; i++) {
-      const file = fileList[i];
-      const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-
-      if (file.size > 50 * 1024 * 1024) {
-        setError(`File "${file.name}" is too large. Max 50MB per file.`);
-        return;
-      }
-
-      if (AUDIO_EXTS.includes(ext)) {
-        if (newAudio) {
-          setError("Please select only one audio file.");
-          return;
-        }
-        newAudio = file;
-      } else if (COVER_EXTS.includes(ext)) {
-        if (newCover) {
-          setError("Please select only one image or video file.");
-          return;
-        }
-        newCover = file;
-      } else {
-        setError(`Unsupported file type: ${ext}`);
-        return;
-      }
+    const ext = selected.name.substring(selected.name.lastIndexOf(".")).toLowerCase();
+    if (!ALLOWED_EXTS.includes(ext)) {
+      setError("Unsupported file type. Supported: MP3, WAV, OGG, FLAC, M4A, AAC, MP4, WEBM, MOV, JPG, PNG, GIF, WEBP");
+      setFile(null);
+      return;
     }
-
-    if (!newAudio) {
-      setError("Please include an audio file (.mp3, .wav, .ogg, .flac, .m4a, .aac).");
+    if (selected.size > 50 * 1024 * 1024) {
+      setError("File is too large. Maximum size is 50MB.");
+      setFile(null);
       return;
     }
 
     setError("");
-    setAudioFile(newAudio);
-    setCoverFile(newCover);
+    setFile(selected);
 
-    if (newCover) {
-      const coverExt = newCover.name.substring(newCover.name.lastIndexOf(".")).toLowerCase();
-      if ([".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(coverExt)) {
-        setCoverPreview(URL.createObjectURL(newCover));
-      }
+    if ([".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext)) {
+      setPreview(URL.createObjectURL(selected));
     }
   }
 
@@ -111,7 +83,7 @@ export default function Upload() {
 
     if (!title.trim()) return setError("Title is required.");
     if (!genre.trim()) return setError("Genre is required.");
-    if (!audioFile) return setError("Please select your files to upload (audio file required).");
+    if (!file) return setError("Please select a file to upload.");
     if (aiTools.length === 0) return setError("Select at least one AI tool used.");
     if (!ownsRights) return setError("You must confirm you own all rights.");
     if (!agreesTerms) return setError("You must agree to the platform terms.");
@@ -126,8 +98,7 @@ export default function Upload() {
       formData.append("title", title);
       formData.append("genre", genre);
       formData.append("aiTools", JSON.stringify(aiTools));
-      formData.append("audioFile", audioFile);
-      if (coverFile) formData.append("coverFile", coverFile);
+      formData.append("file", file);
       if (userData?.id) formData.append("userId", String(userData.id));
 
       const res = await fetch("/api/tracks/upload", {
@@ -192,6 +163,13 @@ export default function Upload() {
     );
   }
 
+  function getFileLabel(f: File) {
+    const ext = f.name.substring(f.name.lastIndexOf(".")).toLowerCase();
+    if ([".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"].includes(ext)) return "Audio";
+    if ([".mp4", ".webm", ".mov"].includes(ext)) return "Video";
+    return "Image";
+  }
+
   return (
     <div className="hwm-app">
       <div className="bg-lines" />
@@ -218,58 +196,50 @@ export default function Upload() {
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Upload Files *</label>
+              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Upload File *</label>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept={ALL_ACCEPT}
-                onChange={handleFilesChange}
-                multiple
+                accept={ACCEPT}
+                onChange={handleFileChange}
                 style={{ display: "none" }}
-                data-testid="input-files"
+                data-testid="input-file"
               />
               <div
                 onClick={() => fileInputRef.current?.click()}
                 style={{
                   width: "100%",
                   padding: "24px 14px",
-                  background: audioFile ? "rgba(108,240,255,.08)" : "rgba(255,255,255,.04)",
-                  border: `2px dashed ${audioFile ? "rgba(108,240,255,.4)" : "rgba(108,240,255,.15)"}`,
+                  background: file ? "rgba(108,240,255,.08)" : "rgba(255,255,255,.04)",
+                  border: `2px dashed ${file ? "rgba(108,240,255,.4)" : "rgba(108,240,255,.15)"}`,
                   borderRadius: 6,
-                  color: audioFile ? "#6cf0ff" : "rgba(170,182,232,.5)",
+                  color: file ? "#6cf0ff" : "rgba(170,182,232,.5)",
                   fontSize: 14,
                   textAlign: "center",
                   cursor: "pointer",
                   boxSizing: "border-box" as const,
                   transition: "border-color 0.2s, background 0.2s",
                 }}
-                data-testid="button-choose-files"
+                data-testid="button-choose-file"
               >
-                {audioFile ? (
+                {file ? (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-                    {coverPreview && (
-                      <img src={coverPreview} alt="Cover preview" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6 }} data-testid="img-cover-preview" />
+                    {preview && (
+                      <img src={preview} alt="Preview" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6 }} data-testid="img-file-preview" />
                     )}
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Music size={16} />
-                      <span>{audioFile.name}</span>
-                      <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(audioFile.size / (1024 * 1024)).toFixed(1)} MB)</span>
+                      <span style={{ background: "rgba(108,240,255,.15)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{getFileLabel(file)}</span>
+                      <span>{file.name}</span>
+                      <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(file.size / (1024 * 1024)).toFixed(1)} MB)</span>
                     </div>
-                    {coverFile && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#a06bff" }}>
-                        <ImageIcon size={16} />
-                        <span>{coverFile.name}</span>
-                        <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(coverFile.size / (1024 * 1024)).toFixed(1)} MB)</span>
-                      </div>
-                    )}
-                    <div style={{ color: "rgba(170,182,232,.4)", fontSize: 12, marginTop: 2 }}>Click to change files</div>
+                    <div style={{ color: "rgba(170,182,232,.4)", fontSize: 12, marginTop: 2 }}>Click to change file</div>
                   </div>
                 ) : (
                   <div>
                     <UploadIcon size={28} style={{ marginBottom: 8, opacity: 0.5 }} />
-                    <div style={{ fontSize: 15, marginBottom: 4 }}>Click to select your song + image or video</div>
-                    <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)" }}>Select an audio file and an image or video together</div>
-                    <div style={{ fontSize: 11, marginTop: 6, color: "rgba(170,182,232,.3)" }}>Audio: MP3, WAV, OGG, FLAC, M4A, AAC &bull; Visual: JPG, PNG, GIF, WEBP, MP4, WEBM, MOV (max 50MB each)</div>
+                    <div style={{ fontSize: 15, marginBottom: 4 }}>Click to upload your file</div>
+                    <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)" }}>Upload your song, video, or image</div>
+                    <div style={{ fontSize: 11, marginTop: 6, color: "rgba(170,182,232,.3)" }}>MP3, WAV, OGG, FLAC, M4A, AAC, MP4, WEBM, MOV, JPG, PNG, GIF, WEBP (max 50MB)</div>
                   </div>
                 )}
               </div>

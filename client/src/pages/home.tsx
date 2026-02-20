@@ -62,25 +62,23 @@ function TrackRow({ track, showRank }: { track: Track; showRank?: boolean }) {
       data-testid={`track-row-${track.id}`}
     >
       <div className="thumb" style={{ position: "relative", overflow: "hidden" }}>
-        {track.coverUrl && !showRank ? (
-          track.coverUrl.match(/\.(mp4|webm|mov)$/i) ? (
-            <video
-              src={track.coverUrl}
-              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
-              muted
-              loop
-              autoPlay
-              playsInline
-              data-testid={`video-cover-${track.id}`}
-            />
-          ) : (
-            <img
-              src={track.coverUrl}
-              alt={track.title}
-              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
-              data-testid={`img-cover-${track.id}`}
-            />
-          )
+        {track.fileUrl && !showRank && track.fileUrl.match(/\.(mp4|webm|mov)$/i) ? (
+          <video
+            src={track.fileUrl}
+            style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+            muted
+            loop
+            autoPlay
+            playsInline
+            data-testid={`video-thumb-${track.id}`}
+          />
+        ) : track.fileUrl && !showRank && track.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+          <img
+            src={track.fileUrl}
+            alt={track.title}
+            style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+            data-testid={`img-thumb-${track.id}`}
+          />
         ) : null}
         {showRank && track.rank ? (
           <span className="rankBadge" data-testid={`text-rank-${track.rank}`}>#{track.rank}</span>

@@ -6,15 +6,13 @@ import bcrypt from "bcrypt";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import archiver from "archiver";
 
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-const AUDIO_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
-const COVER_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm", ".mov"];
+const ALLOWED_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".mp4", ".webm", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -27,16 +25,10 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (file.fieldname === "audioFile" && AUDIO_EXTS.includes(ext)) {
+    if (ALLOWED_EXTS.includes(ext)) {
       cb(null, true);
-    } else if (file.fieldname === "coverFile" && COVER_EXTS.includes(ext)) {
-      cb(null, true);
-    } else if (file.fieldname === "audioFile") {
-      cb(new Error("Only audio files are allowed (.mp3, .wav, .ogg, .flac, .m4a, .aac)"));
-    } else if (file.fieldname === "coverFile") {
-      cb(new Error("Only image/video files are allowed (.jpg, .png, .gif, .webp, .mp4, .webm, .mov)"));
     } else {
-      cb(new Error("Unexpected file field"));
+      cb(new Error("Unsupported file type. Allowed: MP3, WAV, OGG, FLAC, M4A, AAC, MP4, WEBM, MOV, JPG, PNG, GIF, WEBP"));
     }
   },
 });
@@ -158,34 +150,15 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Track not found or has no file" });
       }
 
-      const audioPath = path.join(process.cwd(), track.fileUrl.replace(/^\//, ""));
-      if (!fs.existsSync(audioPath)) {
-        return res.status(404).json({ message: "Audio file not found" });
-      }
-
-      const hasCover = track.coverUrl != null;
-      const coverPath = hasCover ? path.join(process.cwd(), track.coverUrl!.replace(/^\//, "")) : null;
-      const coverExists = coverPath ? fs.existsSync(coverPath) : false;
-
-      if (!coverExists) {
-        res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(track.title)}${path.extname(audioPath)}"`);
-        res.setHeader("Content-Type", "application/octet-stream");
-        return fs.createReadStream(audioPath).pipe(res);
+      const filePath = path.join(process.cwd(), track.fileUrl.replace(/^\//, ""));
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "File not found" });
       }
 
       const safeName = track.title.replace(/[^a-zA-Z0-9_\- ]/g, "").trim() || "track";
-      res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(safeName)}.zip"`);
-      res.setHeader("Content-Type", "application/zip");
-
-      const archive = archiver("zip", { zlib: { level: 5 } });
-      archive.on("error", (err) => {
-        console.error("Archive error:", err);
-        if (!res.headersSent) res.status(500).json({ message: "Download failed" });
-      });
-      archive.pipe(res);
-      archive.file(audioPath, { name: `${safeName}${path.extname(audioPath)}` });
-      archive.file(coverPath!, { name: `${safeName}_cover${path.extname(coverPath!)}` });
-      await archive.finalize();
+      res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(safeName)}${path.extname(filePath)}"`);
+      res.setHeader("Content-Type", "application/octet-stream");
+      fs.createReadStream(filePath).pipe(res);
     } catch (err) {
       console.error("Download error:", err);
       if (!res.headersSent) res.status(500).json({ message: "Download failed" });
@@ -193,10 +166,7 @@ export async function registerRoutes(
   });
 
   app.post("/api/tracks/upload", (req, res, next) => {
-    upload.fields([
-      { name: "audioFile", maxCount: 1 },
-      { name: "coverFile", maxCount: 1 },
-    ])(req, res, (err) => {
+    upload.single("file")(req, res, (err) => {
       if (err instanceof multer.MulterError) {
         if (err.code === "LIMIT_FILE_SIZE") {
           return res.status(400).json({ message: "File is too large. Maximum size is 50MB." });
@@ -237,11 +207,7 @@ export async function registerRoutes(
         await storage.updateUserCreatorId(user.id, creator.id);
       }
 
-      const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
-      const audioFile = files?.audioFile?.[0];
-      const coverFile = files?.coverFile?.[0];
-      const fileUrl = audioFile ? `/uploads/${audioFile.filename}` : null;
-      const coverUrl = coverFile ? `/uploads/${coverFile.filename}` : null;
+      const fileUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
       const track = await storage.insertTrack({
         title,
@@ -252,7 +218,7 @@ export async function registerRoutes(
         category: "new",
         creatorId: creator.id,
         fileUrl,
-        coverUrl,
+        coverUrl: null,
       });
 
       await storage.incrementCreatorTrackCount(creator.id);
@@ -295,12 +261,6 @@ export async function registerRoutes(
         const filePath = path.join(process.cwd(), track.fileUrl.replace(/^\//, ""));
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
-        }
-      }
-      if (track.coverUrl) {
-        const coverPath = path.join(process.cwd(), track.coverUrl.replace(/^\//, ""));
-        if (fs.existsSync(coverPath)) {
-          fs.unlinkSync(coverPath);
         }
       }
 
