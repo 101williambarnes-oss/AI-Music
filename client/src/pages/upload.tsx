@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { Music } from "lucide-react";
 
 export default function Upload() {
   const [title, setTitle] = useState("");
@@ -11,6 +12,8 @@ export default function Upload() {
   const [loading, setLoading] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
   const TOOLS = ["Suno", "Udio", "Stable Audio", "AIVA", "Other"];
@@ -43,12 +46,33 @@ export default function Upload() {
     );
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] || null;
+    if (file) {
+      const allowed = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
+      const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+      if (!allowed.includes(ext)) {
+        setError("Only audio files are allowed (.mp3, .wav, .ogg, .flac, .m4a, .aac)");
+        setAudioFile(null);
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        setError("File size must be under 50MB");
+        setAudioFile(null);
+        return;
+      }
+      setError("");
+      setAudioFile(file);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
     if (!title.trim()) return setError("Title is required.");
     if (!genre.trim()) return setError("Genre is required.");
+    if (!audioFile) return setError("Please select an audio file to upload.");
     if (aiTools.length === 0) return setError("Select at least one AI tool used.");
     if (!ownsRights) return setError("You must confirm you own all rights.");
     if (!agreesTerms) return setError("You must agree to the platform terms.");
@@ -58,10 +82,17 @@ export default function Upload() {
     try {
       const stored = localStorage.getItem("hwm_user");
       const userData = stored ? JSON.parse(stored) : null;
+
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("genre", genre);
+      formData.append("aiTools", JSON.stringify(aiTools));
+      formData.append("audioFile", audioFile);
+      if (userData?.id) formData.append("userId", String(userData.id));
+
       const res = await fetch("/api/tracks/upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, genre, aiTools, userId: userData?.id }),
+        body: formData,
       });
 
       const data = await res.json();
@@ -144,6 +175,49 @@ export default function Upload() {
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Genre *</label>
               <input type="text" value={genre} onChange={(e) => setGenre(e.target.value)} placeholder="e.g. Electronic, Hip-Hop, Rock" style={inputStyle} required data-testid="input-track-genre" />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Audio File *</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".mp3,.wav,.ogg,.flac,.m4a,.aac"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+                data-testid="input-audio-file"
+              />
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  width: "100%",
+                  padding: "20px 14px",
+                  background: audioFile ? "rgba(108,240,255,.08)" : "rgba(255,255,255,.04)",
+                  border: `2px dashed ${audioFile ? "rgba(108,240,255,.4)" : "rgba(108,240,255,.15)"}`,
+                  borderRadius: 6,
+                  color: audioFile ? "#6cf0ff" : "rgba(170,182,232,.5)",
+                  fontSize: 14,
+                  textAlign: "center",
+                  cursor: "pointer",
+                  boxSizing: "border-box" as const,
+                  transition: "border-color 0.2s, background 0.2s",
+                }}
+                data-testid="button-choose-file"
+              >
+                {audioFile ? (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    <Music size={18} />
+                    <span>{audioFile.name}</span>
+                    <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(audioFile.size / (1024 * 1024)).toFixed(1)} MB)</span>
+                  </div>
+                ) : (
+                  <div>
+                    <Music size={24} style={{ marginBottom: 6, opacity: 0.5 }} />
+                    <div>Click to choose an audio file</div>
+                    <div style={{ fontSize: 12, marginTop: 4 }}>MP3, WAV, OGG, FLAC, M4A, AAC (max 50MB)</div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div style={{ marginBottom: 16 }}>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
-import { Download } from "lucide-react";
+import { Download, Music } from "lucide-react";
 
 function formatPlays(plays: number) {
   if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
@@ -128,6 +128,28 @@ export default function CreatorProfile() {
                           <div className="by" data-testid={`text-track-genre-${track.id}`}>{track.genre}</div>
                         </div>
                         <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
+                        {track.fileUrl && (
+                          <a
+                            href={track.fileUrl}
+                            download
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: 32,
+                              height: 32,
+                              borderRadius: 6,
+                              background: "rgba(108,240,255,.1)",
+                              border: "1px solid rgba(108,240,255,.2)",
+                              color: "#6cf0ff",
+                              textDecoration: "none",
+                              flexShrink: 0,
+                            }}
+                            data-testid={`button-download-track-${track.id}`}
+                          >
+                            <Download size={14} />
+                          </a>
+                        )}
                       </div>
                     ))}
                   </div>

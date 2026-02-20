@@ -1,8 +1,36 @@
-import type { Express } from "express";
+import express, { type Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { signupSchema, signinSchema } from "@shared/schema";
 import bcrypt from "bcrypt";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+
+const uploadsDir = path.join(process.cwd(), "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, uploadsDir),
+    filename: (_req, file, cb) => {
+      const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname)}`;
+      cb(null, uniqueName);
+    },
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowed.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only audio files are allowed (.mp3, .wav, .ogg, .flac, .m4a, .aac)"));
+    }
+  },
+});
 
 export async function registerRoutes(
   httpServer: Server,
@@ -109,7 +137,22 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/tracks/upload", async (req, res) => {
+  app.use("/uploads", express.static(uploadsDir));
+
+  app.post("/api/tracks/upload", (req, res, next) => {
+    upload.single("audioFile")(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res.status(400).json({ message: "File is too large. Maximum size is 50MB." });
+        }
+        return res.status(400).json({ message: err.message });
+      }
+      if (err) {
+        return res.status(400).json({ message: err.message });
+      }
+      next();
+    });
+  }, async (req, res) => {
     const userId = req.session.userId || req.body.userId;
     if (!userId) {
       return res.status(401).json({ message: "You must be signed in to upload" });
@@ -138,6 +181,8 @@ export async function registerRoutes(
         await storage.updateUserCreatorId(user.id, creator.id);
       }
 
+      const fileUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
       const track = await storage.insertTrack({
         title,
         artist: creator.name,
@@ -146,6 +191,7 @@ export async function registerRoutes(
         rank: null,
         category: "new",
         creatorId: creator.id,
+        fileUrl,
       });
 
       await storage.incrementCreatorTrackCount(creator.id);
