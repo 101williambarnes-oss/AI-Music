@@ -436,16 +436,23 @@
   padding: 14px 0 16px;
   background: linear-gradient(180deg, transparent 0%, rgba(5,6,21,.85) 40%, #050615 100%);
 }
-.heroNav span {
-  cursor: pointer;
+.heroNav a {
   color: #eaf0ff;
+  text-decoration: none;
+  position: relative;
+  font-size: 16px;
 }
-.heroNav span::after {
+
+.heroNav a:hover {
+  color: var(--cyan);
+}
+
+.heroNav a::after {
   content: "";
   display: block;
   height: 2px;
   margin-top: 6px;
-  background: linear-gradient(90deg, transparent, #6cf0ff, transparent);
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
   opacity: .6;
 }
 
