@@ -3,6 +3,7 @@ import { useState } from "react";
 export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [verifyEmail, setVerifyEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -56,6 +57,27 @@ export default function SignUp() {
                   boxSizing: "border-box",
                 }}
                 data-testid="input-email"
+              />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Verify Email</label>
+              <input
+                type="email"
+                value={verifyEmail}
+                onChange={(e) => setVerifyEmail(e.target.value)}
+                placeholder="Re-enter your email"
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  background: "rgba(255,255,255,.06)",
+                  border: "1px solid rgba(108,240,255,.15)",
+                  borderRadius: 6,
+                  color: "#eaf0ff",
+                  fontSize: 15,
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+                data-testid="input-verify-email"
               />
             </div>
             <div style={{ marginBottom: 16 }}>
