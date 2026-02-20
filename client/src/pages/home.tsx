@@ -339,6 +339,24 @@ export default function Home() {
         </div>
       </section>
 
+      <nav className="quick-nav" data-testid="nav-quick-links">
+        <a href="/top-25" className="quick-nav-tab" data-testid="link-quick-top25">
+          Top 25
+        </a>
+        <a href="/trending" className="quick-nav-tab" data-testid="link-quick-trending">
+          Trending
+        </a>
+        <a href="/new-songs" className="quick-nav-tab" data-testid="link-quick-new-songs">
+          New Songs
+        </a>
+        <a href="/new-creators" className="quick-nav-tab" data-testid="link-quick-new-creators">
+          New Creators
+        </a>
+        <a href="/downloads" className="quick-nav-tab" data-testid="link-quick-downloads">
+          Downloads
+        </a>
+      </nav>
+
       <div className="five-columns" data-testid="section-content">
         <section className="panel column-panel genre-sidebar" data-testid="section-genres">
           <div className="section-header">
