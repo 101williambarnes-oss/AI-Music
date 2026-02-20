@@ -1,10 +1,11 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { type Track } from "@shared/schema";
+import { Trash2 } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
 
-export function TrackRow({ track, showRank, hideComments }: { track: Track; showRank?: boolean; hideComments?: boolean }) {
+export function TrackRow({ track, showRank, hideComments, onDelete }: { track: Track; showRank?: boolean; hideComments?: boolean; onDelete?: (trackId: number) => void }) {
   const { currentTrackId, isPlaying, toggle, play } = useAudioPlayer();
   const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
   const hasAudio = !!track.fileUrl;
@@ -108,6 +109,32 @@ export function TrackRow({ track, showRank, hideComments }: { track: Track; show
           <div className="title" data-testid={`text-track-title-${track.id}`}>{track.title}</div>
           <div className="by" data-testid={`text-track-artist-${track.id}`}>{track.artist}</div>
         </div>
+        {onDelete && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (confirm("Are you sure you want to delete this track?")) {
+                onDelete(track.id);
+              }
+            }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 32,
+              height: 32,
+              borderRadius: 6,
+              background: "rgba(255,79,216,.1)",
+              border: "1px solid rgba(255,79,216,.2)",
+              color: "#ff4fd8",
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+            data-testid={`button-delete-track-${track.id}`}
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
       </div>
       <TrackActions track={track} hideComments={hideComments} />
       {showVideoModal && isVideo && (

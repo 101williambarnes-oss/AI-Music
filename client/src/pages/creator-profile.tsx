@@ -2,10 +2,9 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
-import { Upload, Trash2 } from "lucide-react";
+import { Upload } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
-import { useAudioPlayer } from "@/lib/audioPlayer";
-import { TrackActions } from "@/components/track-actions";
+import { TrackRow } from "@/components/track-row";
 
 function formatPlays(plays: number) {
   if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
@@ -54,8 +53,6 @@ export default function CreatorProfile() {
       queryClient.invalidateQueries({ queryKey: ["/api/tracks/top25"] });
     },
   });
-
-  const { currentTrackId, isPlaying, toggle } = useAudioPlayer();
 
   const avatarGradient =
     creator?.avatarColor === "cyan"
@@ -162,77 +159,11 @@ export default function CreatorProfile() {
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }} data-testid="list-creator-tracks">
                     {tracks.map((track) => (
-                      <div key={track.id} data-testid={`track-row-${track.id}`}>
-                        <div className="row">
-                          <div className="thumb" style={{ position: "relative", overflow: "hidden" }}>
-                            {track.fileUrl && track.fileUrl.match(/\.(mp4|webm|mov)$/i) ? (
-                              <video
-                                src={track.fileUrl}
-                                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
-                                muted
-                                loop
-                                autoPlay
-                                playsInline
-                                data-testid={`video-thumb-${track.id}`}
-                              />
-                            ) : track.fileUrl && track.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                              <img
-                                src={track.fileUrl}
-                                alt={track.title}
-                                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
-                                data-testid={`img-thumb-${track.id}`}
-                              />
-                            ) : null}
-                            <div
-                              className="play-btn"
-                              onClick={track.fileUrl ? () => toggle(track.id, track.fileUrl!) : undefined}
-                              style={{
-                                cursor: track.fileUrl ? "pointer" : "default",
-                                opacity: track.fileUrl ? 1 : 0.4,
-                                color: currentTrackId === track.id && isPlaying ? "#ff4fd8" : undefined,
-                                position: "relative",
-                                zIndex: 1,
-                              }}
-                              data-testid={`button-play-${track.id}`}
-                            >
-                              {currentTrackId === track.id && isPlaying ? "\u275A\u275A" : "\u25B6"}
-                            </div>
-                          </div>
-                          <div className="meta">
-                            <div className="title" data-testid={`text-track-title-${track.id}`}>{track.title}</div>
-                            <div className="by" data-testid={`text-track-genre-${track.id}`}>{track.genre}</div>
-                          </div>
-                          <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
-                          {isOwnProfile && (
-                            <button
-                              onClick={() => {
-                                if (confirm("Are you sure you want to delete this track?")) {
-                                  deleteTrackMutation.mutate(track.id);
-                                }
-                              }}
-                              disabled={deleteTrackMutation.isPending}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                width: 32,
-                                height: 32,
-                                borderRadius: 6,
-                                background: "rgba(255,79,216,.1)",
-                                border: "1px solid rgba(255,79,216,.2)",
-                                color: "#ff4fd8",
-                                cursor: "pointer",
-                                flexShrink: 0,
-                                opacity: deleteTrackMutation.isPending ? 0.5 : 1,
-                              }}
-                              data-testid={`button-delete-track-${track.id}`}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          )}
-                        </div>
-                        <TrackActions track={track} />
-                      </div>
+                      <TrackRow
+                        key={track.id}
+                        track={track}
+                        onDelete={isOwnProfile ? (trackId) => deleteTrackMutation.mutate(trackId) : undefined}
+                      />
                     ))}
                   </div>
                 )}
