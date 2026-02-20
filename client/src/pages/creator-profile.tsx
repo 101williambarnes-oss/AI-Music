@@ -4,6 +4,7 @@ import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
 import { Download, Upload, Trash2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
+import { useAudioPlayer } from "@/lib/audioPlayer";
 
 function formatPlays(plays: number) {
   if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
@@ -52,6 +53,8 @@ export default function CreatorProfile() {
       queryClient.invalidateQueries({ queryKey: ["/api/tracks/top25"] });
     },
   });
+
+  const { currentTrackId, isPlaying, toggle } = useAudioPlayer();
 
   const avatarGradient =
     creator?.avatarColor === "cyan"
@@ -142,7 +145,18 @@ export default function CreatorProfile() {
                         data-testid={`track-row-${track.id}`}
                       >
                         <div className="thumb">
-                          <div className="play-btn">&#9654;</div>
+                          <div
+                            className="play-btn"
+                            onClick={track.fileUrl ? () => toggle(track.id, track.fileUrl!) : undefined}
+                            style={{
+                              cursor: track.fileUrl ? "pointer" : "default",
+                              opacity: track.fileUrl ? 1 : 0.4,
+                              color: currentTrackId === track.id && isPlaying ? "#ff4fd8" : undefined,
+                            }}
+                            data-testid={`button-play-${track.id}`}
+                          >
+                            {currentTrackId === track.id && isPlaying ? "\u275A\u275A" : "\u25B6"}
+                          </div>
                         </div>
                         <div className="meta">
                           <div className="title" data-testid={`text-track-title-${track.id}`}>{track.title}</div>

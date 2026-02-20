@@ -13,6 +13,7 @@ import SignUp from "@/pages/sign-up";
 import Upload from "@/pages/upload";
 import CreatorProfile from "@/pages/creator-profile";
 import NotFound from "@/pages/not-found";
+import { AudioPlayerProvider } from "@/lib/audioPlayer";
 
 function Router() {
   return (
@@ -35,8 +36,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Router />
+        <AudioPlayerProvider>
+          <Toaster />
+          <Router />
+        </AudioPlayerProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

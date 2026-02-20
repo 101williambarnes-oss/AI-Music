@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
-import { Menu, Search } from "lucide-react";
+import { Menu, Search, Pause } from "lucide-react";
 import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_1771460797070.png";
+import { useAudioPlayer } from "@/lib/audioPlayer";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -51,6 +52,10 @@ function formatPlays(plays: number) {
 }
 
 function TrackRow({ track, showRank }: { track: Track; showRank?: boolean }) {
+  const { currentTrackId, isPlaying, toggle } = useAudioPlayer();
+  const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
+  const hasAudio = !!track.fileUrl;
+
   return (
     <div
       className="row"
@@ -60,7 +65,18 @@ function TrackRow({ track, showRank }: { track: Track; showRank?: boolean }) {
         {showRank && track.rank ? (
           <span className="rankBadge" data-testid={`text-rank-${track.rank}`}>#{track.rank}</span>
         ) : (
-          <div className="play-btn">&#9654;</div>
+          <div
+            className="play-btn"
+            onClick={hasAudio ? () => toggle(track.id, track.fileUrl!) : undefined}
+            style={{
+              cursor: hasAudio ? "pointer" : "default",
+              opacity: hasAudio ? 1 : 0.4,
+              color: isCurrentlyPlaying ? "#ff4fd8" : undefined,
+            }}
+            data-testid={`button-play-${track.id}`}
+          >
+            {isCurrentlyPlaying ? "\u275A\u275A" : "\u25B6"}
+          </div>
         )}
       </div>
       <div className="meta">
