@@ -103,7 +103,28 @@ export default function CreatorProfile() {
   return (
     <div className="hwm-app">
       <div className="bg-lines" />
-      <div className="wrap" style={{ paddingTop: 40, maxWidth: 700, margin: "0 auto" }}>
+
+      <div style={{ textAlign: "center", paddingTop: 24, paddingBottom: 8 }}>
+        <a href="/" style={{ textDecoration: "none" }} data-testid="link-logo-home">
+          <div style={{
+            fontFamily: "'Inter', system-ui, sans-serif",
+            fontSize: "1.5rem",
+            fontWeight: 900,
+            letterSpacing: 3,
+            background: "linear-gradient(90deg, #6cf0ff 0%, #a06bff 50%, #ff4fd8 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }} data-testid="text-brand-logo">
+            HIT WAVE MEDIA
+          </div>
+          <div style={{ fontSize: "0.7rem", color: "rgba(170,182,232,.5)", letterSpacing: 2, marginTop: 2 }}>
+            The Home of AI Music
+          </div>
+        </a>
+      </div>
+
+      <div className="wrap" style={{ paddingTop: 16, maxWidth: 700, margin: "0 auto" }}>
         {isLoading ? (
           <section className="panel" style={{ padding: 40, textAlign: "center" }}>
             <div style={{ color: "rgba(170,182,232,.6)", fontSize: 16 }} data-testid="text-loading">Loading creator profile...</div>
