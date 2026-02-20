@@ -389,6 +389,56 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/creator/:id", async (req, res, next) => {
+    const ua = (req.headers["user-agent"] || "").toLowerCase();
+    const isCrawler = /facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegrambot|discordbot|slackbot|pinterest|redditbot|embedly|quora|outbrain|vkshare|tumblr|skypeuripreview|nuzzel/i.test(ua);
+    if (!isCrawler) return next();
+
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return next();
+
+      const creator = await storage.getCreatorById(id);
+      if (!creator) return next();
+
+      const tracks = await storage.getTracksByCreatorId(creator.id);
+      const ogImage = creator.avatarUrl
+        ? `${req.protocol}://${req.get("host")}${creator.avatarUrl}`
+        : "";
+      const ogTitle = `${creator.name} — Hit Wave Media`;
+      const ogDesc = `Check out ${creator.name} on Hit Wave Media. ${creator.trackCount} track${creator.trackCount !== 1 ? "s" : ""} published. The Home of AI Music.`;
+      const ogUrl = `${req.protocol}://${req.get("host")}/creator/${id}`;
+
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>${ogTitle}</title>
+  <meta name="description" content="${ogDesc}" />
+  <meta property="og:title" content="${ogTitle}" />
+  <meta property="og:description" content="${ogDesc}" />
+  <meta property="og:url" content="${ogUrl}" />
+  <meta property="og:type" content="profile" />
+  <meta property="og:site_name" content="Hit Wave Media" />
+  ${ogImage ? `<meta property="og:image" content="${ogImage}" />` : ""}
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${ogTitle}" />
+  <meta name="twitter:description" content="${ogDesc}" />
+  ${ogImage ? `<meta name="twitter:image" content="${ogImage}" />` : ""}
+</head>
+<body>
+  <h1>${creator.name}</h1>
+  <p>${ogDesc}</p>
+  ${tracks.map(t => `<p>${t.title} by ${t.artist}</p>`).join("\n  ")}
+</body>
+</html>`;
+
+      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    } catch {
+      next();
+    }
+  });
+
   app.get("/api/genres", async (_req, res) => {
     try {
       const genres = await storage.getGenres();
