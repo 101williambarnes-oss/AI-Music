@@ -925,22 +925,21 @@
 .video-modal {
   position: relative;
   width: 90vw;
-  max-width: 800px;
+  max-width: 700px;
   max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   background: rgba(15,20,40,.95);
   border: 1px solid rgba(162,106,255,.25);
   border-radius: 16px;
   box-shadow: 0 0 60px rgba(108,240,255,.12), 0 0 120px rgba(160,107,255,.08);
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .video-modal-close {
-  position: sticky;
-  top: 12px;
-  float: right;
-  margin-right: 12px;
-  margin-top: 12px;
+  position: absolute;
+  top: 8px;
+  right: 8px;
   z-index: 10;
   width: 36px;
   height: 36px;
@@ -962,8 +961,9 @@
 .video-modal-player {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9;
+  aspect-ratio: 2/1;
   background: #000;
+  flex-shrink: 0;
 }
 
 .video-modal-play-overlay {
@@ -981,7 +981,8 @@
 }
 
 .video-controls {
-  padding: 8px 16px 4px;
+  padding: 6px 14px 2px;
+  flex-shrink: 0;
 }
 .video-progress-bar {
   position: relative;
@@ -1082,16 +1083,24 @@
 }
 
 .video-modal-info {
-  padding: 14px 16px 8px;
+  padding: 8px 14px 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 .video-modal-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 900;
   letter-spacing: .3px;
   color: #eaf0ff;
 }
 .video-modal-artist {
-  margin-top: 4px;
-  font-size: 14px;
+  font-size: 13px;
   color: rgba(170,182,232,.85);
+}
+.video-modal-bottom {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }

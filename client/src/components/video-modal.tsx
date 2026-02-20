@@ -189,7 +189,9 @@ export function VideoModal({
           <div className="video-modal-artist" data-testid={`text-modal-artist-${track.id}`}>{track.artist}</div>
         </div>
 
-        <TrackActions track={track} />
+        <div className="video-modal-bottom">
+          <TrackActions track={track} />
+        </div>
       </div>
     </div>
   );
