@@ -56,10 +56,12 @@ export default function Upload() {
     setLoading(true);
 
     try {
+      const stored = localStorage.getItem("hwm_user");
+      const userData = stored ? JSON.parse(stored) : null;
       const res = await fetch("/api/tracks/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, genre, aiTools }),
+        body: JSON.stringify({ title, genre, aiTools, userId: userData?.id }),
       });
 
       const data = await res.json();

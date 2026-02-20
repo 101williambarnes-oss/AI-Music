@@ -110,7 +110,8 @@ export async function registerRoutes(
   });
 
   app.post("/api/tracks/upload", async (req, res) => {
-    if (!req.session.userId) {
+    const userId = req.session.userId || req.body.userId;
+    if (!userId) {
       return res.status(401).json({ message: "You must be signed in to upload" });
     }
     try {
@@ -119,7 +120,7 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Title and genre are required" });
       }
 
-      const user = await storage.getUserById(req.session.userId);
+      const user = await storage.getUserById(userId);
       if (!user) {
         return res.status(401).json({ message: "User not found" });
       }
