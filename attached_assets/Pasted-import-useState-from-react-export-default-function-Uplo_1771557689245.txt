@@ -1,0 +1,158 @@
+import { useState } from "react";
+
+export default function Upload() {
+  const [title, setTitle] = useState("");
+  const [genre, setGenre] = useState("");
+  const [aiTools, setAiTools] = useState([]);
+  const [ownsRights, setOwnsRights] = useState(false);
+  const [agreesTerms, setAgreesTerms] = useState(false);
+  const [audioFile, setAudioFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const TOOLS = ["Suno", "Udio", "Stable Audio", "AIVA", "Other"];
+
+  function toggleTool(tool) {
+    setAiTools(prev =>
+      prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool]
+    );
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+
+    // Frontend validation
+    if (!title.trim()) return setError("Title is required.");
+    if (!genre.trim()) return setError("Genre is required.");
+    if (!audioFile) return setError("Audio file is required.");
+    if (aiTools.length === 0) return setError("Select at least one AI tool used.");
+    if (!ownsRights) return setError("You must confirm you own all rights.");
+    if (!agreesTerms) return setError("You must agree to the platform terms.");
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("genre", genre);
+    formData.append("aiTools", JSON.stringify(aiTools));
+    formData.append("audio", audioFile);
+    if (coverFile) formData.append("cover", coverFile);
+    formData.append("ownsRights", "true");
+    formData.append("agreesTerms", "true");
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/tracks/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      alert("Upload successful!");
+      // Reset form
+      setTitle("");
+      setGenre("");
+      setAiTools([]);
+      setOwnsRights(false);
+      setAgreesTerms(false);
+      setAudioFile(null);
+      setCoverFile(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="p-6 max-w-xl mx-auto text-white">
+      <h1 className="text-3xl font-bold mb-6">Upload Track</h1>
+
+      {error && <div className="mb-4 text-red-400">{error}</div>}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          className="w-full p-3 bg-slate-800 rounded border border-slate-700"
+          placeholder="Track title"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          required
+        />
+
+        <input
+          className="w-full p-3 bg-slate-800 rounded border border-slate-700"
+          placeholder="Genre (e.g. Electronic, Hip-Hop, Rock)"
+          value={genre}
+          onChange={e => setGenre(e.target.value)}
+          required
+        />
+
+        <div>
+          <div className="mb-2 font-semibold">AI Tools Used</div>
+          <div className="flex flex-wrap gap-3">
+            {TOOLS.map(tool => (
+              <label key={tool} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={aiTools.includes(tool)}
+                  onChange={() => toggleTool(tool)}
+                />
+                {tool}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block mb-1">Audio File *</label>
+          <input
+            type="file"
+            accept="audio/*"
+            onChange={e => setAudioFile(e.target.files?.[0] || null)}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1">Cover Image (optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={e => setCoverFile(e.target.files?.[0] || null)}
+          />
+        </div>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={ownsRights}
+            onChange={e => setOwnsRights(e.target.checked)}
+          />
+          I own all rights to this song
+        </label>
+
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={agreesTerms}
+            onChange={e => setAgreesTerms(e.target.checked)}
+          />
+          I agree to the platform terms
+        </label>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-3 rounded bg-gradient-to-r from-blue-500 to-cyan-400 font-semibold"
+        >
+          {loading ? "Uploading..." : "Upload Track"}
+        </button>
+      </form>
+    </div>
+  );
+}

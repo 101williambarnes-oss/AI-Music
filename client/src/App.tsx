@@ -10,6 +10,7 @@ import Top25 from "@/pages/top-25";
 import NewCreators from "@/pages/new-creators";
 import SignIn from "@/pages/sign-in";
 import SignUp from "@/pages/sign-up";
+import Upload from "@/pages/upload";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/new-creators" component={NewCreators} />
       <Route path="/sign-in" component={SignIn} />
       <Route path="/sign-up" component={SignUp} />
+      <Route path="/upload" component={Upload} />
       <Route component={NotFound} />
     </Switch>
   );
