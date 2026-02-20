@@ -259,6 +259,7 @@ export default function CreatorProfile() {
                       <TrackRow
                         key={track.id}
                         track={track}
+                        showDownload
                         onDelete={isOwnProfile ? (trackId) => deleteTrackMutation.mutate(trackId) : undefined}
                       />
                     ))}

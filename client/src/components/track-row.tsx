@@ -1,11 +1,11 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { type Track } from "@shared/schema";
-import { Trash2 } from "lucide-react";
+import { Trash2, Download } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
 
-export function TrackRow({ track, showRank, hideComments, onDelete }: { track: Track; showRank?: boolean; hideComments?: boolean; onDelete?: (trackId: number) => void }) {
+export function TrackRow({ track, showRank, hideComments, onDelete, showDownload }: { track: Track; showRank?: boolean; hideComments?: boolean; onDelete?: (trackId: number) => void; showDownload?: boolean }) {
   const { currentTrackId, isPlaying, toggle, play } = useAudioPlayer();
   const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
   const hasAudio = !!track.fileUrl;
@@ -109,6 +109,29 @@ export function TrackRow({ track, showRank, hideComments, onDelete }: { track: T
           <div className="title" data-testid={`text-track-title-${track.id}`}>{track.title}</div>
           <div className="by" data-testid={`text-track-artist-${track.id}`}>{track.artist}</div>
         </div>
+        {showDownload && track.fileUrl && (
+          <a
+            href={`/api/tracks/${track.id}/download`}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 32,
+              height: 32,
+              borderRadius: 6,
+              background: "rgba(108,240,255,.1)",
+              border: "1px solid rgba(108,240,255,.2)",
+              color: "#6cf0ff",
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+            title="Download"
+            data-testid={`button-download-track-${track.id}`}
+          >
+            <Download size={14} />
+          </a>
+        )}
         {onDelete && (
           <button
             onClick={(e) => {
