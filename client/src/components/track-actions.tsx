@@ -256,10 +256,10 @@ function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; on
       testId: "facebook",
     },
     {
-      name: "WhatsApp",
-      color: "#25d366",
-      url: `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
-      testId: "whatsapp",
+      name: "Instagram",
+      color: "#e1306c",
+      url: `https://www.instagram.com/`,
+      testId: "instagram",
     },
     {
       name: "TikTok",
@@ -268,16 +268,88 @@ function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; on
       testId: "tiktok",
     },
     {
+      name: "Snapchat",
+      color: "#fffc00",
+      url: `https://www.snapchat.com/share?url=${encodeURIComponent(shareUrl)}`,
+      testId: "snapchat",
+    },
+    {
+      name: "WhatsApp",
+      color: "#25d366",
+      url: `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      testId: "whatsapp",
+    },
+    {
+      name: "Telegram",
+      color: "#0088cc",
+      url: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+      testId: "telegram",
+    },
+    {
+      name: "LinkedIn",
+      color: "#0a66c2",
+      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+      testId: "linkedin",
+    },
+    {
+      name: "Pinterest",
+      color: "#e60023",
+      url: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&description=${encodeURIComponent(shareText)}`,
+      testId: "pinterest",
+    },
+    {
+      name: "Threads",
+      color: "#ffffff",
+      url: `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      testId: "threads",
+    },
+    {
       name: "Reddit",
       color: "#ff4500",
       url: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
       testId: "reddit",
     },
     {
+      name: "Tumblr",
+      color: "#35465c",
+      url: `https://www.tumblr.com/widgets/share/tool?canonicalUrl=${encodeURIComponent(shareUrl)}&caption=${encodeURIComponent(shareText)}`,
+      testId: "tumblr",
+    },
+    {
+      name: "Discord",
+      color: "#5865f2",
+      url: `https://discord.com/channels/@me`,
+      testId: "discord",
+    },
+    {
+      name: "YouTube",
+      color: "#ff0000",
+      url: `https://www.youtube.com/`,
+      testId: "youtube",
+    },
+    {
+      name: "Spotify",
+      color: "#1db954",
+      url: `https://open.spotify.com/`,
+      testId: "spotify",
+    },
+    {
+      name: "SoundCloud",
+      color: "#ff5500",
+      url: `https://soundcloud.com/`,
+      testId: "soundcloud",
+    },
+    {
       name: "Email",
       color: "#6cf0ff",
       url: `mailto:?subject=${encodeURIComponent(`Check out ${track.title} on Hit Wave Media`)}&body=${encodeURIComponent(shareText + "\n\n" + shareUrl)}`,
       testId: "email",
+    },
+    {
+      name: "SMS",
+      color: "#34c759",
+      url: `sms:?body=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      testId: "sms",
     },
   ];
 
