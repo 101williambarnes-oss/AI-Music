@@ -19,10 +19,10 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
     if (!videoRef.current || !isVideo) return;
     if (isCurrentlyPlaying) {
       videoRef.current.play().catch(() => {});
-    } else if (currentTrackId === track.id && !isPlaying) {
+    } else {
       videoRef.current.pause();
     }
-  }, [currentTrackId, isPlaying, track.id, isVideo, isCurrentlyPlaying]);
+  }, [isCurrentlyPlaying, isVideo]);
 
   return (
     <div data-testid={`track-row-${track.id}`}>
@@ -35,7 +35,6 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
               style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
               muted
               loop
-              autoPlay
               playsInline
               data-testid={`video-thumb-${track.id}`}
             />
