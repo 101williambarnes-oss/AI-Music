@@ -96,14 +96,15 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
       const headers: Record<string, string> = { "Content-Type": "application/json", ...getHeaders() };
       const res = await fetch(`/api/tracks/${track.id}/likes`, { method: "POST", headers, credentials: "include" });
       if (!res.ok) throw new Error("Failed to toggle like");
-      return res.json();
+      return res.json() as Promise<{ count: number; liked: boolean }>;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      qc.setQueryData(["/api/tracks", String(track.id), "likes", identKey], data);
       qc.invalidateQueries({
         predicate: (query) => {
           const key = query.queryKey as string[];
-          if (key[0] === "/api/tracks" && key[1] === String(track.id) && key[2] === "likes") return true;
           if (key[0] === "/api/tracks" && key[1] === "top25") return true;
+          if (key[0] === "/api/tracks" && key[1] === "trending") return true;
           return false;
         },
       });
