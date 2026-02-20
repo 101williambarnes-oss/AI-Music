@@ -118,15 +118,17 @@ function TrackList({
 
 function CreatorCard({ creator }: { creator: Creator }) {
   return (
-    <div className="creator" data-testid={`creator-card-${creator.id}`}>
-      <div className="avatar" />
-      <div>
-        <div className="cname" data-testid={`text-creator-name-${creator.id}`}>{creator.name}</div>
-        <div className="ctext" data-testid={`text-creator-tracks-${creator.id}`}>
-          {creator.trackCount} New Track{creator.trackCount !== 1 ? "s" : ""}
+    <a href={`/creator/${creator.id}`} style={{ textDecoration: "none", color: "inherit" }} data-testid={`creator-card-${creator.id}`}>
+      <div className="creator" style={{ cursor: "pointer" }}>
+        <div className="avatar" />
+        <div>
+          <div className="cname" data-testid={`text-creator-name-${creator.id}`}>{creator.name}</div>
+          <div className="ctext" data-testid={`text-creator-tracks-${creator.id}`}>
+            {creator.trackCount} New Track{creator.trackCount !== 1 ? "s" : ""}
+          </div>
         </div>
       </div>
-    </div>
+    </a>
   );
 }
 

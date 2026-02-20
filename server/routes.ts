@@ -25,6 +25,23 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/creators/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid creator ID" });
+      }
+      const creator = await storage.getCreatorById(id);
+      if (!creator) {
+        return res.status(404).json({ message: "Creator not found" });
+      }
+      const tracks = await storage.getTracksByArtist(creator.name);
+      res.json({ creator, tracks });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch creator" });
+    }
+  });
+
   app.get("/api/genres", async (_req, res) => {
     try {
       const genres = await storage.getGenres();
