@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 
 export default function SignIn() {
@@ -8,6 +8,20 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("hwm_user");
+      if (stored) {
+        const user = JSON.parse(stored);
+        if (user.creatorId) {
+          setLocation(`/creator/${user.creatorId}`);
+        } else {
+          setLocation("/");
+        }
+      }
+    } catch {}
+  }, [setLocation]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
