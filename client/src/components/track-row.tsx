@@ -53,7 +53,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
             <video
               ref={videoRef}
               src={track.fileUrl!}
-              style={{ width: 54, height: 54, objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+              style={{ width: 54, height: 54, objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
               muted
               loop
               playsInline
@@ -63,7 +63,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
             <img
               src={track.fileUrl}
               alt={track.title}
-              style={{ width: 54, height: 54, objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+              style={{ width: 54, height: 54, objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
               data-testid={`img-thumb-${track.id}`}
             />
           ) : null}
