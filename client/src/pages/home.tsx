@@ -60,11 +60,11 @@ function TrackList({
   testId?: string;
 }) {
   return (
-    <section className="panel" data-testid={`section-${testId}`}>
+    <section className="panel column-panel" data-testid={`section-${testId}`}>
       <div className="section-header">
         <h3 data-testid={`panel-header-${testId}`}>{title}</h3>
       </div>
-      <div className="list" data-testid={`list-${testId}`}>
+      <div className="list column-list" data-testid={`list-${testId}`}>
         {isLoading ? (
           [1, 2, 3, 4].map((i) => (
             <div
@@ -242,7 +242,7 @@ export default function Home() {
         )}
       </div>
 
-      <div className="single-column" data-testid="section-content">
+      <div className="four-columns" data-testid="section-content">
         <TrackList
           title="Trending Now"
           tracks={filteredTrending}
@@ -265,7 +265,7 @@ export default function Home() {
           testId="new-songs"
         />
 
-        <section className="panel" data-testid="section-creators">
+        <section className="panel column-panel" data-testid="section-creators">
           <div className="section-header">
             <h3 data-testid="panel-header-creators">New Creators of the Week</h3>
           </div>
@@ -280,7 +280,7 @@ export default function Home() {
                 />
               ))
             ) : creators.length === 0 ? (
-              <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "32px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-creators">
+              <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-creators">
                 No creators yet
               </div>
             ) : (
