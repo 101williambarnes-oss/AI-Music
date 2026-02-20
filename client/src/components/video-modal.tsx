@@ -126,6 +126,12 @@ export function VideoModal({
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    window.scrollTo(0, 0);
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
   return (
     <div className="video-modal-overlay" onClick={handleClose} data-testid="video-modal-overlay">
       <div className="video-modal" onClick={(e) => e.stopPropagation()} data-testid="video-modal">
