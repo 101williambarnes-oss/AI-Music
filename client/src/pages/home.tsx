@@ -386,6 +386,13 @@ export default function Home() {
         />
 
         <div className="stacked-column" data-testid="section-right-column">
+          <TrackColumn
+            title="New Songs of the Week"
+            tracks={filteredNew}
+            isLoading={newSongsLoading}
+            testId="new-songs"
+          />
+
           <section className="panel column-panel" data-testid="section-creators">
             <div className="section-header">
               <h3 data-testid="panel-header-creators">New Creators</h3>
@@ -409,13 +416,6 @@ export default function Home() {
               )}
             </div>
           </section>
-
-          <TrackColumn
-            title="New Songs of the Week"
-            tracks={filteredNew}
-            isLoading={newSongsLoading}
-            testId="new-songs"
-          />
         </div>
       </div>
     </div>
