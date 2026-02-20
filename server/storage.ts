@@ -38,6 +38,7 @@ export interface IStorage {
   getCommentCount(trackId: number): Promise<number>;
   addComment(comment: InsertComment): Promise<Comment>;
   deleteComment(commentId: number): Promise<void>;
+  updateCreatorAvatar(creatorId: number, avatarUrl: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -225,6 +226,10 @@ export class DatabaseStorage implements IStorage {
 
   async deleteComment(commentId: number): Promise<void> {
     await db.delete(comments).where(eq(comments.id, commentId));
+  }
+
+  async updateCreatorAvatar(creatorId: number, avatarUrl: string): Promise<void> {
+    await db.update(creators).set({ avatarUrl }).where(eq(creators.id, creatorId));
   }
 }
 

@@ -149,7 +149,14 @@ export default function NewCreators() {
                   data-testid={`creator-card-${creator.id}`}
                 >
                   <div className="creator" style={{ cursor: "pointer" }}>
-                    <div className="avatar" />
+                    <div
+                      className="avatar"
+                      style={creator.avatarUrl ? {
+                        backgroundImage: `url(${creator.avatarUrl})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      } : undefined}
+                    />
                     <div>
                       <div className="cname" data-testid={`text-creator-name-${creator.id}`}>{creator.name}</div>
                       <div className="ctext" data-testid={`text-creator-tracks-${creator.id}`}>

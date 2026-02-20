@@ -230,6 +230,52 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/creators/:id/avatar", (req, res, next) => {
+    upload.single("avatar")(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res.status(400).json({ message: "File is too large. Maximum size is 50MB." });
+        }
+        return res.status(400).json({ message: err.message });
+      }
+      if (err) {
+        return res.status(400).json({ message: err.message });
+      }
+      next();
+    });
+  }, async (req, res) => {
+    const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
+    if (!userId || isNaN(userId)) {
+      return res.status(401).json({ message: "You must be signed in to update your avatar" });
+    }
+    try {
+      const creatorId = parseInt(req.params.id);
+      if (isNaN(creatorId)) return res.status(400).json({ message: "Invalid creator ID" });
+
+      const creator = await storage.getCreatorByUserId(userId);
+      if (!creator || creator.id !== creatorId) {
+        return res.status(403).json({ message: "You can only update your own avatar" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      if (![".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext)) {
+        return res.status(400).json({ message: "Only image files are allowed for avatars" });
+      }
+
+      const avatarUrl = `/uploads/${req.file.filename}`;
+      await storage.updateCreatorAvatar(creatorId, avatarUrl);
+
+      res.json({ avatarUrl });
+    } catch (error) {
+      console.error("Avatar upload error:", error);
+      res.status(500).json({ message: "Failed to upload avatar" });
+    }
+  });
+
   app.delete("/api/tracks/:id", async (req, res) => {
     const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
     if (!userId) {

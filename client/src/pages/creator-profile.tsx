@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
-import { Upload } from "lucide-react";
+import { Upload, Camera } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { TrackRow } from "@/components/track-row";
 
@@ -24,6 +24,7 @@ export default function CreatorProfile() {
       return null;
     }
   });
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, error } = useQuery<{ creator: Creator; tracks: Track[] }>({
     queryKey: ["/api/creators", creatorId],
@@ -54,6 +55,44 @@ export default function CreatorProfile() {
     },
   });
 
+  const avatarMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      const res = await fetch(`/api/creators/${creatorId}/avatar`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "x-user-id": String(user?.id || "") },
+        body: formData,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ message: "Failed to upload" }));
+        throw new Error(data.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/creators", creatorId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/creators"] });
+    },
+  });
+
+  function handleAvatarClick() {
+    if (isOwnProfile && avatarInputRef.current) {
+      avatarInputRef.current.click();
+    }
+  }
+
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      avatarMutation.mutate(file);
+    }
+    if (avatarInputRef.current) {
+      avatarInputRef.current.value = "";
+    }
+  }
+
   const avatarGradient =
     creator?.avatarColor === "cyan"
       ? "radial-gradient(circle at 30% 30%, rgba(108,240,255,.8), rgba(160,107,255,.35) 55%, rgba(255,79,216,.20))"
@@ -83,18 +122,55 @@ export default function CreatorProfile() {
                     width: 80,
                     height: 80,
                     borderRadius: "50%",
-                    background: avatarGradient,
+                    background: creator.avatarUrl ? `url(${creator.avatarUrl}) center/cover no-repeat` : avatarGradient,
                     border: "2px solid rgba(108,240,255,.25)",
                     flexShrink: 0,
                     boxShadow: "0 0 24px rgba(108,240,255,.15)",
+                    cursor: isOwnProfile ? "pointer" : "default",
+                    position: "relative",
+                    overflow: "hidden",
                   }}
+                  onClick={handleAvatarClick}
+                  title={isOwnProfile ? "Click to change your profile photo" : undefined}
                   data-testid="img-creator-avatar"
+                >
+                  {isOwnProfile && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: "rgba(0,0,0,.6)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "4px 0",
+                      }}
+                    >
+                      <Camera size={14} style={{ color: "#fff" }} />
+                    </div>
+                  )}
+                </div>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleAvatarChange}
+                  data-testid="input-avatar-upload"
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <h1 style={{ color: "#6cf0ff", fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: 1 }} data-testid="text-creator-name">{creator.name}</h1>
                   <div style={{ color: "rgba(170,182,232,.7)", fontSize: 14, marginTop: 6 }} data-testid="text-creator-stats">
                     {creator.trackCount} Track{creator.trackCount !== 1 ? "s" : ""} Published
                   </div>
+                  {avatarMutation.isPending && (
+                    <div style={{ color: "#6cf0ff", fontSize: 12, marginTop: 4 }}>Uploading photo...</div>
+                  )}
+                  {avatarMutation.isError && (
+                    <div style={{ color: "#ff4fd8", fontSize: 12, marginTop: 4 }}>Failed to upload photo. Try again.</div>
+                  )}
                 </div>
                 <a
                   href="/"
