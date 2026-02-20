@@ -297,6 +297,10 @@ export async function registerRoutes(
   app.get("/api/tracks/:category", async (req, res) => {
     try {
       const { category } = req.params;
+      if (category === "all") {
+        const allTracks = await storage.getAllTracks();
+        return res.json(allTracks);
+      }
       if (category === "top25") {
         const topTracks = await storage.getTop25ByLikes();
         return res.json(topTracks);

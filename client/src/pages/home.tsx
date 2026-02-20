@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
 import { Search } from "lucide-react";
@@ -7,82 +7,38 @@ import { TrackRow } from "@/components/track-row";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
-const GENRE_GROUPS = [
-  {
-    name: "Pop",
-    genres: ["Pop", "Dance Pop", "Indie Pop", "Electro Pop"],
-  },
-  {
-    name: "Hip Hop",
-    genres: ["Hip Hop", "Rap", "Trap"],
-  },
-  {
-    name: "EDM",
-    genres: ["EDM", "House", "Techno", "Trance", "Drum & Bass", "Dubstep", "Future Bass"],
-  },
-  {
-    name: "Rock",
-    genres: ["Rock", "Alt Rock", "Metal", "Industrial"],
-  },
-  {
-    name: "Country",
-    genres: ["Country", "Blues", "Americana"],
-  },
-  {
-    name: "Cinematic",
-    genres: ["Cinematic", "Orchestral", "Epic", "Soundtrack"],
-  },
-  {
-    name: "Lo-Fi",
-    genres: ["Lo-Fi", "Chillhop", "Study Beats"],
-  },
-  {
-    name: "R&B",
-    genres: ["R&B", "Neo-Soul", "Soul"],
-  },
-  {
-    name: "Experimental",
-    genres: ["Experimental", "Ambient", "Glitch", "Synthwave"],
-  },
+const ALL_GENRES = [
+  "Pop", "Dance Pop", "Indie Pop", "Electro Pop",
+  "Hip Hop", "Rap", "Trap",
+  "EDM", "House", "Techno", "Trance", "Drum & Bass", "Dubstep", "Future Bass",
+  "Rock", "Alt Rock", "Metal", "Industrial",
+  "Country", "Blues", "Americana",
+  "Cinematic", "Orchestral", "Epic", "Soundtrack",
+  "Lo-Fi", "Chillhop", "Study Beats",
+  "R&B", "Neo-Soul", "Soul",
+  "Experimental", "Ambient", "Glitch", "Synthwave",
+  "Electronic",
 ];
 
-function TrackList({
-  title,
+function GenreColumn({
+  genre,
   tracks,
-  showRank,
-  isLoading,
-  testId,
+  id,
 }: {
-  title: string;
+  genre: string;
   tracks: Track[];
-  showRank?: boolean;
-  isLoading?: boolean;
-  testId?: string;
+  id: string;
 }) {
   return (
-    <section className="panel column-panel" data-testid={`section-${testId}`}>
+    <section className="panel column-panel" id={id} data-testid={`section-genre-${genre.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
       <div className="section-header">
-        <h3 data-testid={`panel-header-${testId}`}>{title}</h3>
+        <h3 data-testid={`panel-header-genre-${genre.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>{genre}</h3>
+        <span className="genre-count" data-testid={`text-genre-count-${genre.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>{tracks.length} song{tracks.length !== 1 ? "s" : ""}</span>
       </div>
-      <div className="list column-list" data-testid={`list-${testId}`}>
-        {isLoading ? (
-          [1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="row"
-              style={{ height: 74, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
-              data-testid={`skeleton-track-${i}`}
-            />
-          ))
-        ) : tracks.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(170,182,232,.6)" }} data-testid={`empty-${testId}`}>
-            No tracks found
-          </div>
-        ) : (
-          tracks.map((track) => (
-            <TrackRow key={track.id} track={track} showRank={showRank} />
-          ))
-        )}
+      <div className="list column-list" data-testid={`list-genre-${genre.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
+        {tracks.map((track) => (
+          <TrackRow key={track.id} track={track} />
+        ))}
       </div>
     </section>
   );
@@ -105,9 +61,9 @@ function CreatorCard({ creator }: { creator: Creator }) {
 }
 
 export default function Home() {
-  const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState<AuthUser | null>(null);
+  const columnsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -125,44 +81,64 @@ export default function Home() {
     }
   }, []);
 
-  const { data: trending = [], isLoading: trendingLoading } = useQuery<Track[]>({
-    queryKey: ["/api/tracks", "trending"],
-  });
-
-  const { data: newSongs = [], isLoading: newSongsLoading } = useQuery<Track[]>({
-    queryKey: ["/api/tracks", "new"],
-  });
-
-  const { data: topTracks = [], isLoading: topLoading } = useQuery<Track[]>({
-    queryKey: ["/api/tracks", "top25"],
+  const { data: allTracks = [], isLoading: tracksLoading } = useQuery<Track[]>({
+    queryKey: ["/api/tracks", "all"],
   });
 
   const { data: creators = [], isLoading: creatorsLoading } = useQuery<Creator[]>({
     queryKey: ["/api/creators"],
   });
 
-  function filterTracks(tracks: Track[]) {
-    let result = tracks;
-    if (activeGenre) {
-      result = result.filter(
-        (t) => t.genre.toLowerCase() === activeGenre.toLowerCase()
-      );
-    }
+  const genreMap = useMemo(() => {
+    const map = new Map<string, Track[]>();
+    let tracks = allTracks;
+
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(
+      tracks = tracks.filter(
         (t) =>
           t.title.toLowerCase().includes(q) ||
           t.artist.toLowerCase().includes(q) ||
           t.genre.toLowerCase().includes(q)
       );
     }
-    return result;
+
+    for (const track of tracks) {
+      const genreKey = track.genre.trim();
+      const existing = map.get(genreKey) || [];
+      existing.push(track);
+      map.set(genreKey, existing);
+    }
+    return map;
+  }, [allTracks, searchQuery]);
+
+  const activeGenres = useMemo(() => {
+    const ordered: string[] = [];
+    const mapKeys = Array.from(genreMap.keys());
+    for (const g of ALL_GENRES) {
+      const key = mapKeys.find((k) => k.toLowerCase() === g.toLowerCase());
+      if (key && genreMap.get(key)!.length > 0) {
+        ordered.push(key);
+      }
+    }
+    for (const key of mapKeys) {
+      if (!ordered.some((o) => o.toLowerCase() === key.toLowerCase())) {
+        ordered.push(key);
+      }
+    }
+    return ordered;
+  }, [genreMap]);
+
+  function genreId(genre: string) {
+    return "genre-" + genre.toLowerCase().replace(/[^a-z0-9]/g, "-");
   }
 
-  const filteredTrending = filterTracks(trending);
-  const filteredNew = filterTracks(newSongs);
-  const filteredTop = filterTracks(topTracks);
+  function scrollToGenre(genre: string) {
+    const el = document.getElementById(genreId(genre));
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    }
+  }
 
   return (
     <div className="hwm-app">
@@ -222,53 +198,57 @@ export default function Home() {
       </section>
 
       <div className="genre-bar" data-testid="genre-bar">
-        <button
-          className={`genre-pill${activeGenre === null ? " active" : ""}`}
-          onClick={() => setActiveGenre(null)}
-          data-testid="button-genre-all"
-        >
-          All Genres
-        </button>
-        {GENRE_GROUPS.map((group) =>
-          group.genres.map((genre) => (
-            <button
-              key={genre}
-              className={`genre-pill${activeGenre === genre ? " active" : ""}`}
-              onClick={() => setActiveGenre(activeGenre === genre ? null : genre)}
-              data-testid={`button-genre-${genre.toLowerCase().replace(/[^a-z]/g, "-")}`}
-            >
-              {genre}
-            </button>
-          ))
-        )}
+        {activeGenres.map((genre) => (
+          <button
+            key={genre}
+            className="genre-pill"
+            onClick={() => scrollToGenre(genre)}
+            data-testid={`button-genre-${genre.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}
+          >
+            {genre}
+          </button>
+        ))}
       </div>
 
-      <div className="four-columns" data-testid="section-content">
-        <TrackList
-          title="Trending Now"
-          tracks={filteredTrending}
-          isLoading={trendingLoading}
-          testId="trending"
-        />
-
-        <TrackList
-          title="Top 25 This Week"
-          tracks={filteredTop}
-          showRank
-          isLoading={topLoading}
-          testId="top25"
-        />
-
-        <TrackList
-          title="New Songs of the Week"
-          tracks={filteredNew}
-          isLoading={newSongsLoading}
-          testId="new-songs"
-        />
+      <div className="genre-columns" ref={columnsRef} data-testid="section-content">
+        {tracksLoading ? (
+          [1, 2, 3, 4].map((i) => (
+            <section key={i} className="panel column-panel" data-testid={`skeleton-column-${i}`}>
+              <div className="section-header">
+                <h3 style={{ opacity: 0.3 }}>Loading...</h3>
+              </div>
+              <div className="list column-list">
+                {[1, 2, 3].map((j) => (
+                  <div
+                    key={j}
+                    className="row"
+                    style={{ height: 74, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
+                  />
+                ))}
+              </div>
+            </section>
+          ))
+        ) : activeGenres.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px 20px", color: "rgba(170,182,232,.6)", gridColumn: "1/-1" }} data-testid="empty-genres">
+            No tracks found
+          </div>
+        ) : (
+          activeGenres.map((genre) => (
+            <GenreColumn
+              key={genre}
+              genre={genre}
+              tracks={genreMap.get(genre) || []}
+              id={genreId(genre)}
+            />
+          ))
+        )}
 
         <section className="panel column-panel" data-testid="section-creators">
           <div className="section-header">
-            <h3 data-testid="panel-header-creators">New Creators of the Week</h3>
+            <h3 data-testid="panel-header-creators">Creators</h3>
+            <span className="genre-count" data-testid="text-creators-count">
+              {creators.length} creator{creators.length !== 1 ? "s" : ""}
+            </span>
           </div>
           <div className="creators-grid" data-testid="list-creators">
             {creatorsLoading ? (
