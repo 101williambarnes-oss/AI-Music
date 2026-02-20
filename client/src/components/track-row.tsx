@@ -4,7 +4,7 @@ import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
 
-export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean }) {
+export function TrackRow({ track, showRank, hideComments }: { track: Track; showRank?: boolean; hideComments?: boolean }) {
   const { currentTrackId, isPlaying, toggle, play } = useAudioPlayer();
   const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
   const hasAudio = !!track.fileUrl;
@@ -109,7 +109,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
           <div className="by" data-testid={`text-track-artist-${track.id}`}>{track.artist}</div>
         </div>
       </div>
-      <TrackActions track={track} />
+      <TrackActions track={track} hideComments={hideComments} />
       {showVideoModal && isVideo && (
         <VideoModal track={track} onClose={handleModalClose} />
       )}

@@ -83,7 +83,7 @@ function TrackColumn({
           </div>
         ) : (
           tracks.map((track) => (
-            <TrackRow key={track.id} track={track} showRank={showRank} />
+            <TrackRow key={track.id} track={track} showRank={showRank} hideComments />
           ))
         )}
       </div>

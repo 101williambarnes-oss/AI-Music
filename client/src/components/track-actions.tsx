@@ -45,7 +45,7 @@ function formatPlays(plays: number) {
   return plays.toString();
 }
 
-export function TrackActions({ track }: { track: Track }) {
+export function TrackActions({ track, hideComments }: { track: Track; hideComments?: boolean }) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [nameText, setNameText] = useState(getVisitorName());
@@ -148,17 +148,19 @@ export function TrackActions({ track }: { track: Track }) {
           <Heart style={{ width: 14, height: 14, fill: likeData?.liked ? "#ff4fd8" : "none", stroke: likeData?.liked ? "#ff4fd8" : "currentColor" }} />
           <span data-testid={`text-like-count-${track.id}`}>{likeData?.count ?? 0}</span>
         </button>
-        <button
-          className={`action-btn comment-btn hover-elevate${showComments ? " active" : ""}`}
-          onClick={() => setShowComments(!showComments)}
-          title="Comments"
-          data-testid={`button-comments-${track.id}`}
-        >
-          <MessageCircle style={{ width: 14, height: 14 }} />
-          <span data-testid={`text-comment-count-${track.id}`}>{commentCountData?.count ?? 0}</span>
-        </button>
+        {!hideComments && (
+          <button
+            className={`action-btn comment-btn hover-elevate${showComments ? " active" : ""}`}
+            onClick={() => setShowComments(!showComments)}
+            title="Comments"
+            data-testid={`button-comments-${track.id}`}
+          >
+            <MessageCircle style={{ width: 14, height: 14 }} />
+            <span data-testid={`text-comment-count-${track.id}`}>{commentCountData?.count ?? 0}</span>
+          </button>
+        )}
       </div>
-      {showComments && (
+      {!hideComments && showComments && (
         <div className="comments-section" data-testid={`comments-section-${track.id}`}>
           <div className="comment-input-row" data-testid={`comment-input-row-${track.id}`}>
             {!user && (
