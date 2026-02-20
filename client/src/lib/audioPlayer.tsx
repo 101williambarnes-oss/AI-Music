@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useRef, useCallback, useEffect } from "react";
+import { queryClient } from "@/lib/queryClient";
 
 type AudioPlayerState = {
   currentTrackId: number | null;
@@ -44,6 +45,16 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     audio.play().then(() => {
       setCurrentTrackId(trackId);
       setIsPlaying(true);
+      if (currentTrackId !== trackId) {
+        fetch(`/api/tracks/${trackId}/play`, { method: "POST" }).then(() => {
+          queryClient.invalidateQueries({
+            predicate: (query) => {
+              const key = query.queryKey as string[];
+              return key[0] === "/api/tracks" && (key[1] === "trending" || key[1] === "new" || key[1] === "top25" || key.length === 1);
+            },
+          });
+        }).catch(() => {});
+      }
     }).catch(() => {});
   }, [currentTrackId]);
 

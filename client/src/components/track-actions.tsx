@@ -70,7 +70,9 @@ export function TrackActions({ track }: { track: Track }) {
       qc.invalidateQueries({
         predicate: (query) => {
           const key = query.queryKey as string[];
-          return key[0] === "/api/tracks" && key[1] === String(track.id) && key[2] === "likes";
+          if (key[0] === "/api/tracks" && key[1] === String(track.id) && key[2] === "likes") return true;
+          if (key[0] === "/api/tracks" && key[1] === "top25") return true;
+          return false;
         },
       });
     },

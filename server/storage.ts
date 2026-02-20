@@ -23,6 +23,8 @@ export interface IStorage {
   incrementCreatorTrackCount(creatorId: number): Promise<void>;
   deleteTrack(trackId: number): Promise<Track | undefined>;
   decrementCreatorTrackCount(creatorId: number): Promise<void>;
+  incrementPlays(trackId: number): Promise<number>;
+  getTop25ByLikes(): Promise<Track[]>;
   getLikeCount(trackId: number): Promise<number>;
   getUserLike(trackId: number, userId: number): Promise<Like | undefined>;
   addLike(like: InsertLike): Promise<Like>;
@@ -121,6 +123,23 @@ export class DatabaseStorage implements IStorage {
 
   async decrementCreatorTrackCount(creatorId: number): Promise<void> {
     await db.update(creators).set({ trackCount: sql`GREATEST(${creators.trackCount} - 1, 0)` }).where(eq(creators.id, creatorId));
+  }
+
+  async incrementPlays(trackId: number): Promise<number> {
+    const [result] = await db.update(tracks).set({ plays: sql`${tracks.plays} + 1` }).where(eq(tracks.id, trackId)).returning({ plays: tracks.plays });
+    return result?.plays ?? 0;
+  }
+
+  async getTop25ByLikes(): Promise<Track[]> {
+    const result = await db
+      .select({
+        track: tracks,
+        likeCount: sql<number>`COALESCE((SELECT count(*)::int FROM likes WHERE likes.track_id = ${tracks.id}), 0)`,
+      })
+      .from(tracks)
+      .orderBy(sql`COALESCE((SELECT count(*)::int FROM likes WHERE likes.track_id = ${tracks.id}), 0) DESC`, desc(tracks.plays))
+      .limit(25);
+    return result.map((r, i) => ({ ...r.track, rank: i + 1 }));
   }
 
   async getLikeCount(trackId: number): Promise<number> {

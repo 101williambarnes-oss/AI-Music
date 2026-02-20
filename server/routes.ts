@@ -283,9 +283,24 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/tracks/:id/play", async (req, res) => {
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+      const plays = await storage.incrementPlays(trackId);
+      res.json({ plays });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to increment plays" });
+    }
+  });
+
   app.get("/api/tracks/:category", async (req, res) => {
     try {
       const { category } = req.params;
+      if (category === "top25") {
+        const topTracks = await storage.getTop25ByLikes();
+        return res.json(topTracks);
+      }
       const tracks = await storage.getTracks(category);
       res.json(tracks);
     } catch (error) {
