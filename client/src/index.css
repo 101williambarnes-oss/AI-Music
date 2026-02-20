@@ -719,3 +719,125 @@
     order: 3;
   }
 }
+
+.track-actions-wrap {
+  padding: 0 10px 10px;
+}
+.track-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: rgba(170,182,232,.7);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.action-btn.like-btn.liked {
+  color: #ff4fd8;
+}
+.action-btn.comment-btn.active {
+  color: #6cf0ff;
+}
+
+.comments-section {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: rgba(7,10,20,.55);
+  border-radius: 10px;
+  border: 1px solid rgba(108,240,255,.08);
+}
+.comment-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.comment-input-row input {
+  flex: 1;
+  background: rgba(15,20,40,.6);
+  border: 1px solid rgba(108,240,255,.12);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: rgba(234,240,255,.9);
+  font-size: 12px;
+  outline: none;
+}
+.comment-input-row input::placeholder {
+  color: rgba(170,182,232,.4);
+}
+.comment-input-row input:focus {
+  border-color: rgba(108,240,255,.3);
+}
+.comment-input-row button {
+  background: rgba(108,240,255,.12);
+  border: 1px solid rgba(108,240,255,.2);
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #6cf0ff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.comment-input-row button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.comment-signin-hint {
+  font-size: 12px;
+  color: rgba(170,182,232,.5);
+  margin-bottom: 8px;
+}
+.comment-signin-hint a {
+  color: #6cf0ff;
+  text-decoration: none;
+}
+
+.comments-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+.no-comments {
+  font-size: 12px;
+  color: rgba(170,182,232,.4);
+  text-align: center;
+  padding: 12px 0;
+}
+.comment-item {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(108,240,255,.05);
+}
+.comment-item:last-child {
+  border-bottom: none;
+}
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 3px;
+}
+.comment-author {
+  font-size: 12px;
+  font-weight: 700;
+  color: #a06bff;
+}
+.comment-time {
+  font-size: 10px;
+  color: rgba(170,182,232,.4);
+}
+.comment-text {
+  font-size: 12px;
+  color: rgba(234,240,255,.8);
+  line-height: 1.4;
+}

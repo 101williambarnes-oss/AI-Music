@@ -4,6 +4,7 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-02-20: Likes & comments - every track has like button and independent comment section, shared TrackActions component
 - 2026-02-20: Cover image/video upload - tracks can have cover art (image or video) uploaded alongside audio, displayed as thumbnail
 - 2026-02-20: Audio player - functional play/pause on tracks with uploaded files, shared audio context across pages
 - 2026-02-20: Track delete - creators can delete their own tracks from their profile
@@ -28,8 +29,9 @@ client/src/pages/creator-profile.tsx - Individual creator profiles
 client/src/pages/downloads.tsx    - Downloads page with genre sections
 client/src/App.tsx                - Router setup
 client/src/lib/audioPlayer.tsx     - Shared audio player context for track playback
-shared/schema.ts                  - Database schema (tracks with fileUrl/coverUrl, creators, genres, users)
-server/routes.ts                  - API endpoints (auth, tracks, creators, genres)
+client/src/components/track-actions.tsx - Shared like/comment component for tracks
+shared/schema.ts                  - Database schema (tracks, creators, genres, users, likes, comments)
+server/routes.ts                  - API endpoints (auth, tracks, creators, genres, likes, comments)
 server/storage.ts                 - Database storage layer
 server/db.ts                      - Database connection
 server/index.ts                   - Express app with session middleware
@@ -46,6 +48,11 @@ server/seed.ts                    - Seed data for initial content
 - GET /api/creators - Get all creators
 - GET /api/creators/:id - Get creator with tracks
 - GET /api/genres - Get all genres
+- GET /api/tracks/:id/likes - Get like count and user's like status
+- POST /api/tracks/:id/likes - Toggle like (auth required)
+- GET /api/tracks/:id/comments - Get comments for a track
+- POST /api/tracks/:id/comments - Add comment (auth required)
+- DELETE /api/comments/:id - Delete comment (auth required)
 
 ## Theme
 Dark cyberpunk with neon cyan (#6cf0ff), purple (#a06bff), and pink (#ff4fd8) accent colors on deep dark background (#070a14).
