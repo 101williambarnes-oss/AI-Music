@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type Track } from "@shared/schema";
 import { TrackRow } from "@/components/track-row";
 import { Search, X, ArrowLeft } from "lucide-react";
+import { ALL_GENRES } from "@/lib/genres";
 
 export default function NewSongs() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -12,7 +13,7 @@ export default function NewSongs() {
     queryKey: ["/api/tracks", "new"],
   });
 
-  const genres = Array.from(new Set(tracks.map((t) => t.genre))).sort();
+  const genres = ALL_GENRES;
 
   const filtered = tracks.filter((t) => {
     const matchesGenre = genreFilter === "all" || t.genre === genreFilter;

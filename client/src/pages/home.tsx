@@ -5,21 +5,9 @@ import { Search, Music, User, X } from "lucide-react";
 import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_1771460797070.png";
 import { TrackRow } from "@/components/track-row";
 import { useLocation } from "wouter";
+import { ALL_GENRES } from "@/lib/genres";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
-
-const ALL_GENRES = [
-  "Pop", "Dance Pop", "Indie Pop", "Electro Pop",
-  "Hip Hop", "Rap", "Trap",
-  "EDM", "House", "Techno", "Trance", "Drum & Bass", "Dubstep", "Future Bass",
-  "Rock", "Alt Rock", "Metal", "Industrial",
-  "Country", "Blues", "Americana",
-  "Cinematic", "Orchestral", "Epic", "Soundtrack",
-  "Lo-Fi", "Chillhop", "Study Beats",
-  "R&B", "Neo-Soul", "Soul",
-  "Experimental", "Ambient", "Glitch", "Synthwave",
-  "Electronic",
-];
 
 function CreatorCard({ creator }: { creator: Creator }) {
   return (
