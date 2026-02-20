@@ -1,18 +1,25 @@
-import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre } from "@shared/schema";
-import { tracks, creators, genres } from "@shared/schema";
+import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser } from "@shared/schema";
+import { tracks, creators, genres, users } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, asc } from "drizzle-orm";
+import { eq, desc, asc, sql } from "drizzle-orm";
 
 export interface IStorage {
   getTracks(category: string): Promise<Track[]>;
   getAllTracks(): Promise<Track[]>;
   getCreators(): Promise<Creator[]>;
   getCreatorById(id: number): Promise<Creator | undefined>;
+  getCreatorByUserId(userId: number): Promise<Creator | undefined>;
   getTracksByArtist(artistName: string): Promise<Track[]>;
+  getTracksByCreatorId(creatorId: number): Promise<Track[]>;
   getGenres(): Promise<Genre[]>;
   insertTrack(track: InsertTrack): Promise<Track>;
   insertCreator(creator: InsertCreator): Promise<Creator>;
   insertGenre(genre: InsertGenre): Promise<Genre>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserById(id: number): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUserCreatorId(userId: number, creatorId: number): Promise<void>;
+  incrementCreatorTrackCount(creatorId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -36,8 +43,17 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
+  async getCreatorByUserId(userId: number): Promise<Creator | undefined> {
+    const [result] = await db.select().from(creators).where(eq(creators.userId, userId));
+    return result;
+  }
+
   async getTracksByArtist(artistName: string): Promise<Track[]> {
     return db.select().from(tracks).where(eq(tracks.artist, artistName)).orderBy(desc(tracks.plays));
+  }
+
+  async getTracksByCreatorId(creatorId: number): Promise<Track[]> {
+    return db.select().from(tracks).where(eq(tracks.creatorId, creatorId)).orderBy(desc(tracks.plays));
   }
 
   async getGenres(): Promise<Genre[]> {
@@ -57,6 +73,29 @@ export class DatabaseStorage implements IStorage {
   async insertGenre(genre: InsertGenre): Promise<Genre> {
     const [result] = await db.insert(genres).values(genre).returning();
     return result;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [result] = await db.select().from(users).where(eq(users.email, email));
+    return result;
+  }
+
+  async getUserById(id: number): Promise<User | undefined> {
+    const [result] = await db.select().from(users).where(eq(users.id, id));
+    return result;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [result] = await db.insert(users).values(user).returning();
+    return result;
+  }
+
+  async updateUserCreatorId(userId: number, creatorId: number): Promise<void> {
+    await db.update(users).set({ creatorId }).where(eq(users.id, userId));
+  }
+
+  async incrementCreatorTrackCount(creatorId: number): Promise<void> {
+    await db.update(creators).set({ trackCount: sql`${creators.trackCount} + 1` }).where(eq(creators.id, creatorId));
   }
 }
 

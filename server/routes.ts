@@ -1,11 +1,149 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { signupSchema, signinSchema } from "@shared/schema";
+import bcrypt from "bcrypt";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const parsed = signupSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: parsed.error.errors[0].message });
+      }
+      const { name, email, password } = parsed.data;
+
+      const existing = await storage.getUserByEmail(email);
+      if (existing) {
+        return res.status(400).json({ message: "An account with this email already exists" });
+      }
+
+      const passwordHash = await bcrypt.hash(password, 10);
+      const user = await storage.createUser({ name, email, passwordHash });
+
+      const colors = ["cyan", "purple", "pink"];
+      const avatarColor = colors[Math.floor(Math.random() * colors.length)];
+      const creator = await storage.insertCreator({
+        name,
+        trackCount: 0,
+        avatarColor,
+        userId: user.id,
+      });
+
+      await storage.updateUserCreatorId(user.id, creator.id);
+
+      req.session.userId = user.id;
+      res.json({ user: { id: user.id, name: user.name, email: user.email, creatorId: creator.id } });
+    } catch (error) {
+      console.error("Signup error:", error);
+      res.status(500).json({ message: "Failed to create account" });
+    }
+  });
+
+  app.post("/api/auth/signin", async (req, res) => {
+    try {
+      const parsed = signinSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: parsed.error.errors[0].message });
+      }
+      const { email, password } = parsed.data;
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      const valid = await bcrypt.compare(password, user.passwordHash);
+      if (!valid) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      const creator = await storage.getCreatorByUserId(user.id);
+
+      req.session.userId = user.id;
+      res.json({ user: { id: user.id, name: user.name, email: user.email, creatorId: creator?.id || null } });
+    } catch (error) {
+      console.error("Signin error:", error);
+      res.status(500).json({ message: "Failed to sign in" });
+    }
+  });
+
+  app.post("/api/auth/signout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to sign out" });
+      }
+      res.json({ message: "Signed out" });
+    });
+  });
+
+  app.get("/api/auth/me", async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    try {
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      const creator = await storage.getCreatorByUserId(user.id);
+      res.json({ user: { id: user.id, name: user.name, email: user.email, creatorId: creator?.id || null } });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get user" });
+    }
+  });
+
+  app.post("/api/tracks/upload", async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "You must be signed in to upload" });
+    }
+    try {
+      const { title, genre, aiTools } = req.body;
+      if (!title || !genre) {
+        return res.status(400).json({ message: "Title and genre are required" });
+      }
+
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      let creator = await storage.getCreatorByUserId(user.id);
+      if (!creator) {
+        const colors = ["cyan", "purple", "pink"];
+        const avatarColor = colors[Math.floor(Math.random() * colors.length)];
+        creator = await storage.insertCreator({
+          name: user.name,
+          trackCount: 0,
+          avatarColor,
+          userId: user.id,
+        });
+        await storage.updateUserCreatorId(user.id, creator.id);
+      }
+
+      const track = await storage.insertTrack({
+        title,
+        artist: creator.name,
+        genre,
+        plays: 0,
+        rank: null,
+        category: "new",
+        creatorId: creator.id,
+      });
+
+      await storage.incrementCreatorTrackCount(creator.id);
+
+      res.json({ track, creatorId: creator.id });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: "Failed to upload track" });
+    }
+  });
+
   app.get("/api/tracks", async (_req, res) => {
     try {
       const allTracks = await storage.getAllTracks();
@@ -44,8 +182,9 @@ export async function registerRoutes(
       if (!creator) {
         return res.status(404).json({ message: "Creator not found" });
       }
-      const tracks = await storage.getTracksByArtist(creator.name);
-      res.json({ creator, tracks });
+      const tracks = await storage.getTracksByCreatorId(creator.id);
+      const fallbackTracks = tracks.length > 0 ? tracks : await storage.getTracksByArtist(creator.name);
+      res.json({ creator, tracks: fallbackTracks });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch creator" });
     }

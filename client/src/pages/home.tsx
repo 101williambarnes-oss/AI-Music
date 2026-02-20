@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
 import { Menu, Search } from "lucide-react";
 import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_1771460797070.png";
+
+type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
 const GENRE_GROUPS = [
   {
@@ -135,6 +137,16 @@ function CreatorCard({ creator }: { creator: Creator }) {
 export default function Home() {
   const [activeGenre, setActiveGenre] = useState("EDM");
   const [searchQuery, setSearchQuery] = useState("");
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user) setUser(data.user);
+      })
+      .catch(() => {});
+  }, []);
 
   const { data: trending = [], isLoading: trendingLoading } = useQuery<Track[]>({
     queryKey: ["/api/tracks", "trending"],
@@ -194,8 +206,28 @@ export default function Home() {
         </div>
         <div className="topbar-actions">
           <a href="/downloads" className="topbar-login" data-testid="link-downloads">Downloads</a>
-          <a href="/sign-in" className="topbar-login" data-testid="link-creators-login">Creators Login</a>
-          <a href="/sign-up" className="topbar-signup" data-testid="button-sign-up">Sign Up</a>
+          {user ? (
+            <>
+              <a href="/upload" className="topbar-login" data-testid="link-upload">Upload</a>
+              <a href={user.creatorId ? `/creator/${user.creatorId}` : "/"} className="topbar-login" data-testid="link-my-profile">{user.name}</a>
+              <button
+                className="topbar-login"
+                style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", font: "inherit", padding: 0 }}
+                onClick={async () => {
+                  await fetch("/api/auth/signout", { method: "POST" });
+                  setUser(null);
+                }}
+                data-testid="button-signout"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <a href="/sign-in" className="topbar-login" data-testid="link-creators-login">Creators Login</a>
+              <a href="/sign-up" className="topbar-signup" data-testid="button-sign-up">Sign Up</a>
+            </>
+          )}
         </div>
       </header>
 
