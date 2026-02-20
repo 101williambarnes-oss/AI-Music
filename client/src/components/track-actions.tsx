@@ -262,6 +262,12 @@ function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; on
       testId: "whatsapp",
     },
     {
+      name: "TikTok",
+      color: "#fe2c55",
+      url: `https://www.tiktok.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+      testId: "tiktok",
+    },
+    {
       name: "Reddit",
       color: "#ff4500",
       url: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
