@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Track, type Comment } from "@shared/schema";
 import { Heart, MessageCircle, Send } from "lucide-react";
@@ -15,8 +15,18 @@ function getUser(): AuthUser | null {
 export function TrackActions({ track }: { track: Track }) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [user, setUser] = useState<AuthUser | null>(getUser);
   const qc = useQueryClient();
-  const user = getUser();
+
+  useEffect(() => {
+    const check = () => setUser(getUser());
+    window.addEventListener("storage", check);
+    const interval = setInterval(check, 1000);
+    return () => {
+      window.removeEventListener("storage", check);
+      clearInterval(interval);
+    };
+  }, []);
 
   const { data: likeData } = useQuery<{ count: number; liked: boolean }>({
     queryKey: ["/api/tracks", String(track.id), "likes"],
