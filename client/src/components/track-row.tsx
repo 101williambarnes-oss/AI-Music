@@ -54,12 +54,12 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
   return (
     <div data-testid={`track-row-${track.id}`}>
       <div className="row" onClick={handleRowClick} style={{ cursor: hasAudio ? "pointer" : "default" }} data-testid={`button-play-${track.id}`}>
-        <div className="thumb" style={{ position: "relative", overflow: "hidden", flexShrink: 0, width: 54, height: 54 }}>
+        <div className="thumb" style={{ position: "relative", overflow: "hidden", flexShrink: 0 }}>
           {isVideo && !showRank ? (
             <video
               ref={videoRef}
               src={track.fileUrl!}
-              style={{ width: 54, height: 54, objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
               muted
               loop
               playsInline
@@ -69,7 +69,7 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
             <img
               src={track.fileUrl}
               alt={track.title}
-              style={{ width: 54, height: 54, objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
               data-testid={`img-thumb-${track.id}`}
             />
           ) : null}
@@ -105,9 +105,9 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
             </div>
           )}
         </div>
-        <div className="meta">
-          <div className="title" data-testid={`text-track-title-${track.id}`}>{track.title}</div>
-          <div className="by" data-testid={`text-track-artist-${track.id}`}>{track.artist}</div>
+        <div className="meta" style={{ minWidth: 0, overflow: "hidden" }}>
+          <div className="title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-title-${track.id}`}>{track.title}</div>
+          <div className="by" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-artist-${track.id}`}>{track.artist}</div>
         </div>
         {showDownload && track.fileUrl && (
           <a
