@@ -10,7 +10,7 @@ function formatPlays(plays: number) {
 }
 
 export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean }) {
-  const { currentTrackId, isPlaying, toggle } = useAudioPlayer();
+  const { currentTrackId, isPlaying, toggle, play } = useAudioPlayer();
   const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
   const hasAudio = !!track.fileUrl;
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -29,10 +29,10 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
   function handlePlay() {
     if (!hasAudio) return;
     if (isVideo) {
-      toggle(track.id, track.fileUrl!);
       if (!isCurrentlyPlaying) {
-        setShowVideoModal(true);
+        play(track.id, track.fileUrl!);
       }
+      setShowVideoModal(true);
     } else {
       toggle(track.id, track.fileUrl!);
     }
