@@ -55,7 +55,7 @@ export function VideoModal({
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement)?.tagName;
       const isInput = tag === "INPUT" || tag === "TEXTAREA";
-      if (e.key === "Escape") { pause(); onClose(); }
+      if (e.key === "Escape") { onClose(); }
       if (isInput) return;
       if (e.key === "ArrowLeft") handleSkip(-10);
       if (e.key === "ArrowRight") handleSkip(10);
@@ -66,7 +66,6 @@ export function VideoModal({
   }, [onClose, pause]);
 
   function handleClose() {
-    pause();
     onClose();
   }
 

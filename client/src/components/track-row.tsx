@@ -34,20 +34,20 @@ export function TrackRow({ track, showRank, hideComments }: { track: Track; show
     if (!hasAudio) return;
     if (isVideo) {
       wantModalRef.current = true;
-      play(track.id, track.fileUrl!);
+      if (currentTrackId !== track.id) {
+        play(track.id, track.fileUrl!);
+      } else if (!isPlaying) {
+        play(track.id, track.fileUrl!);
+      }
       setShowVideoModal(true);
     } else {
       toggle(track.id, track.fileUrl!);
     }
-  }, [hasAudio, isVideo, track.id, track.fileUrl, play, toggle]);
+  }, [hasAudio, isVideo, track.id, track.fileUrl, play, toggle, currentTrackId, isPlaying]);
 
   function handleModalClose() {
     wantModalRef.current = false;
     setShowVideoModal(false);
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-    }
   }
 
   return (
