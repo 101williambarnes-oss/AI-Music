@@ -11,6 +11,10 @@ export default function SignUp() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [agreeRights, setAgreeRights] = useState(false);
+  const [agreeAI, setAgreeAI] = useState(false);
+  const [agreeTOS, setAgreeTOS] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [, setLocation] = useLocation();
 
   useEffect(() => {
@@ -36,6 +40,7 @@ export default function SignUp() {
     if (email !== verifyEmail) return setError("Emails do not match.");
     if (password.length < 6) return setError("Password must be at least 6 characters.");
     if (password !== confirmPassword) return setError("Passwords do not match.");
+    if (!agreeRights || !agreeAI || !agreeTOS) return setError("You must agree to all terms before creating an account.");
 
     setLoading(true);
     try {
@@ -126,19 +131,38 @@ export default function SignUp() {
                 </button>
               </div>
             </div>
+            <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 14 }}>
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", color: "#aab6e8", fontSize: 13, lineHeight: 1.5 }} data-testid="label-agree-rights">
+                <input type="checkbox" checked={agreeRights} onChange={(e) => setAgreeRights(e.target.checked)} style={{ marginTop: 3, accentColor: "#6cf0ff", flexShrink: 0 }} data-testid="checkbox-agree-rights" />
+                I confirm that I own or have the rights to upload this content and that it does not violate any laws or copyrights.
+              </label>
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", color: "#aab6e8", fontSize: 13, lineHeight: 1.5 }} data-testid="label-agree-ai">
+                <input type="checkbox" checked={agreeAI} onChange={(e) => setAgreeAI(e.target.checked)} style={{ marginTop: 3, accentColor: "#6cf0ff", flexShrink: 0 }} data-testid="checkbox-agree-ai" />
+                I confirm this content was created using AI tools I am allowed to use.
+              </label>
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", color: "#aab6e8", fontSize: 13, lineHeight: 1.5 }} data-testid="label-agree-tos">
+                <input type="checkbox" checked={agreeTOS} onChange={(e) => setAgreeTOS(e.target.checked)} style={{ marginTop: 3, accentColor: "#6cf0ff", flexShrink: 0 }} data-testid="checkbox-agree-tos" />
+                <span>
+                  I agree to Hit Wave Media's Terms of Service and Content Rules.
+                  {" "}
+                  <button type="button" onClick={() => setShowTerms(true)} style={{ background: "none", border: "none", color: "#6cf0ff", fontSize: 13, cursor: "pointer", padding: 0, textDecoration: "underline" }} data-testid="button-view-terms">(View Terms)</button>
+                </span>
+              </label>
+            </div>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreeRights || !agreeAI || !agreeTOS}
               style={{
                 width: "100%",
                 padding: "12px 0",
-                background: loading ? "rgba(108,240,255,.3)" : "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)",
+                background: (loading || !agreeRights || !agreeAI || !agreeTOS) ? "rgba(108,240,255,.2)" : "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)",
                 border: "none",
                 borderRadius: 6,
-                color: "#050615",
+                color: (loading || !agreeRights || !agreeAI || !agreeTOS) ? "rgba(5,6,21,.5)" : "#050615",
                 fontWeight: 700,
                 fontSize: 15,
-                cursor: loading ? "not-allowed" : "pointer",
+                cursor: (loading || !agreeRights || !agreeAI || !agreeTOS) ? "not-allowed" : "pointer",
               }}
               data-testid="button-signup-submit"
             >
@@ -153,6 +177,34 @@ export default function SignUp() {
           <a href="/" style={{ color: "#6cf0ff", textDecoration: "none" }} data-testid="link-back-home">&#8592; Back to Home</a>
         </div>
       </div>
+
+      {showTerms && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowTerms(false)} data-testid="modal-terms">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#0d1229", border: "1px solid rgba(108,240,255,.2)", borderRadius: 12, maxWidth: 560, width: "100%", maxHeight: "80vh", overflow: "auto", padding: 32 }}>
+            <h2 style={{ color: "#6cf0ff", fontSize: 22, fontWeight: 700, marginBottom: 20 }}>Terms of Service &amp; Content Rules</h2>
+            <div style={{ color: "#aab6e8", fontSize: 14, lineHeight: 1.8 }}>
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>1. Content Ownership</h3>
+              <p style={{ marginBottom: 16 }}>You retain ownership of all content you upload. By uploading, you grant Hit Wave Media a non-exclusive license to display, stream, and distribute your content on the platform.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>2. AI-Generated Content</h3>
+              <p style={{ marginBottom: 16 }}>All AI-generated music must be created using tools you have lawful access to. You are responsible for ensuring your AI-generated content does not infringe on existing copyrights or intellectual property.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>3. Prohibited Content</h3>
+              <p style={{ marginBottom: 16 }}>The following content is strictly prohibited: content that infringes copyrights or trademarks, content promoting hate or violence, explicit or illegal material, spam or misleading content, and malware or harmful files.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>4. Account Responsibility</h3>
+              <p style={{ marginBottom: 16 }}>You are responsible for all activity under your account. Keep your credentials secure. Hit Wave Media reserves the right to remove content or suspend accounts that violate these terms.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>5. Content Removal</h3>
+              <p style={{ marginBottom: 16 }}>Hit Wave Media reserves the right to remove any content that violates these terms without prior notice. Repeat violations may result in permanent account suspension.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>6. Privacy</h3>
+              <p style={{ marginBottom: 16 }}>Your email and account information are kept private. We do not sell or share your personal data with third parties.</p>
+            </div>
+            <button onClick={() => setShowTerms(false)} style={{ width: "100%", padding: "12px 0", background: "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)", border: "none", borderRadius: 6, color: "#050615", fontWeight: 700, fontSize: 15, cursor: "pointer", marginTop: 12 }} data-testid="button-close-terms">Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
