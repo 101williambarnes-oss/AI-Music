@@ -754,6 +754,25 @@
   text-align: right;
   font-size: 14px;
 }
+.row-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 54px;
+}
+.row-stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(234,240,255,.7);
+  white-space: nowrap;
+}
+.row-stat-likes {
+  color: rgba(255,79,216,.7);
+}
 
 .rankBadge {
   font-weight: 1000;

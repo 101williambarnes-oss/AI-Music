@@ -1,12 +1,34 @@
 import { useRef, useEffect, useState, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { type Track } from "@shared/schema";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
+import { Heart, Play as PlayIcon } from "lucide-react";
 
 function formatPlays(plays: number) {
   if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
   return plays.toString();
+}
+
+function getVisitorId(): string {
+  let vid = localStorage.getItem("hwm_visitor_id");
+  if (!vid) {
+    vid = "v_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem("hwm_visitor_id", vid);
+  }
+  return vid;
+}
+
+function getHeaders(): Record<string, string> {
+  try {
+    const stored = localStorage.getItem("hwm_user");
+    if (stored) {
+      const u = JSON.parse(stored);
+      if (u?.id) return { "x-user-id": String(u.id) };
+    }
+  } catch {}
+  return { "x-visitor-id": getVisitorId() };
 }
 
 export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean }) {
@@ -17,6 +39,14 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
   const isVideo = !!track.fileUrl && /\.(mp4|webm|mov)$/i.test(track.fileUrl);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const wantModalRef = useRef(false);
+
+  const { data: likeData } = useQuery<{ count: number; liked: boolean }>({
+    queryKey: ["/api/tracks", String(track.id), "likes", "row"],
+    queryFn: async () => {
+      const res = await fetch(`/api/tracks/${track.id}/likes`, { headers: getHeaders(), credentials: "include" });
+      return res.json();
+    },
+  });
 
   useEffect(() => {
     if (!videoRef.current || !isVideo) return;
@@ -113,7 +143,16 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
           <div className="title" data-testid={`text-track-title-${track.id}`}>{track.title}</div>
           <div className="by" data-testid={`text-track-artist-${track.id}`}>{track.artist}</div>
         </div>
-        <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
+        <div className="row-stats" data-testid={`stats-${track.id}`}>
+          <span className="row-stat" data-testid={`text-track-plays-${track.id}`}>
+            <PlayIcon style={{ width: 12, height: 12 }} />
+            {formatPlays(track.plays)}
+          </span>
+          <span className="row-stat row-stat-likes" data-testid={`text-row-likes-${track.id}`}>
+            <Heart style={{ width: 12, height: 12, fill: (likeData?.count ?? 0) > 0 ? "#ff4fd8" : "none", stroke: (likeData?.count ?? 0) > 0 ? "#ff4fd8" : "currentColor" }} />
+            {likeData?.count ?? 0}
+          </span>
+        </div>
       </div>
       <TrackActions track={track} />
       {showVideoModal && isVideo && (
