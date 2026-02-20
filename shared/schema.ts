@@ -44,6 +44,12 @@ export const likes = pgTable("likes", {
   userId: integer("user_id").notNull(),
 });
 
+export const visitorLikes = pgTable("visitor_likes", {
+  id: serial("id").primaryKey(),
+  trackId: integer("track_id").notNull(),
+  visitorId: text("visitor_id").notNull(),
+});
+
 export const comments = pgTable("comments", {
   id: serial("id").primaryKey(),
   trackId: integer("track_id").notNull(),

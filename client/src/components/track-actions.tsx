@@ -12,15 +12,38 @@ function getUser(): AuthUser | null {
   } catch { return null; }
 }
 
-function getUserHeaders(): Record<string, string> {
+function getVisitorId(): string {
+  let vid = localStorage.getItem("hwm_visitor_id");
+  if (!vid) {
+    vid = "v_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem("hwm_visitor_id", vid);
+  }
+  return vid;
+}
+
+function getVisitorName(): string {
+  return localStorage.getItem("hwm_visitor_name") || "";
+}
+
+function setVisitorName(name: string) {
+  localStorage.setItem("hwm_visitor_name", name);
+}
+
+function getHeaders(): Record<string, string> {
   const u = getUser();
-  if (u) return { "x-user-id": String(u.id) };
-  return {};
+  const headers: Record<string, string> = {};
+  if (u) {
+    headers["x-user-id"] = String(u.id);
+  } else {
+    headers["x-visitor-id"] = getVisitorId();
+  }
+  return headers;
 }
 
 export function TrackActions({ track }: { track: Track }) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [nameText, setNameText] = useState(getVisitorName());
   const [user, setUser] = useState<AuthUser | null>(getUser);
   const qc = useQueryClient();
 
@@ -34,10 +57,12 @@ export function TrackActions({ track }: { track: Track }) {
     };
   }, []);
 
+  const identKey = user ? `u${user.id}` : getVisitorId();
+
   const { data: likeData } = useQuery<{ count: number; liked: boolean }>({
-    queryKey: ["/api/tracks", String(track.id), "likes", user?.id ?? "anon"],
+    queryKey: ["/api/tracks", String(track.id), "likes", identKey],
     queryFn: async () => {
-      const res = await fetch(`/api/tracks/${track.id}/likes`, { headers: getUserHeaders(), credentials: "include" });
+      const res = await fetch(`/api/tracks/${track.id}/likes`, { headers: getHeaders(), credentials: "include" });
       return res.json();
     },
   });
@@ -61,7 +86,7 @@ export function TrackActions({ track }: { track: Track }) {
 
   const likeMutation = useMutation({
     mutationFn: async () => {
-      const headers: Record<string, string> = { "Content-Type": "application/json", ...getUserHeaders() };
+      const headers: Record<string, string> = { "Content-Type": "application/json", ...getHeaders() };
       const res = await fetch(`/api/tracks/${track.id}/likes`, { method: "POST", headers, credentials: "include" });
       if (!res.ok) throw new Error("Failed to toggle like");
       return res.json();
@@ -80,12 +105,17 @@ export function TrackActions({ track }: { track: Track }) {
 
   const commentMutation = useMutation({
     mutationFn: async (text: string) => {
-      const headers: Record<string, string> = { "Content-Type": "application/json", ...getUserHeaders() };
+      const headers: Record<string, string> = { "Content-Type": "application/json", ...getHeaders() };
+      const body: any = { text };
+      if (!user && nameText.trim()) {
+        body.visitorName = nameText.trim();
+        setVisitorName(nameText.trim());
+      }
       const res = await fetch(`/api/tracks/${track.id}/comments`, {
         method: "POST",
         headers,
         credentials: "include",
-        body: JSON.stringify({ text }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error("Failed to add comment");
       return res.json();
@@ -102,15 +132,8 @@ export function TrackActions({ track }: { track: Track }) {
       <div className="track-actions" data-testid={`track-actions-${track.id}`}>
         <button
           className={`action-btn like-btn hover-elevate${likeData?.liked ? " liked" : ""}`}
-          onClick={() => {
-            const freshUser = getUser();
-            if (!freshUser) {
-              window.location.href = "/sign-in";
-              return;
-            }
-            likeMutation.mutate();
-          }}
-          title={user ? (likeData?.liked ? "Unlike" : "Like") : "Sign in to like"}
+          onClick={() => likeMutation.mutate()}
+          title={likeData?.liked ? "Unlike" : "Like"}
           data-testid={`button-like-${track.id}`}
         >
           <Heart style={{ width: 14, height: 14, fill: likeData?.liked ? "#ff4fd8" : "none", stroke: likeData?.liked ? "#ff4fd8" : "currentColor" }} />
@@ -128,34 +151,37 @@ export function TrackActions({ track }: { track: Track }) {
       </div>
       {showComments && (
         <div className="comments-section" data-testid={`comments-section-${track.id}`}>
-          {user && (
-            <div className="comment-input-row" data-testid={`comment-input-row-${track.id}`}>
+          <div className="comment-input-row" data-testid={`comment-input-row-${track.id}`}>
+            {!user && (
               <input
                 type="text"
-                placeholder="Add a comment..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && commentText.trim()) {
-                    commentMutation.mutate(commentText.trim());
-                  }
-                }}
-                data-testid={`input-comment-${track.id}`}
+                placeholder="Your name (optional)"
+                value={nameText}
+                onChange={(e) => setNameText(e.target.value)}
+                style={{ maxWidth: 120 }}
+                data-testid={`input-visitor-name-${track.id}`}
               />
-              <button
-                onClick={() => commentText.trim() && commentMutation.mutate(commentText.trim())}
-                disabled={!commentText.trim() || commentMutation.isPending}
-                data-testid={`button-submit-comment-${track.id}`}
-              >
-                <Send style={{ width: 14, height: 14 }} />
-              </button>
-            </div>
-          )}
-          {!user && (
-            <div className="comment-signin-hint" data-testid={`text-signin-hint-${track.id}`}>
-              <a href="/sign-in">Sign in</a> to leave a comment
-            </div>
-          )}
+            )}
+            <input
+              type="text"
+              placeholder="Add a comment..."
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && commentText.trim()) {
+                  commentMutation.mutate(commentText.trim());
+                }
+              }}
+              data-testid={`input-comment-${track.id}`}
+            />
+            <button
+              onClick={() => commentText.trim() && commentMutation.mutate(commentText.trim())}
+              disabled={!commentText.trim() || commentMutation.isPending}
+              data-testid={`button-submit-comment-${track.id}`}
+            >
+              <Send style={{ width: 14, height: 14 }} />
+            </button>
+          </div>
           <div className="comments-list" data-testid={`comments-list-${track.id}`}>
             {commentsData.length === 0 ? (
               <div className="no-comments" data-testid={`text-no-comments-${track.id}`}>No comments yet</div>

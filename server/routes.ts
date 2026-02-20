@@ -354,9 +354,13 @@ export async function registerRoutes(
       if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
       const count = await storage.getLikeCount(trackId);
       const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
+      const visitorId = req.headers["x-visitor-id"] as string;
       let liked = false;
       if (userId && !isNaN(userId)) {
         const existing = await storage.getUserLike(trackId, userId);
+        liked = !!existing;
+      } else if (visitorId) {
+        const existing = await storage.getVisitorLike(trackId, visitorId);
         liked = !!existing;
       }
       res.json({ count, liked });
@@ -366,22 +370,35 @@ export async function registerRoutes(
   });
 
   app.post("/api/tracks/:id/likes", async (req, res) => {
+    const visitorId = req.headers["x-visitor-id"] as string;
     const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
-    if (!userId || isNaN(userId)) {
-      return res.status(401).json({ message: "You must be signed in to like tracks" });
+    const effectiveId = (userId && !isNaN(userId)) ? userId : null;
+    const effectiveVisitor = visitorId || null;
+    if (!effectiveId && !effectiveVisitor) {
+      return res.status(400).json({ message: "An identifier is required to like tracks" });
     }
     try {
       const trackId = parseInt(req.params.id);
       if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
-      const existing = await storage.getUserLike(trackId, userId);
-      if (existing) {
-        await storage.removeLike(trackId, userId);
+      if (effectiveId) {
+        const existing = await storage.getUserLike(trackId, effectiveId);
+        if (existing) {
+          await storage.removeLike(trackId, effectiveId);
+        } else {
+          await storage.addLike({ trackId, userId: effectiveId });
+        }
+        const count = await storage.getLikeCount(trackId);
+        res.json({ count, liked: !existing });
       } else {
-        await storage.addLike({ trackId, userId });
+        const existing = await storage.getVisitorLike(trackId, effectiveVisitor!);
+        if (existing) {
+          await storage.removeVisitorLike(trackId, effectiveVisitor!);
+        } else {
+          await storage.addVisitorLike({ trackId, visitorId: effectiveVisitor! });
+        }
+        const count = await storage.getLikeCount(trackId);
+        res.json({ count, liked: !existing });
       }
-      const count = await storage.getLikeCount(trackId);
-      const liked = !existing;
-      res.json({ count, liked });
     } catch (error) {
       res.status(500).json({ message: "Failed to toggle like" });
     }
@@ -411,22 +428,29 @@ export async function registerRoutes(
 
   app.post("/api/tracks/:id/comments", async (req, res) => {
     const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
-    if (!userId || isNaN(userId)) {
-      return res.status(401).json({ message: "You must be signed in to comment" });
-    }
+    const hasUser = userId && !isNaN(userId);
     try {
       const trackId = parseInt(req.params.id);
       if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
-      const { text } = req.body;
+      const { text, visitorName } = req.body;
       if (!text || typeof text !== "string" || text.trim().length === 0) {
         return res.status(400).json({ message: "Comment text is required" });
       }
-      const user = await storage.getUserById(userId);
-      if (!user) return res.status(401).json({ message: "User not found" });
+      let commentUserName = "Visitor";
+      let commentUserId = 0;
+      if (hasUser) {
+        const user = await storage.getUserById(userId);
+        if (user) {
+          commentUserName = user.name;
+          commentUserId = user.id;
+        }
+      } else if (visitorName && typeof visitorName === "string" && visitorName.trim().length > 0) {
+        commentUserName = visitorName.trim();
+      }
       const comment = await storage.addComment({
         trackId,
-        userId,
-        userName: user.name,
+        userId: commentUserId,
+        userName: commentUserName,
         text: text.trim(),
       });
       res.json(comment);

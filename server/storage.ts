@@ -1,5 +1,5 @@
 import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser, type Like, type InsertLike, type Comment, type InsertComment } from "@shared/schema";
-import { tracks, creators, genres, users, likes, comments } from "@shared/schema";
+import { tracks, creators, genres, users, likes, comments, visitorLikes } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
 
@@ -29,6 +29,9 @@ export interface IStorage {
   getUserLike(trackId: number, userId: number): Promise<Like | undefined>;
   addLike(like: InsertLike): Promise<Like>;
   removeLike(trackId: number, userId: number): Promise<void>;
+  getVisitorLike(trackId: number, visitorId: string): Promise<any>;
+  addVisitorLike(data: { trackId: number; visitorId: string }): Promise<any>;
+  removeVisitorLike(trackId: number, visitorId: string): Promise<void>;
   getComments(trackId: number): Promise<Comment[]>;
   getCommentCount(trackId: number): Promise<number>;
   addComment(comment: InsertComment): Promise<Comment>;
@@ -131,20 +134,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTop25ByLikes(): Promise<Track[]> {
+    const totalLikes = sql<number>`COALESCE((SELECT count(*)::int FROM likes WHERE likes.track_id = ${tracks.id}), 0) + COALESCE((SELECT count(*)::int FROM visitor_likes WHERE visitor_likes.track_id = ${tracks.id}), 0)`;
     const result = await db
       .select({
         track: tracks,
-        likeCount: sql<number>`COALESCE((SELECT count(*)::int FROM likes WHERE likes.track_id = ${tracks.id}), 0)`,
+        likeCount: totalLikes,
       })
       .from(tracks)
-      .orderBy(sql`COALESCE((SELECT count(*)::int FROM likes WHERE likes.track_id = ${tracks.id}), 0) DESC`, desc(tracks.plays))
+      .orderBy(sql`${totalLikes} DESC`, desc(tracks.plays))
       .limit(25);
     return result.map((r, i) => ({ ...r.track, rank: i + 1 }));
   }
 
   async getLikeCount(trackId: number): Promise<number> {
-    const result = await db.select({ count: sql<number>`count(*)::int` }).from(likes).where(eq(likes.trackId, trackId));
-    return result[0]?.count ?? 0;
+    const userLikes = await db.select({ count: sql<number>`count(*)::int` }).from(likes).where(eq(likes.trackId, trackId));
+    const vLikes = await db.select({ count: sql<number>`count(*)::int` }).from(visitorLikes).where(eq(visitorLikes.trackId, trackId));
+    return (userLikes[0]?.count ?? 0) + (vLikes[0]?.count ?? 0);
   }
 
   async getUserLike(trackId: number, userId: number): Promise<Like | undefined> {
@@ -159,6 +164,20 @@ export class DatabaseStorage implements IStorage {
 
   async removeLike(trackId: number, userId: number): Promise<void> {
     await db.delete(likes).where(and(eq(likes.trackId, trackId), eq(likes.userId, userId)));
+  }
+
+  async getVisitorLike(trackId: number, visitorId: string): Promise<any> {
+    const [result] = await db.select().from(visitorLikes).where(and(eq(visitorLikes.trackId, trackId), eq(visitorLikes.visitorId, visitorId)));
+    return result;
+  }
+
+  async addVisitorLike(data: { trackId: number; visitorId: string }): Promise<any> {
+    const [result] = await db.insert(visitorLikes).values(data).returning();
+    return result;
+  }
+
+  async removeVisitorLike(trackId: number, visitorId: string): Promise<void> {
+    await db.delete(visitorLikes).where(and(eq(visitorLikes.trackId, trackId), eq(visitorLikes.visitorId, visitorId)));
   }
 
   async getComments(trackId: number): Promise<Comment[]> {
