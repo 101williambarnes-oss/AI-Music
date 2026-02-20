@@ -205,7 +205,6 @@ export default function Home() {
           </div>
         </div>
         <div className="topbar-actions">
-          <a href="/downloads" className="topbar-login" data-testid="link-downloads">Downloads</a>
           {user ? (
             <>
               <a href="/upload" className="topbar-login" data-testid="link-upload">Upload</a>
