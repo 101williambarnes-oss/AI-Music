@@ -14,6 +14,13 @@ if (!fs.existsSync(uploadsDir)) {
 
 const ALLOWED_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".mp4", ".webm", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
+const ALLOWED_MIMES = [
+  "audio/mpeg", "audio/wav", "audio/wave", "audio/x-wav", "audio/ogg", "audio/flac", "audio/x-flac",
+  "audio/mp4", "audio/x-m4a", "audio/aac", "audio/x-aac",
+  "video/mp4", "video/webm", "video/quicktime",
+  "image/jpeg", "image/png", "image/gif", "image/webp",
+];
+
 const upload = multer({
   storage: multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, uploadsDir),
@@ -25,10 +32,12 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (ALLOWED_EXTS.includes(ext)) {
+    const mimeOk = ALLOWED_MIMES.includes(file.mimetype);
+    const extOk = ALLOWED_EXTS.includes(ext);
+    if (extOk && mimeOk) {
       cb(null, true);
     } else {
-      cb(new Error("Unsupported file type. Allowed: MP3, WAV, OGG, FLAC, M4A, AAC, MP4, WEBM, MOV, JPG, PNG, GIF, WEBP"));
+      cb(new Error("Unsupported file type. Only audio (MP3, WAV, OGG, FLAC, M4A, AAC), video (MP4, WEBM, MOV), and image (JPG, PNG, GIF, WEBP) files are allowed."));
     }
   },
 });
@@ -138,7 +147,12 @@ export async function registerRoutes(
     }
   });
 
-  app.use("/uploads", express.static(uploadsDir));
+  app.use("/uploads", (_req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Security-Policy", "default-src 'none'");
+    res.setHeader("X-Frame-Options", "DENY");
+    next();
+  }, express.static(uploadsDir));
 
   app.get("/api/tracks/:id/download", async (req, res) => {
     try {
