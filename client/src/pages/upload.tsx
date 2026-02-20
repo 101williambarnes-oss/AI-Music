@@ -16,13 +16,25 @@ export default function Upload() {
   const TOOLS = ["Suno", "Udio", "Stable Audio", "AIVA", "Other"];
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("hwm_user");
-      if (stored) {
-        setIsLoggedIn(true);
-      }
-    } catch {}
-    setAuthChecking(false);
+    const stored = localStorage.getItem("hwm_user");
+    if (stored) {
+      setIsLoggedIn(true);
+      setAuthChecking(false);
+    } else {
+      fetch("/api/auth/me")
+        .then((res) => {
+          if (res.ok) {
+            return res.json().then((data: any) => {
+              if (data?.user) {
+                localStorage.setItem("hwm_user", JSON.stringify(data.user));
+                setIsLoggedIn(true);
+              }
+            });
+          }
+        })
+        .catch(() => {})
+        .finally(() => setAuthChecking(false));
+    }
   }, []);
 
   function toggleTool(tool: string) {
