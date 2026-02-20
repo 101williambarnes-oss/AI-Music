@@ -8,6 +8,7 @@ import Trending from "@/pages/trending";
 import NewSongs from "@/pages/new-songs";
 import Top25 from "@/pages/top-25";
 import NewCreators from "@/pages/new-creators";
+import SignIn from "@/pages/sign-in";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/new-songs" component={NewSongs} />
       <Route path="/top-25" component={Top25} />
       <Route path="/new-creators" component={NewCreators} />
+      <Route path="/sign-in" component={SignIn} />
       <Route component={NotFound} />
     </Switch>
   );
