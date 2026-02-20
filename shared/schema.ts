@@ -38,10 +38,27 @@ export const creators = pgTable("creators", {
   userId: integer("user_id"),
 });
 
+export const likes = pgTable("likes", {
+  id: serial("id").primaryKey(),
+  trackId: integer("track_id").notNull(),
+  userId: integer("user_id").notNull(),
+});
+
+export const comments = pgTable("comments", {
+  id: serial("id").primaryKey(),
+  trackId: integer("track_id").notNull(),
+  userId: integer("user_id").notNull(),
+  userName: text("user_name").notNull(),
+  text: text("text").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertGenreSchema = createInsertSchema(genres).omit({ id: true });
 export const insertTrackSchema = createInsertSchema(tracks).omit({ id: true });
 export const insertCreatorSchema = createInsertSchema(creators).omit({ id: true });
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, creatorId: true });
+export const insertLikeSchema = createInsertSchema(likes).omit({ id: true });
+export const insertCommentSchema = createInsertSchema(comments).omit({ id: true, createdAt: true });
 
 export const signupSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -58,7 +75,11 @@ export type InsertGenre = z.infer<typeof insertGenreSchema>;
 export type InsertTrack = z.infer<typeof insertTrackSchema>;
 export type InsertCreator = z.infer<typeof insertCreatorSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertLike = z.infer<typeof insertLikeSchema>;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type Genre = typeof genres.$inferSelect;
 export type Track = typeof tracks.$inferSelect;
 export type Creator = typeof creators.$inferSelect;
 export type User = typeof users.$inferSelect;
+export type Like = typeof likes.$inferSelect;
+export type Comment = typeof comments.$inferSelect;
