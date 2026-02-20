@@ -203,10 +203,10 @@ export default function Home() {
         </div>
 
         <div className="heroNav" data-testid="nav-hero">
-          <a href="trending.html" data-testid="link-trending">Trending Now</a>
-          <a href="new-songs.html" data-testid="link-new-songs">New Songs of the Week</a>
-          <a href="top-25.html" data-testid="link-top25">Top 25 This Week</a>
-          <a href="new-creators.html" data-testid="link-creators">New Creators of the Week</a>
+          <a href="/trending" data-testid="link-trending">Trending Now</a>
+          <a href="/new-songs" data-testid="link-new-songs">New Songs of the Week</a>
+          <a href="/top-25" data-testid="link-top25">Top 25 This Week</a>
+          <a href="/new-creators" data-testid="link-creators">New Creators of the Week</a>
         </div>
       </section>
 
