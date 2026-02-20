@@ -203,6 +203,50 @@ export async function registerRoutes(
     }
   });
 
+  app.delete("/api/tracks/:id", async (req, res) => {
+    const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
+    if (!userId) {
+      return res.status(401).json({ message: "You must be signed in to delete tracks" });
+    }
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) {
+        return res.status(400).json({ message: "Invalid track ID" });
+      }
+
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      const creator = await storage.getCreatorByUserId(user.id);
+      if (!creator) {
+        return res.status(403).json({ message: "You are not a creator" });
+      }
+
+      const creatorTracks = await storage.getTracksByCreatorId(creator.id);
+      const track = creatorTracks.find(t => t.id === trackId);
+      if (!track) {
+        return res.status(403).json({ message: "You can only delete your own tracks" });
+      }
+
+      if (track.fileUrl) {
+        const filePath = path.join(process.cwd(), track.fileUrl);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+
+      await storage.deleteTrack(trackId);
+      await storage.decrementCreatorTrackCount(creator.id);
+
+      res.json({ message: "Track deleted" });
+    } catch (error) {
+      console.error("Delete track error:", error);
+      res.status(500).json({ message: "Failed to delete track" });
+    }
+  });
+
   app.get("/api/tracks", async (_req, res) => {
     try {
       const allTracks = await storage.getAllTracks();

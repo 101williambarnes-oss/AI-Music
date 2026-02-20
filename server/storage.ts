@@ -20,6 +20,8 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserCreatorId(userId: number, creatorId: number): Promise<void>;
   incrementCreatorTrackCount(creatorId: number): Promise<void>;
+  deleteTrack(trackId: number): Promise<Track | undefined>;
+  decrementCreatorTrackCount(creatorId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -96,6 +98,15 @@ export class DatabaseStorage implements IStorage {
 
   async incrementCreatorTrackCount(creatorId: number): Promise<void> {
     await db.update(creators).set({ trackCount: sql`${creators.trackCount} + 1` }).where(eq(creators.id, creatorId));
+  }
+
+  async deleteTrack(trackId: number): Promise<Track | undefined> {
+    const [result] = await db.delete(tracks).where(eq(tracks.id, trackId)).returning();
+    return result;
+  }
+
+  async decrementCreatorTrackCount(creatorId: number): Promise<void> {
+    await db.update(creators).set({ trackCount: sql`GREATEST(${creators.trackCount} - 1, 0)` }).where(eq(creators.id, creatorId));
   }
 }
 

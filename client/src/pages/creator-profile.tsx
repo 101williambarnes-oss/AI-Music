@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
-import { Download, Music } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
+import { queryClient } from "@/lib/queryClient";
 
 function formatPlays(plays: number) {
   if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
@@ -31,6 +32,26 @@ export default function CreatorProfile() {
   const creator = data?.creator;
   const tracks = data?.tracks || [];
   const isOwnProfile = user?.creatorId === creator?.id;
+
+  const deleteTrackMutation = useMutation({
+    mutationFn: async (trackId: number) => {
+      const res = await fetch(`/api/tracks/${trackId}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "x-user-id": String(user?.id || "") },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ message: "Failed to delete" }));
+        throw new Error(data.message);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/creators", creatorId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tracks/new"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tracks/trending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tracks/top25"] });
+    },
+  });
 
   const avatarGradient =
     creator?.avatarColor === "cyan"
@@ -149,6 +170,33 @@ export default function CreatorProfile() {
                           >
                             <Download size={14} />
                           </a>
+                        )}
+                        {isOwnProfile && (
+                          <button
+                            onClick={() => {
+                              if (confirm("Are you sure you want to delete this track?")) {
+                                deleteTrackMutation.mutate(track.id);
+                              }
+                            }}
+                            disabled={deleteTrackMutation.isPending}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: 32,
+                              height: 32,
+                              borderRadius: 6,
+                              background: "rgba(255,79,216,.1)",
+                              border: "1px solid rgba(255,79,216,.2)",
+                              color: "#ff4fd8",
+                              cursor: "pointer",
+                              flexShrink: 0,
+                              opacity: deleteTrackMutation.isPending ? 0.5 : 1,
+                            }}
+                            data-testid={`button-delete-track-${track.id}`}
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         )}
                       </div>
                     ))}
