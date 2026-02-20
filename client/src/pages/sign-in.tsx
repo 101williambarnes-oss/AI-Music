@@ -67,7 +67,11 @@ export default function SignIn() {
   return (
     <div className="hwm-app">
       <div className="bg-lines" />
-      <div className="wrap" style={{ paddingTop: 60, maxWidth: 420, margin: "0 auto" }}>
+      <div className="wrap" style={{ paddingTop: 30, maxWidth: 420, margin: "0 auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <a href="/" style={{ color: "#6cf0ff", textDecoration: "none", fontSize: 14, fontWeight: 600 }} data-testid="link-top-back-home">&larr; Back to Home</a>
+          <a href="/sign-up" style={{ color: "#a06bff", textDecoration: "none", fontSize: 14, fontWeight: 600 }} data-testid="link-top-signup">New creator? Sign Up &rarr;</a>
+        </div>
         <section className="panel" style={{ padding: 32 }}>
           <h2 style={{ color: "#6cf0ff", fontSize: 24, fontWeight: 700, marginBottom: 8, textAlign: "center" }} data-testid="text-signin-title">Creators Login</h2>
           <p style={{ color: "rgba(170,182,232,.6)", fontSize: 14, textAlign: "center", marginBottom: 24 }} data-testid="text-signin-subtitle">Sign in to your Hit Wave Media account</p>
