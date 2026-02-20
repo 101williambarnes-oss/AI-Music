@@ -417,8 +417,12 @@ export default function Home() {
           </section>
 
           <section className="panel column-panel" data-testid="section-creators">
-            <div className="section-header">
-              <h3 data-testid="panel-header-creators">New Creators</h3>
+            <div className="section-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <a href="/new-creators" style={{ textDecoration: "none", color: "inherit" }} data-testid="link-new-creators-page">
+                <h3 data-testid="panel-header-creators" style={{ cursor: "pointer" }}>
+                  New Creators <span style={{ fontSize: "0.7em", color: "#6cf0ff", marginLeft: 6 }}>View All &rarr;</span>
+                </h3>
+              </a>
             </div>
             <div className="creators-grid column-list" data-testid="list-creators">
               {creatorsLoading ? (
