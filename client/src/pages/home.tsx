@@ -385,36 +385,38 @@ export default function Home() {
           testId="trending"
         />
 
-        <section className="panel column-panel" data-testid="section-creators">
-          <div className="section-header">
-            <h3 data-testid="panel-header-creators">New Creators of the Week</h3>
-          </div>
-          <div className="creators-grid column-list" data-testid="list-creators">
-            {creatorsLoading ? (
-              [1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="creator"
-                  style={{ height: 62, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
-                  data-testid={`skeleton-creator-${i}`}
-                />
-              ))
-            ) : filteredCreators.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-creators">
-                {searchQuery ? "No creators found" : "No creators yet"}
-              </div>
-            ) : (
-              filteredCreators.map((creator) => <CreatorCard key={creator.id} creator={creator} />)
-            )}
-          </div>
-        </section>
+        <div className="stacked-column" data-testid="section-right-column">
+          <section className="panel column-panel" data-testid="section-creators">
+            <div className="section-header">
+              <h3 data-testid="panel-header-creators">New Creators</h3>
+            </div>
+            <div className="creators-grid column-list" data-testid="list-creators">
+              {creatorsLoading ? (
+                [1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="creator"
+                    style={{ height: 62, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
+                    data-testid={`skeleton-creator-${i}`}
+                  />
+                ))
+              ) : filteredCreators.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-creators">
+                  {searchQuery ? "No creators found" : "No creators yet"}
+                </div>
+              ) : (
+                filteredCreators.map((creator) => <CreatorCard key={creator.id} creator={creator} />)
+              )}
+            </div>
+          </section>
 
-        <TrackColumn
-          title="New Songs of the Week"
-          tracks={filteredNew}
-          isLoading={newSongsLoading}
-          testId="new-songs"
-        />
+          <TrackColumn
+            title="New Songs of the Week"
+            tracks={filteredNew}
+            isLoading={newSongsLoading}
+            testId="new-songs"
+          />
+        </div>
       </div>
     </div>
   );

@@ -551,7 +551,7 @@
 
 .five-columns {
   display: grid;
-  grid-template-columns: 200px 1fr 1fr 1fr 1fr;
+  grid-template-columns: 180px 1fr 1fr 1fr;
   gap: 14px;
   padding: 14px 22px 38px;
   height: calc(100vh - 80px);
@@ -844,12 +844,29 @@
   background: rgba(0,0,0,.15);
 }
 
+.stacked-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.stacked-column > .column-panel {
+  flex: 0 1 auto;
+  max-height: 45%;
+  min-height: 180px;
+}
+
 @media (max-width: 1100px) {
   .five-columns {
-    grid-template-columns: 180px 1fr 1fr;
+    grid-template-columns: 160px 1fr 1fr;
     height: auto;
   }
-  .five-columns > .column-panel {
+  .stacked-column {
+    grid-column: span 2;
+  }
+  .five-columns > .column-panel,
+  .stacked-column > .column-panel {
     max-height: 500px;
   }
 }
@@ -860,7 +877,11 @@
   .genre-sidebar {
     max-height: 200px;
   }
-  .five-columns > .column-panel {
+  .stacked-column {
+    grid-column: span 1;
+  }
+  .five-columns > .column-panel,
+  .stacked-column > .column-panel {
     max-height: 400px;
   }
 }
