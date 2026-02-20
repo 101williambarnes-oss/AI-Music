@@ -148,7 +148,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
           data-testid={`button-like-${track.id}`}
         >
           <Heart style={{ width: 14, height: 14, fill: likeData?.liked ? "#ff4fd8" : "none", stroke: likeData?.liked ? "#ff4fd8" : "currentColor" }} />
-          <span data-testid={`text-like-count-${track.id}`}>{likeData?.count ?? 0}</span>
+          <span style={{ fontWeight: 900 }} data-testid={`text-like-count-${track.id}`}>{likeData?.count ?? 0}</span>
         </button>
         {!hideComments && (
           <button
