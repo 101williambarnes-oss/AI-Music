@@ -48,27 +48,23 @@ const GENRE_GROUPS = [
 
 function TrackList({
   title,
-  subtitle,
   tracks,
   showRank,
-  tall,
   isLoading,
   testId,
 }: {
   title: string;
-  subtitle?: string;
   tracks: Track[];
   showRank?: boolean;
-  tall?: boolean;
   isLoading?: boolean;
   testId?: string;
 }) {
   return (
-    <section className="panel">
+    <section className="panel" data-testid={`section-${testId}`}>
       <div className="section-header">
         <h3 data-testid={`panel-header-${testId}`}>{title}</h3>
       </div>
-      <div className={`list${tall ? " tall" : ""}`} data-testid={`list-${testId}`}>
+      <div className="list" data-testid={`list-${testId}`}>
         {isLoading ? (
           [1, 2, 3, 4].map((i) => (
             <div
@@ -222,117 +218,76 @@ export default function Home() {
           <h1 className="heroTitle sr-only" data-testid="text-hero-title">HIT WAVE MEDIA</h1>
           <div className="heroSubtitle sr-only" data-testid="text-hero-subtitle">The Home of AI Music</div>
         </div>
-
-        <div className="heroNav" data-testid="nav-hero">
-          <a href="/trending" data-testid="link-trending">Trending Now</a>
-          <a href="/new-songs" data-testid="link-new-songs">New Songs of the Week</a>
-          <a href="/top-25" data-testid="link-top25">Top 25 This Week</a>
-          <a href="/new-creators" data-testid="link-creators">New Creators of the Week</a>
-        </div>
       </section>
 
-      <div className="wrap" data-testid="section-content">
-        <div className="grid-layout">
-          <aside className="explore-sounds" data-testid="sidebar-genres">
-            <h3 className="explore-title" data-testid="panel-header-genres">Explore Sounds</h3>
-            <nav aria-label="Genre navigation" data-testid="nav-genres">
-              <div className="genre-group">
-                <ul>
-                  <li
-                    className={activeGenre === null ? "active" : ""}
-                    onClick={() => setActiveGenre(null)}
-                    role="button"
-                    tabIndex={0}
-                    aria-pressed={activeGenre === null}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setActiveGenre(null); }}
-                    data-testid="button-genre-all"
-                  >
-                    All Genres
-                  </li>
-                </ul>
-              </div>
-              {GENRE_GROUPS.map((group) => (
+      <div className="genre-bar" data-testid="genre-bar">
+        <button
+          className={`genre-pill${activeGenre === null ? " active" : ""}`}
+          onClick={() => setActiveGenre(null)}
+          data-testid="button-genre-all"
+        >
+          All Genres
+        </button>
+        {GENRE_GROUPS.map((group) =>
+          group.genres.map((genre) => (
+            <button
+              key={genre}
+              className={`genre-pill${activeGenre === genre ? " active" : ""}`}
+              onClick={() => setActiveGenre(activeGenre === genre ? null : genre)}
+              data-testid={`button-genre-${genre.toLowerCase().replace(/[^a-z]/g, "-")}`}
+            >
+              {genre}
+            </button>
+          ))
+        )}
+      </div>
+
+      <div className="single-column" data-testid="section-content">
+        <TrackList
+          title="Trending Now"
+          tracks={filteredTrending}
+          isLoading={trendingLoading}
+          testId="trending"
+        />
+
+        <TrackList
+          title="Top 25 This Week"
+          tracks={topTracks}
+          showRank
+          isLoading={topLoading}
+          testId="top25"
+        />
+
+        <TrackList
+          title="New Songs of the Week"
+          tracks={filteredNew}
+          isLoading={newSongsLoading}
+          testId="new-songs"
+        />
+
+        <section className="panel" data-testid="section-creators">
+          <div className="section-header">
+            <h3 data-testid="panel-header-creators">New Creators of the Week</h3>
+          </div>
+          <div className="creators-grid" data-testid="list-creators">
+            {creatorsLoading ? (
+              [1, 2, 3, 4].map((i) => (
                 <div
-                  key={group.name}
-                  className="genre-group"
-                  data-testid={`genre-group-${group.name.toLowerCase().replace(/[^a-z]/g, "-")}`}
-                >
-                  <div className="group-title">{group.name}</div>
-                  <ul>
-                    {group.genres.map((genre) => (
-                      <li
-                        key={genre}
-                        className={activeGenre === genre ? "active" : ""}
-                        onClick={() => setActiveGenre(activeGenre === genre ? null : genre)}
-                        role="button"
-                        tabIndex={0}
-                        aria-pressed={activeGenre === genre}
-                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setActiveGenre(activeGenre === genre ? null : genre); }}
-                        data-testid={`button-genre-${genre.toLowerCase().replace(/[^a-z]/g, "-")}`}
-                      >
-                        {genre}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </nav>
-          </aside>
-
-          <main className="stack" data-testid="section-main">
-            <TrackList
-              title="Trending Now"
-              subtitle="scroll"
-              tracks={filteredTrending}
-              tall
-              isLoading={trendingLoading}
-              testId="trending"
-            />
-            <TrackList
-              title="New Songs of the Week"
-              subtitle="scroll"
-              tracks={filteredNew}
-              isLoading={newSongsLoading}
-              testId="new-songs"
-            />
-          </main>
-
-          <aside className="stack" data-testid="sidebar-right">
-            <TrackList
-              title="Top 25 This Week"
-              subtitle="scroll"
-              tracks={topTracks}
-              showRank
-              tall
-              isLoading={topLoading}
-              testId="top25"
-            />
-            <section className="panel">
-              <div className="ph">
-                <h3 data-testid="panel-header-creators">New Creators of the Week</h3>
-                <div className="mini">scroll</div>
+                  key={i}
+                  className="creator"
+                  style={{ height: 62, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
+                  data-testid={`skeleton-creator-${i}`}
+                />
+              ))
+            ) : creators.length === 0 ? (
+              <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "32px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-creators">
+                No creators yet
               </div>
-              <div className="creators-grid" data-testid="list-creators">
-                {creatorsLoading ? (
-                  [1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="creator"
-                      style={{ height: 62, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
-                      data-testid={`skeleton-creator-${i}`}
-                    />
-                  ))
-                ) : creators.length === 0 ? (
-                  <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "32px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-creators">
-                    No creators yet
-                  </div>
-                ) : (
-                  creators.map((creator) => <CreatorCard key={creator.id} creator={creator} />)
-                )}
-              </div>
-            </section>
-          </aside>
-        </div>
+            ) : (
+              creators.map((creator) => <CreatorCard key={creator.id} creator={creator} />)
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

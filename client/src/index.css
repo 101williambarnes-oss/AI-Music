@@ -467,6 +467,53 @@
   opacity: .6;
 }
 
+.single-column {
+  max-width: 800px;
+  margin: 0 auto 38px;
+  padding: 0 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.genre-bar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 22px;
+  overflow-x: auto;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  -ms-overflow-style: none;
+  scrollbar-width: thin;
+}
+
+.genre-pill {
+  flex-shrink: 0;
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(108,240,255,.2);
+  background: rgba(15,20,40,.5);
+  color: rgba(234,240,255,.8);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+  white-space: nowrap;
+}
+.genre-pill:hover {
+  background: rgba(108,240,255,.12);
+  color: #6cf0ff;
+  border-color: rgba(108,240,255,.35);
+}
+.genre-pill.active {
+  background: rgba(108,240,255,.2);
+  color: #6cf0ff;
+  border-color: rgba(108,240,255,.5);
+  box-shadow: 0 0 12px rgba(108,240,255,.15);
+}
+
 .wrap {
   max-width: 1200px;
   margin: 10px auto 38px;
@@ -552,11 +599,9 @@
 
 .list {
   padding: 10px 10px 12px;
-  max-height: 265px;
-  overflow: auto;
 }
 .list.tall {
-  max-height: 320px;
+  max-height: none;
 }
 
 .row {
@@ -639,8 +684,6 @@
 
 .creators-grid {
   padding: 8px 10px 10px;
-  max-height: 220px;
-  overflow: auto;
   display: flex;
   flex-direction: column;
   gap: 6px;
