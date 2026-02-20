@@ -36,6 +36,7 @@ export const creators = pgTable("creators", {
   trackCount: integer("track_count").notNull().default(0),
   avatarColor: text("avatar_color").notNull().default("purple"),
   userId: integer("user_id"),
+  avatarUrl: text("avatar_url"),
 });
 
 export const likes = pgTable("likes", {
