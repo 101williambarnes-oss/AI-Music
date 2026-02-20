@@ -185,8 +185,19 @@ export function VideoModal({
         </div>
 
         <div className="video-modal-info" data-testid="video-modal-info">
-          <div className="video-modal-title" data-testid={`text-modal-title-${track.id}`}>{track.title}</div>
-          <div className="video-modal-artist" data-testid={`text-modal-artist-${track.id}`}>{track.artist}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="video-modal-title" data-testid={`text-modal-title-${track.id}`}>{track.title}</div>
+            <div className="video-modal-artist" data-testid={`text-modal-artist-${track.id}`}>{track.artist}</div>
+          </div>
+          {track.creatorId && (
+            <a
+              href={`/creator/${track.creatorId}`}
+              className="video-modal-library-btn"
+              data-testid={`link-full-library-${track.id}`}
+            >
+              See Full Library
+            </a>
+          )}
         </div>
 
         <div className="video-modal-bottom">
