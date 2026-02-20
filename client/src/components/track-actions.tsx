@@ -38,6 +38,14 @@ export function TrackActions({ track }: { track: Track }) {
     },
   });
 
+  const { data: commentCountData } = useQuery<{ count: number }>({
+    queryKey: ["/api/tracks", String(track.id), "comments", "count"],
+    queryFn: async () => {
+      const res = await fetch(`/api/tracks/${track.id}/comments/count`, { credentials: "include" });
+      return res.json();
+    },
+  });
+
   const { data: commentsData = [] } = useQuery<Comment[]>({
     queryKey: ["/api/tracks", String(track.id), "comments"],
     queryFn: async () => {
@@ -76,6 +84,7 @@ export function TrackActions({ track }: { track: Track }) {
     onSuccess: () => {
       setCommentText("");
       qc.invalidateQueries({ queryKey: ["/api/tracks", String(track.id), "comments"] });
+      qc.invalidateQueries({ queryKey: ["/api/tracks", String(track.id), "comments", "count"] });
     },
   });
 
@@ -99,7 +108,7 @@ export function TrackActions({ track }: { track: Track }) {
           data-testid={`button-comments-${track.id}`}
         >
           <MessageCircle style={{ width: 14, height: 14 }} />
-          <span data-testid={`text-comment-count-${track.id}`}>{showComments ? commentsData.length : ""}</span>
+          <span data-testid={`text-comment-count-${track.id}`}>{commentCountData?.count ?? 0}</span>
         </button>
       </div>
       {showComments && (

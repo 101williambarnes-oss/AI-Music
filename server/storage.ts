@@ -28,6 +28,7 @@ export interface IStorage {
   addLike(like: InsertLike): Promise<Like>;
   removeLike(trackId: number, userId: number): Promise<void>;
   getComments(trackId: number): Promise<Comment[]>;
+  getCommentCount(trackId: number): Promise<number>;
   addComment(comment: InsertComment): Promise<Comment>;
   deleteComment(commentId: number): Promise<void>;
 }
@@ -143,6 +144,11 @@ export class DatabaseStorage implements IStorage {
 
   async getComments(trackId: number): Promise<Comment[]> {
     return db.select().from(comments).where(eq(comments.trackId, trackId)).orderBy(desc(comments.createdAt));
+  }
+
+  async getCommentCount(trackId: number): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`count(*)::int` }).from(comments).where(eq(comments.trackId, trackId));
+    return result?.count ?? 0;
   }
 
   async addComment(comment: InsertComment): Promise<Comment> {

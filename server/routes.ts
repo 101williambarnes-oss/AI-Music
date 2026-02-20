@@ -368,6 +368,17 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/tracks/:id/comments/count", async (req, res) => {
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+      const count = await storage.getCommentCount(trackId);
+      res.json({ count });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get comment count" });
+    }
+  });
+
   app.get("/api/tracks/:id/comments", async (req, res) => {
     try {
       const trackId = parseInt(req.params.id);
