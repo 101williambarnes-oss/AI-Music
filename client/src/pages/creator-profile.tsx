@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
-import { Download, Upload, Trash2 } from "lucide-react";
+import { Upload, Trash2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 
@@ -183,27 +183,6 @@ export default function CreatorProfile() {
                           <div className="by" data-testid={`text-track-genre-${track.id}`}>{track.genre}</div>
                         </div>
                         <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
-                        {track.fileUrl && (
-                          <a
-                            href={`/api/tracks/${track.id}/download`}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              width: 32,
-                              height: 32,
-                              borderRadius: 6,
-                              background: "rgba(108,240,255,.1)",
-                              border: "1px solid rgba(108,240,255,.2)",
-                              color: "#6cf0ff",
-                              textDecoration: "none",
-                              flexShrink: 0,
-                            }}
-                            data-testid={`button-download-track-${track.id}`}
-                          >
-                            <Download size={14} />
-                          </a>
-                        )}
                         {isOwnProfile && (
                           <button
                             onClick={() => {
