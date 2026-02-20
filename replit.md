@@ -4,6 +4,7 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-02-20: Trending Today dynamic ranking - tracks ranked by today's likes + plays, not a static list; track_plays log table tracks daily play events
 - 2026-02-20: Play counter & dynamic Top 25 - play count increments when a new song starts, Top 25 ranked dynamically by like count (ties broken by plays), songs move up/down as likes change
 - 2026-02-20: Video pause fix - video thumbnails now pause when audio pauses, removed autoPlay
 - 2026-02-20: Likes & comments - every track has like button and independent comment section, shared TrackActions component

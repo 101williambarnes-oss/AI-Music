@@ -305,6 +305,10 @@ export async function registerRoutes(
         const topTracks = await storage.getTop25ByLikes();
         return res.json(topTracks);
       }
+      if (category === "trending") {
+        const trendingTracks = await storage.getTrendingTracks();
+        return res.json(trendingTracks);
+      }
       const tracks = await storage.getTracks(category);
       res.json(tracks);
     } catch (error) {

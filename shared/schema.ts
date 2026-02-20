@@ -42,12 +42,20 @@ export const likes = pgTable("likes", {
   id: serial("id").primaryKey(),
   trackId: integer("track_id").notNull(),
   userId: integer("user_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const visitorLikes = pgTable("visitor_likes", {
   id: serial("id").primaryKey(),
   trackId: integer("track_id").notNull(),
   visitorId: text("visitor_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const trackPlays = pgTable("track_plays", {
+  id: serial("id").primaryKey(),
+  trackId: integer("track_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const comments = pgTable("comments", {
@@ -63,7 +71,9 @@ export const insertGenreSchema = createInsertSchema(genres).omit({ id: true });
 export const insertTrackSchema = createInsertSchema(tracks).omit({ id: true });
 export const insertCreatorSchema = createInsertSchema(creators).omit({ id: true });
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, creatorId: true });
-export const insertLikeSchema = createInsertSchema(likes).omit({ id: true });
+export const insertLikeSchema = createInsertSchema(likes).omit({ id: true, createdAt: true });
+export const insertVisitorLikeSchema = createInsertSchema(visitorLikes).omit({ id: true, createdAt: true });
+export const insertTrackPlaySchema = createInsertSchema(trackPlays).omit({ id: true, createdAt: true });
 export const insertCommentSchema = createInsertSchema(comments).omit({ id: true, createdAt: true });
 
 export const signupSchema = z.object({
@@ -82,10 +92,14 @@ export type InsertTrack = z.infer<typeof insertTrackSchema>;
 export type InsertCreator = z.infer<typeof insertCreatorSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertLike = z.infer<typeof insertLikeSchema>;
+export type InsertVisitorLike = z.infer<typeof insertVisitorLikeSchema>;
+export type InsertTrackPlay = z.infer<typeof insertTrackPlaySchema>;
 export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type Genre = typeof genres.$inferSelect;
 export type Track = typeof tracks.$inferSelect;
 export type Creator = typeof creators.$inferSelect;
+export type VisitorLike = typeof visitorLikes.$inferSelect;
+export type TrackPlay = typeof trackPlays.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Like = typeof likes.$inferSelect;
 export type Comment = typeof comments.$inferSelect;

@@ -1,5 +1,5 @@
 import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser, type Like, type InsertLike, type Comment, type InsertComment } from "@shared/schema";
-import { tracks, creators, genres, users, likes, comments, visitorLikes } from "@shared/schema";
+import { tracks, creators, genres, users, likes, comments, visitorLikes, trackPlays } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
 
@@ -32,6 +32,8 @@ export interface IStorage {
   getVisitorLike(trackId: number, visitorId: string): Promise<any>;
   addVisitorLike(data: { trackId: number; visitorId: string }): Promise<any>;
   removeVisitorLike(trackId: number, visitorId: string): Promise<void>;
+  logPlay(trackId: number): Promise<void>;
+  getTrendingTracks(): Promise<Track[]>;
   getComments(trackId: number): Promise<Comment[]>;
   getCommentCount(trackId: number): Promise<number>;
   addComment(comment: InsertComment): Promise<Comment>;
@@ -130,7 +132,34 @@ export class DatabaseStorage implements IStorage {
 
   async incrementPlays(trackId: number): Promise<number> {
     const [result] = await db.update(tracks).set({ plays: sql`${tracks.plays} + 1` }).where(eq(tracks.id, trackId)).returning({ plays: tracks.plays });
+    await this.logPlay(trackId);
     return result?.plays ?? 0;
+  }
+
+  async logPlay(trackId: number): Promise<void> {
+    await db.insert(trackPlays).values({ trackId });
+  }
+
+  async getTrendingTracks(): Promise<Track[]> {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayLikes = sql<number>`
+      COALESCE((SELECT count(*)::int FROM likes WHERE likes.track_id = ${tracks.id} AND likes.created_at >= ${todayStart}), 0)
+      + COALESCE((SELECT count(*)::int FROM visitor_likes WHERE visitor_likes.track_id = ${tracks.id} AND visitor_likes.created_at >= ${todayStart}), 0)
+    `;
+    const todayPlays = sql<number>`
+      COALESCE((SELECT count(*)::int FROM track_plays WHERE track_plays.track_id = ${tracks.id} AND track_plays.created_at >= ${todayStart}), 0)
+    `;
+    const engagement = sql<number>`(${todayLikes}) + (${todayPlays})`;
+
+    const result = await db
+      .select({ track: tracks, engagement })
+      .from(tracks)
+      .orderBy(desc(engagement), desc(tracks.plays))
+      .limit(20);
+
+    return result.map(r => r.track);
   }
 
   async getTop25ByLikes(): Promise<Track[]> {
