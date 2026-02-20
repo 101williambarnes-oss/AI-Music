@@ -4,6 +4,8 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-02-20: Play counter & dynamic Top 25 - play count increments when a new song starts, Top 25 ranked dynamically by like count (ties broken by plays), songs move up/down as likes change
+- 2026-02-20: Video pause fix - video thumbnails now pause when audio pauses, removed autoPlay
 - 2026-02-20: Likes & comments - every track has like button and independent comment section, shared TrackActions component
 - 2026-02-20: Cover image/video upload - tracks can have cover art (image or video) uploaded alongside audio, displayed as thumbnail
 - 2026-02-20: Audio player - functional play/pause on tracks with uploaded files, shared audio context across pages
@@ -44,7 +46,8 @@ server/seed.ts                    - Seed data for initial content
 - POST /api/auth/signout - Logout
 - GET /api/auth/me - Get current user
 - POST /api/tracks/upload - Upload track (auth required)
-- GET /api/tracks/:category - Get tracks by category (trending, new, top25)
+- POST /api/tracks/:id/play - Increment play count for a track
+- GET /api/tracks/:category - Get tracks by category (trending, new, top25 - top25 is dynamic by likes)
 - GET /api/creators - Get all creators
 - GET /api/creators/:id - Get creator with tracks
 - GET /api/genres - Get all genres
