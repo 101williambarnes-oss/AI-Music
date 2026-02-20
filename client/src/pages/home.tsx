@@ -10,69 +10,6 @@ import { ALL_GENRES } from "@/lib/genres";
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
 
-function TrackColumn({
-  title,
-  tracks,
-  isLoading: loading,
-  showRank,
-  testId,
-  onClose,
-  linkTo,
-}: {
-  title: string;
-  tracks: Track[];
-  isLoading?: boolean;
-  showRank?: boolean;
-  testId: string;
-  onClose?: () => void;
-  linkTo?: string;
-}) {
-  return (
-    <section className="panel column-panel" data-testid={`section-${testId}`}>
-      <div className="section-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-        {linkTo ? (
-          <a href={linkTo} style={{ textDecoration: "none", color: "inherit" }} data-testid={`link-${testId}-page`}>
-            <h3 data-testid={`panel-header-${testId}`} style={{ cursor: "pointer" }}>
-              {title} <span style={{ fontSize: "0.7em", color: "#6cf0ff", marginLeft: 6 }}>View All &rarr;</span>
-            </h3>
-          </a>
-        ) : (
-          <h3 data-testid={`panel-header-${testId}`}>{title}</h3>
-        )}
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="genre-close-btn"
-            title="Back to Top 25"
-            data-testid="button-close-genre"
-          >
-            &#10005;
-          </button>
-        )}
-      </div>
-      <div className="list column-list" data-testid={`list-${testId}`}>
-        {loading ? (
-          [1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="row"
-              style={{ height: 74, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
-              data-testid={`skeleton-track-${i}`}
-            />
-          ))
-        ) : tracks.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(170,182,232,.6)" }} data-testid={`empty-${testId}`}>
-            No tracks found
-          </div>
-        ) : (
-          tracks.map((track) => (
-            <TrackRow key={track.id} track={track} showRank={showRank} hideComments showDownload />
-          ))
-        )}
-      </div>
-    </section>
-  );
-}
 
 export default function Home() {
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
@@ -318,39 +255,61 @@ export default function Home() {
 
       <div className="five-columns" data-testid="section-content">
         <section className="panel column-panel genre-sidebar" data-testid="section-genres">
-          <div className="section-header">
-            <h3 data-testid="panel-header-genres">Genres</h3>
-          </div>
-          <div className="genre-list column-list" data-testid="list-genres">
-            <button
-              className={`genre-item${activeGenre === null ? " active" : ""}`}
-              onClick={() => setActiveGenre(null)}
-              data-testid="button-genre-all"
-            >
-              All Genres
-            </button>
-            {ALL_GENRES.map((genre) => (
+          <div className="section-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <h3 data-testid="panel-header-genres">{activeGenre ? activeGenre : "Genres"}</h3>
+            {activeGenre && (
               <button
-                key={genre}
-                className={`genre-item${activeGenre === genre ? " active" : ""}`}
-                onClick={() => setActiveGenre(activeGenre === genre ? null : genre)}
-                data-testid={`button-genre-${genre.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}
+                onClick={() => setActiveGenre(null)}
+                className="genre-close-btn"
+                title="Back to Genres"
+                data-testid="button-close-genre"
               >
-                {genre}
+                &#10005;
               </button>
-            ))}
+            )}
           </div>
+          {activeGenre ? (
+            <div className="list column-list" data-testid="list-genre-results">
+              {tracksLoading ? (
+                [1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="row"
+                    style={{ height: 74, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
+                  />
+                ))
+              ) : filteredGenre.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-genre-results">
+                  No tracks found in {activeGenre}
+                </div>
+              ) : (
+                filteredGenre.map((track) => (
+                  <TrackRow key={track.id} track={track} hideComments showDownload />
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="genre-list column-list" data-testid="list-genres">
+              <button
+                className={`genre-item${activeGenre === null ? " active" : ""}`}
+                onClick={() => setActiveGenre(null)}
+                data-testid="button-genre-all"
+              >
+                All Genres
+              </button>
+              {ALL_GENRES.map((genre) => (
+                <button
+                  key={genre}
+                  className={`genre-item${activeGenre === genre ? " active" : ""}`}
+                  onClick={() => setActiveGenre(activeGenre === genre ? null : genre)}
+                  data-testid={`button-genre-${genre.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}
+                >
+                  {genre}
+                </button>
+              ))}
+            </div>
+          )}
         </section>
-
-        {activeGenre && (
-          <TrackColumn
-            title={activeGenre}
-            tracks={filteredGenre}
-            isLoading={tracksLoading}
-            testId="genre-results"
-            onClose={() => setActiveGenre(null)}
-          />
-        )}
       </div>
     </div>
   );
