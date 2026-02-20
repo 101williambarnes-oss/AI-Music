@@ -12,6 +12,7 @@ import SignIn from "@/pages/sign-in";
 import SignUp from "@/pages/sign-up";
 import Upload from "@/pages/upload";
 import CreatorProfile from "@/pages/creator-profile";
+import Mockup from "@/pages/mockup";
 import NotFound from "@/pages/not-found";
 import { AudioPlayerProvider } from "@/lib/audioPlayer";
 
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/sign-up" component={SignUp} />
       <Route path="/upload" component={Upload} />
       <Route path="/creator/:id" component={CreatorProfile} />
+      <Route path="/mockup" component={Mockup} />
       <Route component={NotFound} />
     </Switch>
   );
