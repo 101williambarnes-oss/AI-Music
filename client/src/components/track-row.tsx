@@ -47,7 +47,26 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
             />
           ) : null}
           {showRank && track.rank ? (
-            <span className="rankBadge" data-testid={`text-rank-${track.rank}`}>#{track.rank}</span>
+            <div
+              onClick={hasAudio ? () => toggle(track.id, track.fileUrl!) : undefined}
+              style={{
+                cursor: hasAudio ? "pointer" : "default",
+                position: "relative",
+                zIndex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                height: "100%",
+              }}
+              data-testid={`button-play-${track.id}`}
+            >
+              {isCurrentlyPlaying ? (
+                <span style={{ color: "#ff4fd8", fontSize: "1.2rem" }}>{"\u275A\u275A"}</span>
+              ) : (
+                <span className="rankBadge" data-testid={`text-rank-${track.rank}`}>#{track.rank}</span>
+              )}
+            </div>
           ) : (
             <div
               className="play-btn"
