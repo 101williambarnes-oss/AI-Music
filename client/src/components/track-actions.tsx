@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Track, type Comment } from "@shared/schema";
-import { Heart, MessageCircle, Send, Play } from "lucide-react";
+import { Heart, MessageCircle, Send, Play, Share2, X, Copy, Check } from "lucide-react";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -47,6 +47,8 @@ function formatPlays(plays: number) {
 
 export function TrackActions({ track, hideComments }: { track: Track; hideComments?: boolean }) {
   const [showComments, setShowComments] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [nameText, setNameText] = useState(getVisitorName());
   const [user, setUser] = useState<AuthUser | null>(getUser);
@@ -159,7 +161,18 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
             <span data-testid={`text-comment-count-${track.id}`}>{commentCountData?.count ?? 0}</span>
           </button>
         )}
+        <button
+          className={`action-btn share-btn hover-elevate${showShare ? " active" : ""}`}
+          onClick={() => { setShowShare(!showShare); setCopied(false); }}
+          title="Share"
+          data-testid={`button-share-${track.id}`}
+        >
+          <Share2 style={{ width: 14, height: 14 }} />
+        </button>
       </div>
+      {showShare && (
+        <ShareDropdown track={track} onClose={() => setShowShare(false)} copied={copied} setCopied={setCopied} />
+      )}
       {!hideComments && showComments && (
         <div className="comments-section" data-testid={`comments-section-${track.id}`}>
           <div className="comment-input-row" data-testid={`comment-input-row-${track.id}`}>
@@ -212,6 +225,117 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; onClose: () => void; copied: boolean; setCopied: (v: boolean) => void }) {
+  const shareUrl = track.creatorId
+    ? `${window.location.origin}/creator/${track.creatorId}`
+    : window.location.origin;
+  const shareText = `Check out "${track.title}" by ${track.artist} on Hit Wave Media!`;
+
+  function copyLink() {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  const socials = [
+    {
+      name: "X (Twitter)",
+      color: "#1da1f2",
+      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
+      testId: "twitter",
+    },
+    {
+      name: "Facebook",
+      color: "#1877f2",
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
+      testId: "facebook",
+    },
+    {
+      name: "WhatsApp",
+      color: "#25d366",
+      url: `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      testId: "whatsapp",
+    },
+    {
+      name: "Reddit",
+      color: "#ff4500",
+      url: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
+      testId: "reddit",
+    },
+    {
+      name: "Email",
+      color: "#6cf0ff",
+      url: `mailto:?subject=${encodeURIComponent(`Check out ${track.title} on Hit Wave Media`)}&body=${encodeURIComponent(shareText + "\n\n" + shareUrl)}`,
+      testId: "email",
+    },
+  ];
+
+  return (
+    <div className="share-dropdown" data-testid={`share-dropdown-${track.id}`}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#6cf0ff", letterSpacing: 0.5 }}>Share this track</span>
+        <button
+          onClick={onClose}
+          style={{ background: "none", border: "none", color: "rgba(170,182,232,.5)", cursor: "pointer", padding: 2, display: "flex" }}
+          data-testid={`button-close-share-${track.id}`}
+        >
+          <X size={14} />
+        </button>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+        {socials.map((s) => (
+          <a
+            key={s.testId}
+            href={s.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              padding: "5px 10px",
+              borderRadius: 6,
+              background: "rgba(108,240,255,.06)",
+              border: "1px solid rgba(108,240,255,.12)",
+              color: s.color,
+              textDecoration: "none",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              transition: "background .2s",
+            }}
+            data-testid={`button-share-${s.testId}-${track.id}`}
+          >
+            {s.name}
+          </a>
+        ))}
+      </div>
+      <button
+        onClick={copyLink}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          width: "100%",
+          padding: "7px 10px",
+          borderRadius: 6,
+          background: copied ? "rgba(108,240,255,.15)" : "rgba(108,240,255,.06)",
+          border: `1px solid ${copied ? "rgba(108,240,255,.3)" : "rgba(108,240,255,.12)"}`,
+          color: copied ? "#6cf0ff" : "rgba(170,182,232,.8)",
+          cursor: "pointer",
+          fontSize: "0.75rem",
+          fontWeight: 600,
+          transition: "all .2s",
+        }}
+        data-testid={`button-copy-link-${track.id}`}
+      >
+        {copied ? <Check size={13} /> : <Copy size={13} />}
+        {copied ? "Link copied!" : "Copy link"}
+      </button>
     </div>
   );
 }

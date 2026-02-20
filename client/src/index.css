@@ -925,6 +925,20 @@
 .action-btn.comment-btn.active {
   color: #6cf0ff;
 }
+.action-btn.share-btn.active {
+  color: #6cf0ff;
+}
+
+.share-dropdown {
+  margin-top: 8px;
+  padding: 12px;
+  background: rgba(7,10,20,.55);
+  border-radius: 10px;
+  border: 1px solid rgba(108,240,255,.08);
+}
+.share-dropdown a:hover {
+  background: rgba(108,240,255,.12) !important;
+}
 
 .comments-section {
   margin-top: 8px;
