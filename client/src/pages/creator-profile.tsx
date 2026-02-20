@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
-import { Download } from "lucide-react";
 
 function formatPlays(plays: number) {
   if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
@@ -88,29 +87,7 @@ export default function CreatorProfile() {
                           <div className="title" data-testid={`text-track-title-${track.id}`}>{track.title}</div>
                           <div className="by" data-testid={`text-track-genre-${track.id}`}>{track.genre}</div>
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                          <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
-                          <button
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                              padding: "6px 14px",
-                              background: "linear-gradient(135deg, rgba(108,240,255,.2), rgba(160,107,255,.2))",
-                              border: "1px solid rgba(108,240,255,.3)",
-                              borderRadius: 8,
-                              color: "#6cf0ff",
-                              fontSize: 12,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              whiteSpace: "nowrap" as const,
-                            }}
-                            data-testid={`button-download-${track.id}`}
-                          >
-                            <Download style={{ width: 14, height: 14 }} />
-                            Download
-                          </button>
-                        </div>
+                        <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
                       </div>
                     ))}
                   </div>
