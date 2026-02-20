@@ -1342,6 +1342,8 @@
     flex-wrap: nowrap;
     padding: 14px 14px 16px;
     gap: 10px;
+    background: #050615;
+    backdrop-filter: none;
   }
   .topbar-left {
     display: none;
