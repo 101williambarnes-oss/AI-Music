@@ -26,7 +26,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
     }
   }, [isCurrentlyPlaying, isVideo]);
 
-  function handlePlay() {
+  function handleRowClick() {
     if (!hasAudio) return;
     if (isVideo) {
       play(track.id, track.fileUrl!);
@@ -38,7 +38,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
 
   return (
     <div data-testid={`track-row-${track.id}`}>
-      <div className="row">
+      <div className="row" onClick={handleRowClick} style={{ cursor: hasAudio ? "pointer" : "default" }} data-testid={`button-play-${track.id}`}>
         <div className="thumb" style={{ position: "relative", overflow: "hidden" }}>
           {isVideo && !showRank ? (
             <video
@@ -60,9 +60,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
           ) : null}
           {showRank && track.rank ? (
             <div
-              onClick={handlePlay}
               style={{
-                cursor: hasAudio ? "pointer" : "default",
                 position: "relative",
                 zIndex: 1,
                 display: "flex",
@@ -71,7 +69,6 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
                 width: "100%",
                 height: "100%",
               }}
-              data-testid={`button-play-${track.id}`}
             >
               {isCurrentlyPlaying ? (
                 <span style={{ color: "#ff4fd8", fontSize: "1.2rem" }}>{"\u275A\u275A"}</span>
@@ -82,15 +79,12 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
           ) : (
             <div
               className="play-btn"
-              onClick={handlePlay}
               style={{
-                cursor: hasAudio ? "pointer" : "default",
                 opacity: hasAudio ? 1 : 0.4,
                 color: isCurrentlyPlaying ? "#ff4fd8" : undefined,
                 position: "relative",
                 zIndex: 1,
               }}
-              data-testid={`button-play-${track.id}`}
             >
               {isCurrentlyPlaying ? "\u275A\u275A" : "\u25B6"}
             </div>
