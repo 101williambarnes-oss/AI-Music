@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
-import { Download, Trash2 } from "lucide-react";
+import { Download, Upload, Trash2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 
 function formatPlays(plays: number) {
@@ -119,8 +119,8 @@ export default function CreatorProfile() {
                   }}
                   data-testid="button-download-music"
                 >
-                  <Download style={{ width: 20, height: 20 }} />
-                  Download Your Music Now
+                  <Upload style={{ width: 20, height: 20 }} />
+                  Upload Your Music Now
                 </a>
               )}
 
