@@ -144,7 +144,27 @@ export default function CreatorProfile() {
                         className="row"
                         data-testid={`track-row-${track.id}`}
                       >
-                        <div className="thumb">
+                        <div className="thumb" style={{ position: "relative", overflow: "hidden" }}>
+                          {track.coverUrl ? (
+                            track.coverUrl.match(/\.(mp4|webm|mov)$/i) ? (
+                              <video
+                                src={track.coverUrl}
+                                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+                                muted
+                                loop
+                                autoPlay
+                                playsInline
+                                data-testid={`video-cover-${track.id}`}
+                              />
+                            ) : (
+                              <img
+                                src={track.coverUrl}
+                                alt={track.title}
+                                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+                                data-testid={`img-cover-${track.id}`}
+                              />
+                            )
+                          ) : null}
                           <div
                             className="play-btn"
                             onClick={track.fileUrl ? () => toggle(track.id, track.fileUrl!) : undefined}
@@ -152,6 +172,8 @@ export default function CreatorProfile() {
                               cursor: track.fileUrl ? "pointer" : "default",
                               opacity: track.fileUrl ? 1 : 0.4,
                               color: currentTrackId === track.id && isPlaying ? "#ff4fd8" : undefined,
+                              position: "relative",
+                              zIndex: 1,
                             }}
                             data-testid={`button-play-${track.id}`}
                           >

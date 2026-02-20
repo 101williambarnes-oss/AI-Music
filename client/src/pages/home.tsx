@@ -61,7 +61,27 @@ function TrackRow({ track, showRank }: { track: Track; showRank?: boolean }) {
       className="row"
       data-testid={`track-row-${track.id}`}
     >
-      <div className="thumb">
+      <div className="thumb" style={{ position: "relative", overflow: "hidden" }}>
+        {track.coverUrl && !showRank ? (
+          track.coverUrl.match(/\.(mp4|webm|mov)$/i) ? (
+            <video
+              src={track.coverUrl}
+              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+              muted
+              loop
+              autoPlay
+              playsInline
+              data-testid={`video-cover-${track.id}`}
+            />
+          ) : (
+            <img
+              src={track.coverUrl}
+              alt={track.title}
+              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+              data-testid={`img-cover-${track.id}`}
+            />
+          )
+        ) : null}
         {showRank && track.rank ? (
           <span className="rankBadge" data-testid={`text-rank-${track.rank}`}>#{track.rank}</span>
         ) : (
@@ -72,6 +92,8 @@ function TrackRow({ track, showRank }: { track: Track; showRank?: boolean }) {
               cursor: hasAudio ? "pointer" : "default",
               opacity: hasAudio ? 1 : 0.4,
               color: isCurrentlyPlaying ? "#ff4fd8" : undefined,
+              position: "relative",
+              zIndex: 1,
             }}
             data-testid={`button-play-${track.id}`}
           >

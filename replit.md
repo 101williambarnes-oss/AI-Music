@@ -4,7 +4,11 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
-- 2026-02-20: Full auth system - signup/signin/signout with session-based auth, upload page with auth gate, header shows logged-in state
+- 2026-02-20: Cover image/video upload - tracks can have cover art (image or video) uploaded alongside audio, displayed as thumbnail
+- 2026-02-20: Audio player - functional play/pause on tracks with uploaded files, shared audio context across pages
+- 2026-02-20: Track delete - creators can delete their own tracks from their profile
+- 2026-02-20: File upload - audio file upload via multer, download buttons on creator profiles
+- 2026-02-20: Full auth system - signup/signin/signout with localStorage-based auth, upload page with auth gate
 - 2026-02-18: Initial build - dark cyberpunk theme, PostgreSQL database with tracks/creators/genres, 3-column responsive layout
 
 ## Tech Stack
@@ -23,7 +27,8 @@ client/src/pages/upload.tsx       - Track upload (auth required)
 client/src/pages/creator-profile.tsx - Individual creator profiles
 client/src/pages/downloads.tsx    - Downloads page with genre sections
 client/src/App.tsx                - Router setup
-shared/schema.ts                  - Database schema (tracks, creators, genres, users)
+client/src/lib/audioPlayer.tsx     - Shared audio player context for track playback
+shared/schema.ts                  - Database schema (tracks with fileUrl/coverUrl, creators, genres, users)
 server/routes.ts                  - API endpoints (auth, tracks, creators, genres)
 server/storage.ts                 - Database storage layer
 server/db.ts                      - Database connection

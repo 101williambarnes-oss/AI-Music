@@ -12,6 +12,9 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+const AUDIO_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
+const COVER_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm", ".mov"];
+
 const upload = multer({
   storage: multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, uploadsDir),
@@ -22,12 +25,17 @@ const upload = multer({
   }),
   limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const allowed = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
     const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext)) {
+    if (file.fieldname === "audioFile" && AUDIO_EXTS.includes(ext)) {
       cb(null, true);
-    } else {
+    } else if (file.fieldname === "coverFile" && COVER_EXTS.includes(ext)) {
+      cb(null, true);
+    } else if (file.fieldname === "audioFile") {
       cb(new Error("Only audio files are allowed (.mp3, .wav, .ogg, .flac, .m4a, .aac)"));
+    } else if (file.fieldname === "coverFile") {
+      cb(new Error("Only image/video files are allowed (.jpg, .png, .gif, .webp, .mp4, .webm, .mov)"));
+    } else {
+      cb(new Error("Unexpected file field"));
     }
   },
 });
@@ -140,7 +148,10 @@ export async function registerRoutes(
   app.use("/uploads", express.static(uploadsDir));
 
   app.post("/api/tracks/upload", (req, res, next) => {
-    upload.single("audioFile")(req, res, (err) => {
+    upload.fields([
+      { name: "audioFile", maxCount: 1 },
+      { name: "coverFile", maxCount: 1 },
+    ])(req, res, (err) => {
       if (err instanceof multer.MulterError) {
         if (err.code === "LIMIT_FILE_SIZE") {
           return res.status(400).json({ message: "File is too large. Maximum size is 50MB." });
@@ -181,7 +192,11 @@ export async function registerRoutes(
         await storage.updateUserCreatorId(user.id, creator.id);
       }
 
-      const fileUrl = req.file ? `/uploads/${req.file.filename}` : null;
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+      const audioFile = files?.audioFile?.[0];
+      const coverFile = files?.coverFile?.[0];
+      const fileUrl = audioFile ? `/uploads/${audioFile.filename}` : null;
+      const coverUrl = coverFile ? `/uploads/${coverFile.filename}` : null;
 
       const track = await storage.insertTrack({
         title,
@@ -192,6 +207,7 @@ export async function registerRoutes(
         category: "new",
         creatorId: creator.id,
         fileUrl,
+        coverUrl,
       });
 
       await storage.incrementCreatorTrackCount(creator.id);
@@ -231,9 +247,15 @@ export async function registerRoutes(
       }
 
       if (track.fileUrl) {
-        const filePath = path.join(process.cwd(), track.fileUrl);
+        const filePath = path.join(process.cwd(), track.fileUrl.replace(/^\//, ""));
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
+        }
+      }
+      if (track.coverUrl) {
+        const coverPath = path.join(process.cwd(), track.coverUrl.replace(/^\//, ""));
+        if (fs.existsSync(coverPath)) {
+          fs.unlinkSync(coverPath);
         }
       }
 
