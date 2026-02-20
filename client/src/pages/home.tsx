@@ -151,6 +151,10 @@ export default function Home() {
   const filteredNew = searchFilter(newSongs);
   const filteredGenre = searchFilter(genreTracks);
 
+  const filteredCreators = searchQuery
+    ? creators.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : creators;
+
   return (
     <div className="hwm-app">
       <div className="bg-lines" />
@@ -273,12 +277,12 @@ export default function Home() {
                   data-testid={`skeleton-creator-${i}`}
                 />
               ))
-            ) : creators.length === 0 ? (
+            ) : filteredCreators.length === 0 ? (
               <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-creators">
-                No creators yet
+                {searchQuery ? "No creators found" : "No creators yet"}
               </div>
             ) : (
-              creators.map((creator) => <CreatorCard key={creator.id} creator={creator} />)
+              filteredCreators.map((creator) => <CreatorCard key={creator.id} creator={creator} />)
             )}
           </div>
         </section>
