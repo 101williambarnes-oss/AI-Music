@@ -93,12 +93,34 @@ export default function CreatorProfile() {
                   }}
                   data-testid="img-creator-avatar"
                 />
-                <div>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <h1 style={{ color: "#6cf0ff", fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: 1 }} data-testid="text-creator-name">{creator.name}</h1>
                   <div style={{ color: "rgba(170,182,232,.7)", fontSize: 14, marginTop: 6 }} data-testid="text-creator-stats">
                     {creator.trackCount} Track{creator.trackCount !== 1 ? "s" : ""} Published
                   </div>
                 </div>
+                <a
+                  href="/"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "8px 16px",
+                    borderRadius: 8,
+                    border: "1px solid rgba(108,240,255,.25)",
+                    background: "rgba(108,240,255,.08)",
+                    color: "#6cf0ff",
+                    textDecoration: "none",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                    transition: "background .2s, border-color .2s",
+                  }}
+                  data-testid="link-back-home"
+                >
+                  &#8592; Home
+                </a>
               </div>
 
               {isOwnProfile && (
@@ -218,9 +240,6 @@ export default function CreatorProfile() {
             </section>
           </>
         )}
-        <div style={{ paddingTop: 20, textAlign: "center" }}>
-          <a href="/" style={{ color: "#6cf0ff", textDecoration: "none" }} data-testid="link-back-home">&#8592; Back to Home</a>
-        </div>
       </div>
     </div>
   );
