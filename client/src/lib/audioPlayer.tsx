@@ -6,6 +6,7 @@ type AudioPlayerState = {
   isPlaying: boolean;
   play: (trackId: number, fileUrl: string) => void;
   pause: () => void;
+  stop: () => void;
   toggle: (trackId: number, fileUrl: string) => void;
   seek: (time: number) => void;
   getCurrentTime: () => number;
@@ -17,6 +18,7 @@ const AudioPlayerContext = createContext<AudioPlayerState>({
   isPlaying: false,
   play: () => {},
   pause: () => {},
+  stop: () => {},
   toggle: () => {},
   seek: () => {},
   getCurrentTime: () => 0,
@@ -75,6 +77,14 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setIsPlaying(false);
   }, []);
 
+  const stop = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    setIsPlaying(false);
+  }, []);
+
   const isPlayingRef = useRef(false);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
@@ -101,7 +111,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   return (
-    <AudioPlayerContext.Provider value={{ currentTrackId, isPlaying, play, pause, toggle, seek, getCurrentTime, getDuration }}>
+    <AudioPlayerContext.Provider value={{ currentTrackId, isPlaying, play, pause, stop, toggle, seek, getCurrentTime, getDuration }}>
       {children}
     </AudioPlayerContext.Provider>
   );

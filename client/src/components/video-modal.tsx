@@ -20,7 +20,7 @@ export function VideoModal({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
-  const { currentTrackId, isPlaying, toggle, pause, seek, getCurrentTime, getDuration } = useAudioPlayer();
+  const { currentTrackId, isPlaying, toggle, stop, seek, getCurrentTime, getDuration } = useAudioPlayer();
   const isThisTrack = currentTrackId === track.id;
   const isCurrentlyPlaying = isThisTrack && isPlaying;
   const [currentTime, setCurrentTime] = useState(0);
@@ -55,7 +55,7 @@ export function VideoModal({
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement)?.tagName;
       const isInput = tag === "INPUT" || tag === "TEXTAREA";
-      if (e.key === "Escape") { pause(); onClose(); }
+      if (e.key === "Escape") { stop(); onClose(); }
       if (isInput) return;
       if (e.key === "ArrowLeft") handleSkip(-10);
       if (e.key === "ArrowRight") handleSkip(10);
@@ -63,10 +63,10 @@ export function VideoModal({
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [onClose, pause]);
+  }, [onClose, stop]);
 
   function handleClose() {
-    pause();
+    stop();
     onClose();
   }
 
