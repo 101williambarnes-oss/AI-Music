@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
@@ -8,9 +9,21 @@ function formatPlays(plays: number) {
   return plays.toString();
 }
 
+type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
+
 export default function CreatorProfile() {
   const [, params] = useRoute("/creator/:id");
   const creatorId = params?.id;
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user) setUser(data.user);
+      })
+      .catch(() => {});
+  }, []);
 
   const { data, isLoading, error } = useQuery<{ creator: Creator; tracks: Track[] }>({
     queryKey: ["/api/creators", creatorId],
@@ -19,6 +32,7 @@ export default function CreatorProfile() {
 
   const creator = data?.creator;
   const tracks = data?.tracks || [];
+  const isOwnProfile = user?.creatorId === creator?.id;
 
   const avatarGradient =
     creator?.avatarColor === "cyan"
@@ -43,7 +57,7 @@ export default function CreatorProfile() {
         ) : (
           <>
             <section className="panel" style={{ padding: 32 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 16 }}>
                 <div
                   style={{
                     width: 80,
@@ -64,6 +78,33 @@ export default function CreatorProfile() {
                 </div>
               </div>
 
+              {isOwnProfile && (
+                <a
+                  href="/upload"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 10,
+                    width: "100%",
+                    padding: "14px 0",
+                    background: "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)",
+                    border: "none",
+                    borderRadius: 8,
+                    color: "#050615",
+                    fontSize: 16,
+                    fontWeight: 800,
+                    textDecoration: "none",
+                    letterSpacing: 0.5,
+                    marginBottom: 24,
+                  }}
+                  data-testid="button-download-music"
+                >
+                  <Download style={{ width: 20, height: 20 }} />
+                  Download Your Music Now
+                </a>
+              )}
+
               <div style={{ borderTop: "1px solid rgba(108,240,255,.1)", paddingTop: 20 }}>
                 <h3 style={{ color: "#6cf0ff", fontSize: 16, fontWeight: 700, marginBottom: 14, letterSpacing: .5 }} data-testid="text-tracks-heading">
                   Tracks by {creator.name}
@@ -71,7 +112,7 @@ export default function CreatorProfile() {
 
                 {tracks.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "30px 0", color: "rgba(170,182,232,.6)" }} data-testid="text-no-tracks">
-                    No tracks found for this creator
+                    No tracks uploaded yet
                   </div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }} data-testid="list-creator-tracks">
@@ -88,29 +129,7 @@ export default function CreatorProfile() {
                           <div className="title" data-testid={`text-track-title-${track.id}`}>{track.title}</div>
                           <div className="by" data-testid={`text-track-genre-${track.id}`}>{track.genre}</div>
                         </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                          <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
-                          <button
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                              padding: "8px 18px",
-                              background: "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)",
-                              border: "none",
-                              borderRadius: 8,
-                              color: "#050615",
-                              fontSize: 13,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              whiteSpace: "nowrap" as const,
-                            }}
-                            data-testid={`button-download-${track.id}`}
-                          >
-                            <Download style={{ width: 14, height: 14 }} />
-                            Download Music Now
-                          </button>
-                        </div>
+                        <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
                       </div>
                     ))}
                   </div>
