@@ -34,6 +34,7 @@ function getHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
   if (u) {
     headers["x-user-id"] = String(u.id);
+    headers["x-visitor-id"] = getVisitorId();
   } else {
     headers["x-visitor-id"] = getVisitorId();
   }
@@ -144,7 +145,8 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
         </span>
         <button
           className={`action-btn like-btn hover-elevate${likeData?.liked ? " liked" : ""}`}
-          onClick={() => likeMutation.mutate()}
+          onClick={() => { if (!likeMutation.isPending) likeMutation.mutate(); }}
+          disabled={likeMutation.isPending}
           title={likeData?.liked ? "Unlike" : "Like"}
           data-testid={`button-like-${track.id}`}
         >

@@ -495,6 +495,12 @@ export async function registerRoutes(
       const trackId = parseInt(req.params.id);
       if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
       if (effectiveId) {
+        if (effectiveVisitor) {
+          const existingVisitor = await storage.getVisitorLike(trackId, effectiveVisitor);
+          if (existingVisitor) {
+            await storage.removeVisitorLike(trackId, effectiveVisitor);
+          }
+        }
         const existing = await storage.getUserLike(trackId, effectiveId);
         if (existing) {
           await storage.removeLike(trackId, effectiveId);
