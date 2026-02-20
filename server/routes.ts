@@ -329,5 +329,96 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/tracks/:id/likes", async (req, res) => {
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+      const count = await storage.getLikeCount(trackId);
+      const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
+      let liked = false;
+      if (userId && !isNaN(userId)) {
+        const existing = await storage.getUserLike(trackId, userId);
+        liked = !!existing;
+      }
+      res.json({ count, liked });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get likes" });
+    }
+  });
+
+  app.post("/api/tracks/:id/likes", async (req, res) => {
+    const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
+    if (!userId || isNaN(userId)) {
+      return res.status(401).json({ message: "You must be signed in to like tracks" });
+    }
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+      const existing = await storage.getUserLike(trackId, userId);
+      if (existing) {
+        await storage.removeLike(trackId, userId);
+      } else {
+        await storage.addLike({ trackId, userId });
+      }
+      const count = await storage.getLikeCount(trackId);
+      const liked = !existing;
+      res.json({ count, liked });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to toggle like" });
+    }
+  });
+
+  app.get("/api/tracks/:id/comments", async (req, res) => {
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+      const trackComments = await storage.getComments(trackId);
+      res.json(trackComments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get comments" });
+    }
+  });
+
+  app.post("/api/tracks/:id/comments", async (req, res) => {
+    const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
+    if (!userId || isNaN(userId)) {
+      return res.status(401).json({ message: "You must be signed in to comment" });
+    }
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+      const { text } = req.body;
+      if (!text || typeof text !== "string" || text.trim().length === 0) {
+        return res.status(400).json({ message: "Comment text is required" });
+      }
+      const user = await storage.getUserById(userId);
+      if (!user) return res.status(401).json({ message: "User not found" });
+      const comment = await storage.addComment({
+        trackId,
+        userId,
+        userName: user.name,
+        text: text.trim(),
+      });
+      res.json(comment);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to add comment" });
+    }
+  });
+
+  app.delete("/api/comments/:id", async (req, res) => {
+    const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
+    if (!userId || isNaN(userId)) {
+      return res.status(401).json({ message: "You must be signed in to delete comments" });
+    }
+    try {
+      const commentId = parseInt(req.params.id);
+      if (isNaN(commentId)) return res.status(400).json({ message: "Invalid comment ID" });
+      await storage.deleteComment(commentId);
+      res.json({ message: "Comment deleted" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
   return httpServer;
 }
