@@ -36,6 +36,48 @@ function CreatorCard({ creator }: { creator: Creator }) {
   );
 }
 
+function TrackColumn({
+  title,
+  tracks,
+  isLoading: loading,
+  showRank,
+  testId,
+}: {
+  title: string;
+  tracks: Track[];
+  isLoading?: boolean;
+  showRank?: boolean;
+  testId: string;
+}) {
+  return (
+    <section className="panel column-panel" data-testid={`section-${testId}`}>
+      <div className="section-header">
+        <h3 data-testid={`panel-header-${testId}`}>{title}</h3>
+      </div>
+      <div className="list column-list" data-testid={`list-${testId}`}>
+        {loading ? (
+          [1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="row"
+              style={{ height: 74, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
+              data-testid={`skeleton-track-${i}`}
+            />
+          ))
+        ) : tracks.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(170,182,232,.6)" }} data-testid={`empty-${testId}`}>
+            No tracks found
+          </div>
+        ) : (
+          tracks.map((track) => (
+            <TrackRow key={track.id} track={track} showRank={showRank} />
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,48 +138,6 @@ export default function Home() {
   const filteredTrending = searchFilter(trending);
   const filteredNew = searchFilter(newSongs);
   const filteredGenre = searchFilter(genreTracks);
-
-  function TrackColumn({
-    title,
-    tracks,
-    isLoading: loading,
-    showRank,
-    testId,
-  }: {
-    title: string;
-    tracks: Track[];
-    isLoading?: boolean;
-    showRank?: boolean;
-    testId: string;
-  }) {
-    return (
-      <section className="panel column-panel" data-testid={`section-${testId}`}>
-        <div className="section-header">
-          <h3 data-testid={`panel-header-${testId}`}>{title}</h3>
-        </div>
-        <div className="list column-list" data-testid={`list-${testId}`}>
-          {loading ? (
-            [1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="row"
-                style={{ height: 74, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
-                data-testid={`skeleton-track-${i}`}
-              />
-            ))
-          ) : tracks.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(170,182,232,.6)" }} data-testid={`empty-${testId}`}>
-              No tracks found
-            </div>
-          ) : (
-            tracks.map((track) => (
-              <TrackRow key={track.id} track={track} showRank={showRank} />
-            ))
-          )}
-        </div>
-      </section>
-    );
-  }
 
   return (
     <div className="hwm-app">

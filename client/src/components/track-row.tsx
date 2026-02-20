@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { type Track } from "@shared/schema";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
@@ -16,6 +16,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
   const videoRef = useRef<HTMLVideoElement>(null);
   const isVideo = !!track.fileUrl && /\.(mp4|webm|mov)$/i.test(track.fileUrl);
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const wantModalRef = useRef(false);
 
   useEffect(() => {
     if (!videoRef.current || !isVideo) return;
@@ -27,17 +28,26 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
     }
   }, [isCurrentlyPlaying, isVideo, showVideoModal]);
 
-  function handleRowClick() {
+  useEffect(() => {
+    if (wantModalRef.current && isPlaying && currentTrackId === track.id) {
+      wantModalRef.current = false;
+      setShowVideoModal(true);
+    }
+  }, [isPlaying, currentTrackId, track.id]);
+
+  const handleRowClick = useCallback(() => {
     if (!hasAudio) return;
     if (isVideo) {
+      wantModalRef.current = true;
       play(track.id, track.fileUrl!);
       setShowVideoModal(true);
     } else {
       toggle(track.id, track.fileUrl!);
     }
-  }
+  }, [hasAudio, isVideo, track.id, track.fileUrl, play, toggle]);
 
   function handleModalClose() {
+    wantModalRef.current = false;
     setShowVideoModal(false);
     if (videoRef.current) {
       videoRef.current.pause();
