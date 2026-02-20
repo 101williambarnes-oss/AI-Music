@@ -9,28 +9,6 @@ import { ALL_GENRES } from "@/lib/genres";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
-function CreatorCard({ creator }: { creator: Creator }) {
-  return (
-    <a href={`/creator/${creator.id}`} style={{ textDecoration: "none", color: "inherit" }} data-testid={`creator-card-${creator.id}`}>
-      <div className="creator" style={{ cursor: "pointer" }}>
-        <div
-          className="avatar"
-          style={creator.avatarUrl ? {
-            backgroundImage: `url(${creator.avatarUrl})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          } : undefined}
-        />
-        <div>
-          <div className="cname" data-testid={`text-creator-name-${creator.id}`}>{creator.name}</div>
-          <div className="ctext" data-testid={`text-creator-tracks-${creator.id}`}>
-            {creator.trackCount} New Track{creator.trackCount !== 1 ? "s" : ""}
-          </div>
-        </div>
-      </div>
-    </a>
-  );
-}
 
 function TrackColumn({
   title,
@@ -124,19 +102,7 @@ export default function Home() {
     queryKey: ["/api/tracks", "all"],
   });
 
-  const { data: topTracks = [], isLoading: topLoading } = useQuery<Track[]>({
-    queryKey: ["/api/tracks", "top25"],
-  });
-
-  const { data: trending = [], isLoading: trendingLoading } = useQuery<Track[]>({
-    queryKey: ["/api/tracks", "trending"],
-  });
-
-  const { data: newSongs = [], isLoading: newSongsLoading } = useQuery<Track[]>({
-    queryKey: ["/api/tracks", "new"],
-  });
-
-  const { data: creators = [], isLoading: creatorsLoading } = useQuery<Creator[]>({
+  const { data: creators = [] } = useQuery<Creator[]>({
     queryKey: ["/api/creators"],
   });
 
@@ -155,14 +121,7 @@ export default function Home() {
     );
   }
 
-  const filteredTop = searchFilter(topTracks);
-  const filteredTrending = searchFilter(trending);
-  const filteredNew = searchFilter(newSongs);
   const filteredGenre = searchFilter(genreTracks);
-
-  const filteredCreators = searchQuery
-    ? creators.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : creators;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -383,7 +342,7 @@ export default function Home() {
           </div>
         </section>
 
-        {activeGenre ? (
+        {activeGenre && (
           <TrackColumn
             title={activeGenre}
             tracks={filteredGenre}
@@ -391,84 +350,7 @@ export default function Home() {
             testId="genre-results"
             onClose={() => setActiveGenre(null)}
           />
-        ) : (
-          <TrackColumn
-            title="Top 25"
-            tracks={filteredTop}
-            isLoading={topLoading}
-            showRank
-            testId="top25"
-            linkTo="/top-25"
-          />
         )}
-
-        <TrackColumn
-          title="Trending Today"
-          tracks={filteredTrending}
-          isLoading={trendingLoading}
-          testId="trending"
-          linkTo="/trending"
-        />
-
-        <div className="stacked-column" data-testid="section-right-column">
-          <section className="panel column-panel" data-testid="section-new-songs">
-            <div className="section-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-              <a href="/new-songs" style={{ textDecoration: "none", color: "inherit" }} data-testid="link-new-songs-page">
-                <h3 data-testid="panel-header-new-songs" style={{ cursor: "pointer" }}>
-                  New Songs of the Week <span style={{ fontSize: "0.7em", color: "#6cf0ff", marginLeft: 6 }}>View All &rarr;</span>
-                </h3>
-              </a>
-            </div>
-            <div className="list column-list" data-testid="list-new-songs">
-              {newSongsLoading ? (
-                [1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="row"
-                    style={{ height: 74, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
-                    data-testid={`skeleton-track-${i}`}
-                  />
-                ))
-              ) : filteredNew.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-new-songs">
-                  No tracks found
-                </div>
-              ) : (
-                filteredNew.map((track) => (
-                  <TrackRow key={track.id} track={track} hideComments showDownload />
-                ))
-              )}
-            </div>
-          </section>
-
-          <section className="panel column-panel" data-testid="section-creators">
-            <div className="section-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-              <a href="/new-creators" style={{ textDecoration: "none", color: "inherit" }} data-testid="link-new-creators-page">
-                <h3 data-testid="panel-header-creators" style={{ cursor: "pointer" }}>
-                  New Creators <span style={{ fontSize: "0.7em", color: "#6cf0ff", marginLeft: 6 }}>View All &rarr;</span>
-                </h3>
-              </a>
-            </div>
-            <div className="creators-grid column-list" data-testid="list-creators">
-              {creatorsLoading ? (
-                [1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="creator"
-                    style={{ height: 62, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
-                    data-testid={`skeleton-creator-${i}`}
-                  />
-                ))
-              ) : filteredCreators.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-creators">
-                  {searchQuery ? "No creators found" : "No creators yet"}
-                </div>
-              ) : (
-                filteredCreators.map((creator) => <CreatorCard key={creator.id} creator={creator} />)
-              )}
-            </div>
-          </section>
-        </div>
       </div>
     </div>
   );
