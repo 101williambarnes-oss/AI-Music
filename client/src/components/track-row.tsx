@@ -29,9 +29,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
   function handlePlay() {
     if (!hasAudio) return;
     if (isVideo) {
-      if (!isCurrentlyPlaying) {
-        play(track.id, track.fileUrl!);
-      }
+      play(track.id, track.fileUrl!);
       setShowVideoModal(true);
     } else {
       toggle(track.id, track.fileUrl!);
