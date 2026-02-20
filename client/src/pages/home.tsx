@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
 import { Menu, Search } from "lucide-react";
@@ -137,14 +137,23 @@ function CreatorCard({ creator }: { creator: Creator }) {
 export default function Home() {
   const [activeGenre, setActiveGenre] = useState("EDM");
   const [searchQuery, setSearchQuery] = useState("");
-  const [user, setUser] = useState<AuthUser | null>(() => {
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem("hwm_user");
-      return stored ? JSON.parse(stored) : null;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.id) {
+          setUser(parsed);
+        } else {
+          localStorage.removeItem("hwm_user");
+        }
+      }
     } catch {
-      return null;
+      localStorage.removeItem("hwm_user");
     }
-  });
+  }, []);
 
   const { data: trending = [], isLoading: trendingLoading } = useQuery<Track[]>({
     queryKey: ["/api/tracks", "trending"],
