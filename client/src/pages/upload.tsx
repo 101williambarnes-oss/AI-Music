@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { Music, Image } from "lucide-react";
+import { Upload as UploadIcon, Music, Image as ImageIcon } from "lucide-react";
+
+const AUDIO_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
+const COVER_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm", ".mov"];
+const ALL_ACCEPT = [...AUDIO_EXTS, ...COVER_EXTS].join(",");
 
 export default function Upload() {
   const [title, setTitle] = useState("");
@@ -16,7 +20,6 @@ export default function Upload() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
   const TOOLS = ["Suno", "Udio", "Stable Audio", "AIVA", "Other"];
@@ -49,51 +52,55 @@ export default function Upload() {
     );
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] || null;
-    if (file) {
-      const allowed = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
-      const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-      if (!allowed.includes(ext)) {
-        setError("Only audio files are allowed (.mp3, .wav, .ogg, .flac, .m4a, .aac)");
-        setAudioFile(null);
-        return;
-      }
-      if (file.size > 50 * 1024 * 1024) {
-        setError("File size must be under 50MB");
-        setAudioFile(null);
-        return;
-      }
-      setError("");
-      setAudioFile(file);
-    }
-  }
+  function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
 
-  function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] || null;
-    if (file) {
-      const allowed = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm", ".mov"];
+    let newAudio: File | null = null;
+    let newCover: File | null = null;
+    if (coverPreview) URL.revokeObjectURL(coverPreview);
+    setCoverPreview(null);
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
       const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-      if (!allowed.includes(ext)) {
-        setError("Only image/video files are allowed (.jpg, .png, .gif, .webp, .mp4, .webm, .mov)");
-        setCoverFile(null);
-        setCoverPreview(null);
-        return;
-      }
+
       if (file.size > 50 * 1024 * 1024) {
-        setError("Cover file must be under 50MB");
-        setCoverFile(null);
-        setCoverPreview(null);
+        setError(`File "${file.name}" is too large. Max 50MB per file.`);
         return;
       }
-      setError("");
-      setCoverFile(file);
-      const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext);
-      if (isImage) {
-        const url = URL.createObjectURL(file);
-        setCoverPreview(url);
+
+      if (AUDIO_EXTS.includes(ext)) {
+        if (newAudio) {
+          setError("Please select only one audio file.");
+          return;
+        }
+        newAudio = file;
+      } else if (COVER_EXTS.includes(ext)) {
+        if (newCover) {
+          setError("Please select only one image or video file.");
+          return;
+        }
+        newCover = file;
       } else {
-        setCoverPreview(null);
+        setError(`Unsupported file type: ${ext}`);
+        return;
+      }
+    }
+
+    if (!newAudio) {
+      setError("Please include an audio file (.mp3, .wav, .ogg, .flac, .m4a, .aac).");
+      return;
+    }
+
+    setError("");
+    setAudioFile(newAudio);
+    setCoverFile(newCover);
+
+    if (newCover) {
+      const coverExt = newCover.name.substring(newCover.name.lastIndexOf(".")).toLowerCase();
+      if ([".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(coverExt)) {
+        setCoverPreview(URL.createObjectURL(newCover));
       }
     }
   }
@@ -104,7 +111,7 @@ export default function Upload() {
 
     if (!title.trim()) return setError("Title is required.");
     if (!genre.trim()) return setError("Genre is required.");
-    if (!audioFile) return setError("Please select an audio file to upload.");
+    if (!audioFile) return setError("Please select your files to upload (audio file required).");
     if (aiTools.length === 0) return setError("Select at least one AI tool used.");
     if (!ownsRights) return setError("You must confirm you own all rights.");
     if (!agreesTerms) return setError("You must agree to the platform terms.");
@@ -211,20 +218,21 @@ export default function Upload() {
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Audio File *</label>
+              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Upload Files *</label>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".mp3,.wav,.ogg,.flac,.m4a,.aac"
-                onChange={handleFileChange}
+                accept={ALL_ACCEPT}
+                onChange={handleFilesChange}
+                multiple
                 style={{ display: "none" }}
-                data-testid="input-audio-file"
+                data-testid="input-files"
               />
               <div
                 onClick={() => fileInputRef.current?.click()}
                 style={{
                   width: "100%",
-                  padding: "20px 14px",
+                  padding: "24px 14px",
                   background: audioFile ? "rgba(108,240,255,.08)" : "rgba(255,255,255,.04)",
                   border: `2px dashed ${audioFile ? "rgba(108,240,255,.4)" : "rgba(108,240,255,.15)"}`,
                   borderRadius: 6,
@@ -235,67 +243,33 @@ export default function Upload() {
                   boxSizing: "border-box" as const,
                   transition: "border-color 0.2s, background 0.2s",
                 }}
-                data-testid="button-choose-file"
+                data-testid="button-choose-files"
               >
                 {audioFile ? (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                    <Music size={18} />
-                    <span>{audioFile.name}</span>
-                    <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(audioFile.size / (1024 * 1024)).toFixed(1)} MB)</span>
-                  </div>
-                ) : (
-                  <div>
-                    <Music size={24} style={{ marginBottom: 6, opacity: 0.5 }} />
-                    <div>Click to choose an audio file</div>
-                    <div style={{ fontSize: 12, marginTop: 4 }}>MP3, WAV, OGG, FLAC, M4A, AAC (max 50MB)</div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Cover Image or Video (optional)</label>
-              <input
-                ref={coverInputRef}
-                type="file"
-                accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov"
-                onChange={handleCoverChange}
-                style={{ display: "none" }}
-                data-testid="input-cover-file"
-              />
-              <div
-                onClick={() => coverInputRef.current?.click()}
-                style={{
-                  width: "100%",
-                  padding: "20px 14px",
-                  background: coverFile ? "rgba(160,107,255,.08)" : "rgba(255,255,255,.04)",
-                  border: `2px dashed ${coverFile ? "rgba(160,107,255,.4)" : "rgba(160,107,255,.15)"}`,
-                  borderRadius: 6,
-                  color: coverFile ? "#a06bff" : "rgba(170,182,232,.5)",
-                  fontSize: 14,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  boxSizing: "border-box" as const,
-                  transition: "border-color 0.2s, background 0.2s",
-                }}
-                data-testid="button-choose-cover"
-              >
-                {coverFile ? (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
                     {coverPreview && (
                       <img src={coverPreview} alt="Cover preview" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6 }} data-testid="img-cover-preview" />
                     )}
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <Image size={18} />
-                      <span>{coverFile.name}</span>
-                      <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(coverFile.size / (1024 * 1024)).toFixed(1)} MB)</span>
+                      <Music size={16} />
+                      <span>{audioFile.name}</span>
+                      <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(audioFile.size / (1024 * 1024)).toFixed(1)} MB)</span>
                     </div>
+                    {coverFile && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#a06bff" }}>
+                        <ImageIcon size={16} />
+                        <span>{coverFile.name}</span>
+                        <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(coverFile.size / (1024 * 1024)).toFixed(1)} MB)</span>
+                      </div>
+                    )}
+                    <div style={{ color: "rgba(170,182,232,.4)", fontSize: 12, marginTop: 2 }}>Click to change files</div>
                   </div>
                 ) : (
                   <div>
-                    <Image size={24} style={{ marginBottom: 6, opacity: 0.5 }} />
-                    <div>Click to add a cover image or video</div>
-                    <div style={{ fontSize: 12, marginTop: 4 }}>JPG, PNG, GIF, WEBP, MP4, WEBM, MOV (max 50MB)</div>
+                    <UploadIcon size={28} style={{ marginBottom: 8, opacity: 0.5 }} />
+                    <div style={{ fontSize: 15, marginBottom: 4 }}>Click to select your song + image or video</div>
+                    <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)" }}>Select an audio file and an image or video together</div>
+                    <div style={{ fontSize: 11, marginTop: 6, color: "rgba(170,182,232,.3)" }}>Audio: MP3, WAV, OGG, FLAC, M4A, AAC &bull; Visual: JPG, PNG, GIF, WEBP, MP4, WEBM, MOV (max 50MB each)</div>
                   </div>
                 )}
               </div>
