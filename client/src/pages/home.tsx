@@ -193,6 +193,7 @@ export default function Home() {
           </div>
         </div>
         <div className="topbar-actions">
+          <a href="/downloads" className="topbar-login" data-testid="link-downloads">Downloads</a>
           <a href="/sign-in" className="topbar-login" data-testid="link-creators-login">Creators Login</a>
           <a href="/sign-up" className="topbar-signup" data-testid="button-sign-up">Sign Up</a>
         </div>

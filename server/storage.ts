@@ -5,6 +5,7 @@ import { eq, desc, asc } from "drizzle-orm";
 
 export interface IStorage {
   getTracks(category: string): Promise<Track[]>;
+  getAllTracks(): Promise<Track[]>;
   getCreators(): Promise<Creator[]>;
   getCreatorById(id: number): Promise<Creator | undefined>;
   getTracksByArtist(artistName: string): Promise<Track[]>;
@@ -20,6 +21,10 @@ export class DatabaseStorage implements IStorage {
       return db.select().from(tracks).where(eq(tracks.category, "top25")).orderBy(asc(tracks.rank));
     }
     return db.select().from(tracks).where(eq(tracks.category, category)).orderBy(desc(tracks.plays));
+  }
+
+  async getAllTracks(): Promise<Track[]> {
+    return db.select().from(tracks).orderBy(desc(tracks.plays));
   }
 
   async getCreators(): Promise<Creator[]> {

@@ -12,6 +12,7 @@ import SignIn from "@/pages/sign-in";
 import SignUp from "@/pages/sign-up";
 import Upload from "@/pages/upload";
 import CreatorProfile from "@/pages/creator-profile";
+import Downloads from "@/pages/downloads";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/sign-up" component={SignUp} />
       <Route path="/upload" component={Upload} />
       <Route path="/creator/:id" component={CreatorProfile} />
+      <Route path="/downloads" component={Downloads} />
       <Route component={NotFound} />
     </Switch>
   );

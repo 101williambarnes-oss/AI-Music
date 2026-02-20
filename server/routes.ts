@@ -6,6 +6,15 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  app.get("/api/tracks", async (_req, res) => {
+    try {
+      const allTracks = await storage.getAllTracks();
+      res.json(allTracks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch tracks" });
+    }
+  });
+
   app.get("/api/tracks/:category", async (req, res) => {
     try {
       const { category } = req.params;
