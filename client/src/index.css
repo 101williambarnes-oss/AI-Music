@@ -1360,7 +1360,13 @@
     display: none;
   }
   .topbar-actions {
-    display: none;
+    flex-shrink: 0;
+    gap: 6px;
+  }
+  .topbar-login, .topbar-signup {
+    padding: 6px 10px;
+    font-size: 11px;
+    border-radius: 16px;
   }
 
   .hero {
