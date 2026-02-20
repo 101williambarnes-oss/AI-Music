@@ -42,19 +42,16 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       audio.src = fileUrl;
       audio.load();
     }
-    audio.play().then(() => {
-      setCurrentTrackId(trackId);
-      setIsPlaying(true);
-      if (currentTrackId !== trackId) {
-        fetch(`/api/tracks/${trackId}/play`, { method: "POST" }).then(() => {
-          queryClient.invalidateQueries({
-            predicate: (query) => {
-              const key = query.queryKey as string[];
-              return key[0] === "/api/tracks" && (key[1] === "trending" || key[1] === "new" || key[1] === "top25" || key.length === 1);
-            },
-          });
-        }).catch(() => {});
-      }
+    setCurrentTrackId(trackId);
+    setIsPlaying(true);
+    audio.play().catch(() => {});
+    fetch(`/api/tracks/${trackId}/play`, { method: "POST" }).then(() => {
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey as string[];
+          return key[0] === "/api/tracks" && (key[1] === "trending" || key[1] === "new" || key[1] === "top25" || key.length === 1);
+        },
+      });
     }).catch(() => {});
   }, [currentTrackId]);
 
