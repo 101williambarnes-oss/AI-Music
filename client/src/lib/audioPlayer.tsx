@@ -7,6 +7,9 @@ type AudioPlayerState = {
   play: (trackId: number, fileUrl: string) => void;
   pause: () => void;
   toggle: (trackId: number, fileUrl: string) => void;
+  seek: (time: number) => void;
+  getCurrentTime: () => number;
+  getDuration: () => number;
 };
 
 const AudioPlayerContext = createContext<AudioPlayerState>({
@@ -15,6 +18,9 @@ const AudioPlayerContext = createContext<AudioPlayerState>({
   play: () => {},
   pause: () => {},
   toggle: () => {},
+  seek: () => {},
+  getCurrentTime: () => 0,
+  getDuration: () => 0,
 });
 
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
@@ -73,8 +79,22 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }, [currentTrackId, isPlaying, play, pause]);
 
+  const seek = useCallback((time: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = time;
+  }, []);
+
+  const getCurrentTime = useCallback(() => {
+    return audioRef.current?.currentTime ?? 0;
+  }, []);
+
+  const getDuration = useCallback(() => {
+    return audioRef.current?.duration ?? 0;
+  }, []);
+
   return (
-    <AudioPlayerContext.Provider value={{ currentTrackId, isPlaying, play, pause, toggle }}>
+    <AudioPlayerContext.Provider value={{ currentTrackId, isPlaying, play, pause, toggle, seek, getCurrentTime, getDuration }}>
       {children}
     </AudioPlayerContext.Provider>
   );

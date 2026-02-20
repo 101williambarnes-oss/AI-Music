@@ -976,6 +976,107 @@
   background: rgba(0,0,0,.15);
 }
 
+.video-controls {
+  padding: 8px 16px 4px;
+}
+.video-progress-bar {
+  position: relative;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.video-progress-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: rgba(234,240,255,.12);
+  border-radius: 2px;
+}
+.video-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6cf0ff, #a06bff);
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+.video-progress-handle {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #6cf0ff;
+  border: 2px solid rgba(7,10,20,.8);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px rgba(108,240,255,.4);
+  transition: left 0.1s linear;
+}
+.video-progress-bar:hover .video-progress-track {
+  height: 6px;
+}
+.video-progress-bar:hover .video-progress-handle {
+  width: 16px;
+  height: 16px;
+}
+.video-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0 2px;
+}
+.video-controls-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.video-ctrl-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(234,240,255,.08);
+  color: rgba(234,240,255,.85);
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.video-ctrl-btn:hover {
+  background: rgba(234,240,255,.15);
+  color: #6cf0ff;
+}
+.video-ctrl-play {
+  width: 44px;
+  height: 44px;
+  background: rgba(108,240,255,.15);
+  border: 1px solid rgba(108,240,255,.25);
+}
+.video-ctrl-play:hover {
+  background: rgba(108,240,255,.25);
+  color: #6cf0ff;
+}
+.video-ctrl-label {
+  position: absolute;
+  font-size: 8px;
+  font-weight: 700;
+  color: inherit;
+  bottom: 4px;
+  right: 4px;
+  line-height: 1;
+}
+.video-time {
+  font-size: 12px;
+  color: rgba(170,182,232,.7);
+  min-width: 40px;
+  font-variant-numeric: tabular-nums;
+}
+.video-time:last-child {
+  text-align: right;
+}
+
 .video-modal-info {
   padding: 14px 16px 8px;
 }
