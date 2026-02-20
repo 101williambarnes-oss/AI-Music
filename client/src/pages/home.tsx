@@ -205,8 +205,7 @@ export default function Home() {
         <div className="topbar-actions">
           {user ? (
             <>
-              <a href="/upload" className="topbar-login" data-testid="link-upload">Upload</a>
-              <a href={user.creatorId ? `/creator/${user.creatorId}` : "/"} className="topbar-login" data-testid="link-my-profile">{user.name}</a>
+              <a href={user.creatorId ? `/creator/${user.creatorId}` : "/"} className="topbar-login" data-testid="link-creators-login">Creators Login</a>
               <button
                 className="topbar-login"
                 style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", font: "inherit", padding: 0 }}
