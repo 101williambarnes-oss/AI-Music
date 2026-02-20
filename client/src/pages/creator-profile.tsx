@@ -17,12 +17,17 @@ export default function CreatorProfile() {
   const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.user) setUser(data.user);
-      })
-      .catch(() => {});
+    function checkAuth() {
+      fetch("/api/auth/me")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.user) setUser(data.user);
+        })
+        .catch(() => {});
+    }
+    checkAuth();
+    const timer = setTimeout(checkAuth, 500);
+    return () => clearTimeout(timer);
   }, []);
 
   const { data, isLoading, error } = useQuery<{ creator: Creator; tracks: Track[] }>({

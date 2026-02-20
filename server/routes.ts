@@ -37,7 +37,13 @@ export async function registerRoutes(
       await storage.updateUserCreatorId(user.id, creator.id);
 
       req.session.userId = user.id;
-      res.json({ user: { id: user.id, name: user.name, email: user.email, creatorId: creator.id } });
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+        res.json({ user: { id: user.id, name: user.name, email: user.email, creatorId: creator.id } });
+      });
     } catch (error) {
       console.error("Signup error:", error);
       res.status(500).json({ message: "Failed to create account" });
@@ -65,7 +71,13 @@ export async function registerRoutes(
       const creator = await storage.getCreatorByUserId(user.id);
 
       req.session.userId = user.id;
-      res.json({ user: { id: user.id, name: user.name, email: user.email, creatorId: creator?.id || null } });
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+        res.json({ user: { id: user.id, name: user.name, email: user.email, creatorId: creator?.id || null } });
+      });
     } catch (error) {
       console.error("Signin error:", error);
       res.status(500).json({ message: "Failed to sign in" });
