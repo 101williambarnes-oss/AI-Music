@@ -1335,6 +1335,9 @@
     font-size: 13px;
     min-height: 40px;
   }
+  .quick-nav-desktop-only {
+    display: none;
+  }
   .site-topbar {
     flex-wrap: wrap;
     padding: 10px 14px;

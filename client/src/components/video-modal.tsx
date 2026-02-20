@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Play, Pause, RotateCcw, RotateCw } from "lucide-react";
 import { type Track } from "@shared/schema";
 import { useAudioPlayer } from "@/lib/audioPlayer";
@@ -132,7 +133,7 @@ export function VideoModal({
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  return (
+  return createPortal(
     <div className="video-modal-overlay" onClick={handleClose} data-testid="video-modal-overlay">
       <div className="video-modal" onClick={(e) => e.stopPropagation()} data-testid="video-modal">
         <button className="video-modal-close" onClick={handleClose} data-testid="button-close-video">
@@ -215,6 +216,7 @@ export function VideoModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
