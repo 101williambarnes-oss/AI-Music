@@ -171,7 +171,7 @@ function CreatorCard({ creator }: { creator: Creator }) {
 }
 
 export default function Home() {
-  const [activeGenre, setActiveGenre] = useState("EDM");
+  const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [user, setUser] = useState<AuthUser | null>(null);
 
@@ -207,21 +207,27 @@ export default function Home() {
     queryKey: ["/api/creators"],
   });
 
-  const filteredTrending = searchQuery
-    ? trending.filter(
+  function filterTracks(tracks: Track[]) {
+    let result = tracks;
+    if (activeGenre) {
+      result = result.filter(
+        (t) => t.genre.toLowerCase() === activeGenre.toLowerCase()
+      );
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
         (t) =>
-          t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          t.artist.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : trending;
+          t.title.toLowerCase().includes(q) ||
+          t.artist.toLowerCase().includes(q) ||
+          t.genre.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }
 
-  const filteredNew = searchQuery
-    ? newSongs.filter(
-        (t) =>
-          t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          t.artist.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : newSongs;
+  const filteredTrending = filterTracks(trending);
+  const filteredNew = filterTracks(newSongs);
 
   return (
     <div className="hwm-app">
@@ -292,6 +298,21 @@ export default function Home() {
           <aside className="explore-sounds" data-testid="sidebar-genres">
             <h3 className="explore-title" data-testid="panel-header-genres">Explore Sounds</h3>
             <nav aria-label="Genre navigation" data-testid="nav-genres">
+              <div className="genre-group">
+                <ul>
+                  <li
+                    className={activeGenre === null ? "active" : ""}
+                    onClick={() => setActiveGenre(null)}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={activeGenre === null}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setActiveGenre(null); }}
+                    data-testid="button-genre-all"
+                  >
+                    All Genres
+                  </li>
+                </ul>
+              </div>
               {GENRE_GROUPS.map((group) => (
                 <div
                   key={group.name}
@@ -304,11 +325,11 @@ export default function Home() {
                       <li
                         key={genre}
                         className={activeGenre === genre ? "active" : ""}
-                        onClick={() => setActiveGenre(genre)}
+                        onClick={() => setActiveGenre(activeGenre === genre ? null : genre)}
                         role="button"
                         tabIndex={0}
                         aria-pressed={activeGenre === genre}
-                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setActiveGenre(genre); }}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setActiveGenre(activeGenre === genre ? null : genre); }}
                         data-testid={`button-genre-${genre.toLowerCase().replace(/[^a-z]/g, "-")}`}
                       >
                         {genre}
