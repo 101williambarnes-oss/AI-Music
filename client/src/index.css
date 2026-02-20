@@ -1340,7 +1340,7 @@
   }
   .site-topbar {
     flex-wrap: nowrap;
-    padding: 10px 14px;
+    padding: 14px 14px 16px;
     gap: 10px;
   }
   .topbar-left {
