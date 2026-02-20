@@ -248,9 +248,6 @@ export default function Home() {
         <a href="/new-creators" className="quick-nav-tab" data-testid="link-quick-new-creators">
           New Creators
         </a>
-        <a href="/downloads" className="quick-nav-tab quick-nav-desktop-only" data-testid="link-quick-downloads">
-          Downloads
-        </a>
       </nav>
 
       <div className="five-columns" data-testid="section-content">
