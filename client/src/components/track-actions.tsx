@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Track, type Comment } from "@shared/schema";
-import { Heart, MessageCircle, Send } from "lucide-react";
+import { Heart, MessageCircle, Send, Play } from "lucide-react";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -38,6 +38,11 @@ function getHeaders(): Record<string, string> {
     headers["x-visitor-id"] = getVisitorId();
   }
   return headers;
+}
+
+function formatPlays(plays: number) {
+  if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
+  return plays.toString();
 }
 
 export function TrackActions({ track }: { track: Track }) {
@@ -130,6 +135,10 @@ export function TrackActions({ track }: { track: Track }) {
   return (
     <div className="track-actions-wrap">
       <div className="track-actions" data-testid={`track-actions-${track.id}`}>
+        <span className="action-stat" title="Plays" data-testid={`text-track-plays-${track.id}`}>
+          <Play style={{ width: 13, height: 13, fill: "currentColor" }} />
+          {formatPlays(track.plays)}
+        </span>
         <button
           className={`action-btn like-btn hover-elevate${likeData?.liked ? " liked" : ""}`}
           onClick={() => likeMutation.mutate()}

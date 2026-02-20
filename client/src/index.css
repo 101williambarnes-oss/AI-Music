@@ -697,7 +697,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 54px 1fr auto;
+  grid-template-columns: 54px 1fr;
   gap: 12px;
   align-items: center;
   padding: 10px;
@@ -872,6 +872,15 @@
   display: flex;
   gap: 12px;
   align-items: center;
+}
+.action-stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: rgba(170,182,232,.7);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
 }
 .action-btn {
   display: flex;
