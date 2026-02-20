@@ -1,10 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Track } from "@shared/schema";
-
-function formatPlays(plays: number) {
-  if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
-  return plays.toString();
-}
+import { TrackRow } from "@/components/track-row";
 
 export default function NewSongs() {
   const { data: tracks = [], isLoading } = useQuery<Track[]>({
@@ -35,16 +31,7 @@ export default function NewSongs() {
               </div>
             ) : (
               tracks.map((track) => (
-                <div className="row" key={track.id} data-testid={`track-row-${track.id}`}>
-                  <div className="thumb">
-                    <div className="play-btn">&#9654;</div>
-                  </div>
-                  <div className="meta">
-                    <div className="title" data-testid={`text-track-title-${track.id}`}>{track.title}</div>
-                    <div className="by" data-testid={`text-track-artist-${track.id}`}>{track.artist}</div>
-                  </div>
-                  <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
-                </div>
+                <TrackRow key={track.id} track={track} />
               ))
             )}
           </div>
