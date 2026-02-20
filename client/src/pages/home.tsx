@@ -44,6 +44,7 @@ function TrackColumn({
   showRank,
   testId,
   onClose,
+  linkTo,
 }: {
   title: string;
   tracks: Track[];
@@ -51,11 +52,20 @@ function TrackColumn({
   showRank?: boolean;
   testId: string;
   onClose?: () => void;
+  linkTo?: string;
 }) {
   return (
     <section className="panel column-panel" data-testid={`section-${testId}`}>
       <div className="section-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-        <h3 data-testid={`panel-header-${testId}`}>{title}</h3>
+        {linkTo ? (
+          <a href={linkTo} style={{ textDecoration: "none", color: "inherit" }} data-testid={`link-${testId}-page`}>
+            <h3 data-testid={`panel-header-${testId}`} style={{ cursor: "pointer" }}>
+              {title} <span style={{ fontSize: "0.7em", color: "#6cf0ff", marginLeft: 6 }}>View All &rarr;</span>
+            </h3>
+          </a>
+        ) : (
+          <h3 data-testid={`panel-header-${testId}`}>{title}</h3>
+        )}
         {onClose && (
           <button
             onClick={onClose}
@@ -375,6 +385,7 @@ export default function Home() {
             isLoading={topLoading}
             showRank
             testId="top25"
+            linkTo="/top-25"
           />
         )}
 
@@ -383,6 +394,7 @@ export default function Home() {
           tracks={filteredTrending}
           isLoading={trendingLoading}
           testId="trending"
+          linkTo="/trending"
         />
 
         <div className="stacked-column" data-testid="section-right-column">
