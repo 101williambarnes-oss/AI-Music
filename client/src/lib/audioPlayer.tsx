@@ -27,6 +27,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [currentTrackId, setCurrentTrackId] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentTrackIdRef = useRef<number | null>(null);
+  const countedPlaysRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     const audio = new Audio();
@@ -44,25 +46,27 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     const audio = audioRef.current;
     if (!audio) return;
 
-    const isNewTrack = currentTrackId !== trackId;
+    const isNewTrack = currentTrackIdRef.current !== trackId;
     if (isNewTrack) {
       audio.src = fileUrl;
       audio.load();
     }
+    currentTrackIdRef.current = trackId;
     setCurrentTrackId(trackId);
     setIsPlaying(true);
     audio.play().catch(() => {});
-    if (isNewTrack) {
+    if (isNewTrack && !countedPlaysRef.current.has(trackId)) {
+      countedPlaysRef.current.add(trackId);
       fetch(`/api/tracks/${trackId}/play`, { method: "POST" }).then(() => {
         queryClient.invalidateQueries({
           predicate: (query) => {
             const key = query.queryKey as string[];
-            return key[0] === "/api/tracks" && (key[1] === "trending" || key[1] === "new" || key[1] === "top25" || key.length === 1);
+            return key[0] === "/api/tracks" && (key[1] === "trending" || key[1] === "new" || key[1] === "top25" || key[1] === "all");
           },
         });
       }).catch(() => {});
     }
-  }, [currentTrackId]);
+  }, []);
 
   const pause = useCallback(() => {
     const audio = audioRef.current;
@@ -71,13 +75,16 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setIsPlaying(false);
   }, []);
 
+  const isPlayingRef = useRef(false);
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
   const toggle = useCallback((trackId: number, fileUrl: string) => {
-    if (currentTrackId === trackId && isPlaying) {
+    if (currentTrackIdRef.current === trackId && isPlayingRef.current) {
       pause();
     } else {
       play(trackId, fileUrl);
     }
-  }, [currentTrackId, isPlaying, play, pause]);
+  }, [play, pause]);
 
   const seek = useCallback((time: number) => {
     const audio = audioRef.current;

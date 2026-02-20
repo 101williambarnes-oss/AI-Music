@@ -104,9 +104,12 @@ export function TrackActions({ track }: { track: Track }) {
           className={`action-btn like-btn hover-elevate${likeData?.liked ? " liked" : ""}`}
           onClick={() => {
             const freshUser = getUser();
-            if (freshUser) likeMutation.mutate();
+            if (!freshUser) {
+              window.location.href = "/sign-in";
+              return;
+            }
+            likeMutation.mutate();
           }}
-          disabled={!user}
           title={user ? (likeData?.liked ? "Unlike" : "Like") : "Sign in to like"}
           data-testid={`button-like-${track.id}`}
         >
