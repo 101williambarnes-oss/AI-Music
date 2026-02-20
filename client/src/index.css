@@ -1339,18 +1339,16 @@
     display: none;
   }
   .site-topbar {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     padding: 10px 14px;
     gap: 10px;
   }
-  .logo {
-    font-size: 16px;
-    letter-spacing: 1.5px;
+  .topbar-left {
+    display: none;
   }
   .topbar-center {
-    order: 3;
-    flex-basis: 100%;
-    min-width: 100%;
+    flex: 1;
+    min-width: 0;
   }
   .search-wrap {
     width: 100%;
@@ -1362,11 +1360,7 @@
     display: none;
   }
   .topbar-actions {
-    gap: 8px;
-  }
-  .topbar-login, .topbar-signup {
-    padding: 6px 12px;
-    font-size: 12px;
+    display: none;
   }
 
   .hero {
@@ -1542,14 +1536,6 @@
 @media (max-width: 480px) {
   .site-topbar {
     padding: 8px 10px;
-  }
-  .logo {
-    font-size: 14px;
-    letter-spacing: 1px;
-  }
-  .topbar-login, .topbar-signup {
-    padding: 5px 10px;
-    font-size: 11px;
   }
 
   .hero {
