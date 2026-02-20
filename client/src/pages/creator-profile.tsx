@@ -187,8 +187,7 @@ export default function CreatorProfile() {
                         <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
                         {track.fileUrl && (
                           <a
-                            href={track.fileUrl}
-                            download
+                            href={`/api/tracks/${track.id}/download`}
                             style={{
                               display: "flex",
                               alignItems: "center",

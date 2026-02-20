@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import archiver from "archiver";
 
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
@@ -146,6 +147,50 @@ export async function registerRoutes(
   });
 
   app.use("/uploads", express.static(uploadsDir));
+
+  app.get("/api/tracks/:id/download", async (req, res) => {
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+
+      const track = await storage.getTrack(trackId);
+      if (!track || !track.fileUrl) {
+        return res.status(404).json({ message: "Track not found or has no file" });
+      }
+
+      const audioPath = path.join(process.cwd(), track.fileUrl.replace(/^\//, ""));
+      if (!fs.existsSync(audioPath)) {
+        return res.status(404).json({ message: "Audio file not found" });
+      }
+
+      const hasCover = track.coverUrl != null;
+      const coverPath = hasCover ? path.join(process.cwd(), track.coverUrl!.replace(/^\//, "")) : null;
+      const coverExists = coverPath ? fs.existsSync(coverPath) : false;
+
+      if (!coverExists) {
+        res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(track.title)}${path.extname(audioPath)}"`);
+        res.setHeader("Content-Type", "application/octet-stream");
+        return fs.createReadStream(audioPath).pipe(res);
+      }
+
+      const safeName = track.title.replace(/[^a-zA-Z0-9_\- ]/g, "").trim() || "track";
+      res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(safeName)}.zip"`);
+      res.setHeader("Content-Type", "application/zip");
+
+      const archive = archiver("zip", { zlib: { level: 5 } });
+      archive.on("error", (err) => {
+        console.error("Archive error:", err);
+        if (!res.headersSent) res.status(500).json({ message: "Download failed" });
+      });
+      archive.pipe(res);
+      archive.file(audioPath, { name: `${safeName}${path.extname(audioPath)}` });
+      archive.file(coverPath!, { name: `${safeName}_cover${path.extname(coverPath!)}` });
+      await archive.finalize();
+    } catch (err) {
+      console.error("Download error:", err);
+      if (!res.headersSent) res.status(500).json({ message: "Download failed" });
+    }
+  });
 
   app.post("/api/tracks/upload", (req, res, next) => {
     upload.fields([

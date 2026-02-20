@@ -4,6 +4,7 @@ import { db } from "./db";
 import { eq, desc, asc, sql } from "drizzle-orm";
 
 export interface IStorage {
+  getTrack(id: number): Promise<Track | undefined>;
   getTracks(category: string): Promise<Track[]>;
   getAllTracks(): Promise<Track[]>;
   getCreators(): Promise<Creator[]>;
@@ -25,6 +26,11 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  async getTrack(id: number): Promise<Track | undefined> {
+    const [track] = await db.select().from(tracks).where(eq(tracks.id, id));
+    return track;
+  }
+
   async getTracks(category: string): Promise<Track[]> {
     if (category === "top25") {
       return db.select().from(tracks).where(eq(tracks.category, "top25")).orderBy(asc(tracks.rank));
