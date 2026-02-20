@@ -16,14 +16,13 @@ export default function Upload() {
   const TOOLS = ["Suno", "Udio", "Stable Audio", "AIVA", "Other"];
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((res) => {
-        if (res.ok) {
-          setIsLoggedIn(true);
-        }
-        setAuthChecking(false);
-      })
-      .catch(() => setAuthChecking(false));
+    try {
+      const stored = localStorage.getItem("hwm_user");
+      if (stored) {
+        setIsLoggedIn(true);
+      }
+    } catch {}
+    setAuthChecking(false);
   }, []);
 
   function toggleTool(tool: string) {

@@ -25,6 +25,7 @@ export default function SignIn() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Sign in failed");
+      localStorage.setItem("hwm_user", JSON.stringify(data.user));
       if (data.user.creatorId) {
         setLocation(`/creator/${data.user.creatorId}`);
       } else {

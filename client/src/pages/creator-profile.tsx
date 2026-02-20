@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
@@ -14,21 +14,14 @@ type AuthUser = { id: number; name: string; email: string; creatorId: number | n
 export default function CreatorProfile() {
   const [, params] = useRoute("/creator/:id");
   const creatorId = params?.id;
-  const [user, setUser] = useState<AuthUser | null>(null);
-
-  useEffect(() => {
-    function checkAuth() {
-      fetch("/api/auth/me")
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data?.user) setUser(data.user);
-        })
-        .catch(() => {});
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    try {
+      const stored = localStorage.getItem("hwm_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
     }
-    checkAuth();
-    const timer = setTimeout(checkAuth, 500);
-    return () => clearTimeout(timer);
-  }, []);
+  });
 
   const { data, isLoading, error } = useQuery<{ creator: Creator; tracks: Track[] }>({
     queryKey: ["/api/creators", creatorId],

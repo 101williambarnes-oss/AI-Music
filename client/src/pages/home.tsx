@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
 import { Menu, Search } from "lucide-react";
@@ -137,16 +137,14 @@ function CreatorCard({ creator }: { creator: Creator }) {
 export default function Home() {
   const [activeGenre, setActiveGenre] = useState("EDM");
   const [searchQuery, setSearchQuery] = useState("");
-  const [user, setUser] = useState<AuthUser | null>(null);
-
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.user) setUser(data.user);
-      })
-      .catch(() => {});
-  }, []);
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    try {
+      const stored = localStorage.getItem("hwm_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const { data: trending = [], isLoading: trendingLoading } = useQuery<Track[]>({
     queryKey: ["/api/tracks", "trending"],
@@ -214,6 +212,7 @@ export default function Home() {
                 style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", font: "inherit", padding: 0 }}
                 onClick={async () => {
                   await fetch("/api/auth/signout", { method: "POST" });
+                  localStorage.removeItem("hwm_user");
                   setUser(null);
                 }}
                 data-testid="button-signout"

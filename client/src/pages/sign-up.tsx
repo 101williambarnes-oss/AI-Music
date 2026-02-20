@@ -32,6 +32,7 @@ export default function SignUp() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Sign up failed");
+      localStorage.setItem("hwm_user", JSON.stringify(data.user));
       setLocation(`/creator/${data.user.creatorId}`);
     } catch (err: any) {
       setError(err.message);
