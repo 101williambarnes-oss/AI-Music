@@ -26,6 +26,7 @@ export const tracks = pgTable("tracks", {
   rank: integer("rank"),
   category: text("category").notNull().default("trending"),
   creatorId: integer("creator_id"),
+  fileUrl: text("file_url"),
 });
 
 export const creators = pgTable("creators", {
