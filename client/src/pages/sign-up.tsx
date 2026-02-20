@@ -77,7 +77,7 @@ export default function SignUp() {
       <div className="bg-lines" />
       <div className="wrap" style={{ paddingTop: 30, maxWidth: 420, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <a href="/" style={{ color: "#6cf0ff", textDecoration: "none", fontSize: 14, fontWeight: 600 }} data-testid="link-top-back-home">&larr; Back to Home</a>
+          <span></span>
           <a href="/sign-in" style={{ color: "#a06bff", textDecoration: "none", fontSize: 14, fontWeight: 600 }} data-testid="link-top-signin">Already a creator? Sign In &rarr;</a>
         </div>
         <section className="panel" style={{ padding: 32 }}>
@@ -177,9 +177,6 @@ export default function SignUp() {
             Already have an account? <a href="/sign-in" style={{ color: "#6cf0ff", textDecoration: "none" }} data-testid="link-signin">Sign In</a>
           </p>
         </section>
-        <div style={{ paddingTop: 20, textAlign: "center" }}>
-          <a href="/" style={{ color: "#6cf0ff", textDecoration: "none" }} data-testid="link-back-home">&#8592; Back to Home</a>
-        </div>
       </div>
 
       {showTerms && (

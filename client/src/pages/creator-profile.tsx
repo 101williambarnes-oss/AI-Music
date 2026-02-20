@@ -193,28 +193,6 @@ export default function CreatorProfile() {
                     <div style={{ color: "#ff4fd8", fontSize: 12, marginTop: 4 }}>Failed to upload photo. Try again.</div>
                   )}
                 </div>
-                <a
-                  href="/"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "8px 16px",
-                    borderRadius: 8,
-                    border: "1px solid rgba(108,240,255,.25)",
-                    background: "rgba(108,240,255,.08)",
-                    color: "#6cf0ff",
-                    textDecoration: "none",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                    transition: "background .2s, border-color .2s",
-                  }}
-                  data-testid="link-back-home"
-                >
-                  &#8592; Home
-                </a>
               </div>
 
               {isOwnProfile && (

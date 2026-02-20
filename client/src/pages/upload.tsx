@@ -155,9 +155,6 @@ export default function Upload() {
               <a href="/sign-up" style={{ padding: "10px 24px", border: "1px solid rgba(108,240,255,.3)", borderRadius: 6, color: "#6cf0ff", fontWeight: 700, fontSize: 15, textDecoration: "none" }} data-testid="link-signup">Sign Up</a>
             </div>
           </section>
-          <div style={{ paddingTop: 20, textAlign: "center" }}>
-            <a href="/" style={{ color: "#6cf0ff", textDecoration: "none" }} data-testid="link-back-home">&#8592; Back to Home</a>
-          </div>
         </div>
       </div>
     );
@@ -291,9 +288,6 @@ export default function Upload() {
             </button>
           </form>
         </section>
-        <div style={{ paddingTop: 20, textAlign: "center" }}>
-          <a href="/" style={{ color: "#6cf0ff", textDecoration: "none" }} data-testid="link-back-home">&#8592; Back to Home</a>
-        </div>
       </div>
     </div>
   );

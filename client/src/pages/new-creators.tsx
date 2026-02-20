@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Creator } from "@shared/schema";
-import { Search, X, ArrowLeft } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 export default function NewCreators() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,23 +18,6 @@ export default function NewCreators() {
     <div className="hwm-app">
       <div className="bg-lines" />
       <div className="wrap" style={{ paddingTop: 32, maxWidth: 900, margin: "0 auto" }}>
-        <a
-          href="/"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            color: "#6cf0ff",
-            textDecoration: "none",
-            marginBottom: 16,
-            fontSize: "0.9rem",
-          }}
-          data-testid="link-back-home"
-        >
-          <ArrowLeft size={16} />
-          Back to Home
-        </a>
-
         <section className="panel" style={{ padding: "20px 24px" }}>
           <div className="section-header" style={{ marginBottom: 16 }}>
             <h3 data-testid="panel-header-new-creators" style={{ fontSize: "1.3rem" }}>

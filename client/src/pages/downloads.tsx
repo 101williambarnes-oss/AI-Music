@@ -172,9 +172,6 @@ export default function Downloads() {
           ))
         )}
 
-        <div style={{ paddingTop: 20, paddingBottom: 40, textAlign: "center" }}>
-          <a href="/" style={{ color: "#6cf0ff", textDecoration: "none" }} data-testid="link-back-home">&#8592; Back to Home</a>
-        </div>
       </div>
     </div>
   );
