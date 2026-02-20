@@ -1,3 +1,4 @@
+import { useRef, useEffect } from "react";
 import { type Track } from "@shared/schema";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
@@ -11,14 +12,26 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
   const { currentTrackId, isPlaying, toggle } = useAudioPlayer();
   const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
   const hasAudio = !!track.fileUrl;
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const isVideo = !!track.fileUrl && /\.(mp4|webm|mov)$/i.test(track.fileUrl);
+
+  useEffect(() => {
+    if (!videoRef.current || !isVideo) return;
+    if (isCurrentlyPlaying) {
+      videoRef.current.play().catch(() => {});
+    } else if (currentTrackId === track.id && !isPlaying) {
+      videoRef.current.pause();
+    }
+  }, [currentTrackId, isPlaying, track.id, isVideo, isCurrentlyPlaying]);
 
   return (
     <div data-testid={`track-row-${track.id}`}>
       <div className="row">
         <div className="thumb" style={{ position: "relative", overflow: "hidden" }}>
-          {track.fileUrl && !showRank && track.fileUrl.match(/\.(mp4|webm|mov)$/i) ? (
+          {isVideo && !showRank ? (
             <video
-              src={track.fileUrl}
+              ref={videoRef}
+              src={track.fileUrl!}
               style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
               muted
               loop
@@ -26,7 +39,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
               playsInline
               data-testid={`video-thumb-${track.id}`}
             />
-          ) : track.fileUrl && !showRank && track.fileUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+          ) : track.fileUrl && !showRank && /\.(jpg|jpeg|png|gif|webp)$/i.test(track.fileUrl) ? (
             <img
               src={track.fileUrl}
               alt={track.title}

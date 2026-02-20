@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Track, type Comment } from "@shared/schema";
 import { Heart, MessageCircle, Send } from "lucide-react";
@@ -10,6 +10,12 @@ function getUser(): AuthUser | null {
     const stored = localStorage.getItem("hwm_user");
     return stored ? JSON.parse(stored) as AuthUser : null;
   } catch { return null; }
+}
+
+function getUserHeaders(): Record<string, string> {
+  const u = getUser();
+  if (u) return { "x-user-id": String(u.id) };
+  return {};
 }
 
 export function TrackActions({ track }: { track: Track }) {
@@ -29,11 +35,9 @@ export function TrackActions({ track }: { track: Track }) {
   }, []);
 
   const { data: likeData } = useQuery<{ count: number; liked: boolean }>({
-    queryKey: ["/api/tracks", String(track.id), "likes"],
+    queryKey: ["/api/tracks", String(track.id), "likes", user?.id ?? "anon"],
     queryFn: async () => {
-      const headers: Record<string, string> = {};
-      if (user) headers["x-user-id"] = String(user.id);
-      const res = await fetch(`/api/tracks/${track.id}/likes`, { headers, credentials: "include" });
+      const res = await fetch(`/api/tracks/${track.id}/likes`, { headers: getUserHeaders(), credentials: "include" });
       return res.json();
     },
   });
@@ -57,21 +61,24 @@ export function TrackActions({ track }: { track: Track }) {
 
   const likeMutation = useMutation({
     mutationFn: async () => {
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (user) headers["x-user-id"] = String(user.id);
+      const headers: Record<string, string> = { "Content-Type": "application/json", ...getUserHeaders() };
       const res = await fetch(`/api/tracks/${track.id}/likes`, { method: "POST", headers, credentials: "include" });
       if (!res.ok) throw new Error("Failed to toggle like");
       return res.json();
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["/api/tracks", String(track.id), "likes"] });
+      qc.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey as string[];
+          return key[0] === "/api/tracks" && key[1] === String(track.id) && key[2] === "likes";
+        },
+      });
     },
   });
 
   const commentMutation = useMutation({
     mutationFn: async (text: string) => {
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (user) headers["x-user-id"] = String(user.id);
+      const headers: Record<string, string> = { "Content-Type": "application/json", ...getUserHeaders() };
       const res = await fetch(`/api/tracks/${track.id}/comments`, {
         method: "POST",
         headers,
@@ -93,7 +100,10 @@ export function TrackActions({ track }: { track: Track }) {
       <div className="track-actions" data-testid={`track-actions-${track.id}`}>
         <button
           className={`action-btn like-btn hover-elevate${likeData?.liked ? " liked" : ""}`}
-          onClick={() => user && likeMutation.mutate()}
+          onClick={() => {
+            const freshUser = getUser();
+            if (freshUser) likeMutation.mutate();
+          }}
           disabled={!user}
           title={user ? (likeData?.liked ? "Unlike" : "Like") : "Sign in to like"}
           data-testid={`button-like-${track.id}`}
