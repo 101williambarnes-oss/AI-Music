@@ -3,6 +3,7 @@ import { useState } from "react";
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="hwm-app">
@@ -35,24 +36,46 @@ export default function SignIn() {
             </div>
             <div style={{ marginBottom: 24 }}>
               <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  background: "rgba(255,255,255,.06)",
-                  border: "1px solid rgba(108,240,255,.15)",
-                  borderRadius: 6,
-                  color: "#eaf0ff",
-                  fontSize: 15,
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-                data-testid="input-password"
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    paddingRight: 50,
+                    background: "rgba(255,255,255,.06)",
+                    border: "1px solid rgba(108,240,255,.15)",
+                    borderRadius: 6,
+                    color: "#eaf0ff",
+                    fontSize: 15,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                  data-testid="input-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    color: "#6cf0ff",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    padding: "4px 6px",
+                  }}
+                  data-testid="button-toggle-password"
+                >
+                  {showPassword ? "HIDE" : "SHOW"}
+                </button>
+              </div>
             </div>
             <button
               type="submit"
