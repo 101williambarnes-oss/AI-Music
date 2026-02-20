@@ -162,6 +162,7 @@ export default function Home() {
 
   const filteredTrending = filterTracks(trending);
   const filteredNew = filterTracks(newSongs);
+  const filteredTop = filterTracks(topTracks);
 
   return (
     <div className="hwm-app">
@@ -252,7 +253,7 @@ export default function Home() {
 
         <TrackList
           title="Top 25 This Week"
-          tracks={topTracks}
+          tracks={filteredTop}
           showRank
           isLoading={topLoading}
           testId="top25"
