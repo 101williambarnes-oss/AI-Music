@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { type Track } from "@shared/schema";
-import { Download } from "lucide-react";
+import { type Track, type Creator } from "@shared/schema";
+import { Download, ArrowRight } from "lucide-react";
 
 function formatPlays(plays: number) {
   if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
   return plays.toString();
 }
 
-function DownloadTrackRow({ track }: { track: Track }) {
+function TrackRow({ track }: { track: Track }) {
   return (
     <div className="row" data-testid={`download-track-row-${track.id}`}>
       <div className="thumb">
@@ -19,26 +19,6 @@ function DownloadTrackRow({ track }: { track: Track }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
-        <button
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "6px 14px",
-            background: "linear-gradient(135deg, rgba(108,240,255,.2), rgba(160,107,255,.2))",
-            border: "1px solid rgba(108,240,255,.3)",
-            borderRadius: 8,
-            color: "#6cf0ff",
-            fontSize: 12,
-            fontWeight: 700,
-            cursor: "pointer",
-            whiteSpace: "nowrap" as const,
-          }}
-          data-testid={`button-download-${track.id}`}
-        >
-          <Download style={{ width: 14, height: 14 }} />
-          Download
-        </button>
       </div>
     </div>
   );
@@ -51,6 +31,10 @@ export default function Downloads() {
 
   const { data: newTracks = [], isLoading: newLoading } = useQuery<Track[]>({
     queryKey: ["/api/tracks", "new"],
+  });
+
+  const { data: creators = [], isLoading: creatorsLoading } = useQuery<Creator[]>({
+    queryKey: ["/api/creators"],
   });
 
   const genreGroups: Record<string, Track[]> = {};
@@ -106,15 +90,71 @@ export default function Downloads() {
               </div>
             ) : (
               newTracks.map((track) => (
-                <DownloadTrackRow key={track.id} track={track} />
+                <TrackRow key={track.id} track={track} />
               ))
             )}
           </div>
         </section>
 
+        <section className="panel" style={{ marginBottom: 20, padding: 24, textAlign: "center" }}>
+          <Download style={{ width: 32, height: 32, color: "#6cf0ff", margin: "0 auto 12px" }} />
+          <h3 style={{ color: "#6cf0ff", fontSize: 18, fontWeight: 700, marginBottom: 8 }} data-testid="text-download-info-title">Download Music from Creator Profiles</h3>
+          <p style={{ color: "rgba(170,182,232,.6)", fontSize: 14, marginBottom: 0, maxWidth: 480, margin: "0 auto" }} data-testid="text-download-info-desc">
+            To download music, visit a creator's profile page. Each creator has a "Download Music Now" button on their tracks.
+          </p>
+        </section>
+
+        <div style={{ marginBottom: 20 }}>
+          <h2 style={{ color: "#6cf0ff", fontSize: 20, fontWeight: 800, letterSpacing: 1, marginBottom: 4 }} data-testid="text-creators-heading">Creators</h2>
+          <p style={{ color: "rgba(170,182,232,.5)", fontSize: 13, margin: 0 }}>Visit a creator's profile to download their music</p>
+        </div>
+
+        {creatorsLoading ? (
+          [1, 2, 3].map((i) => (
+            <div key={i} className="row" style={{ height: 60, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite", marginBottom: 8 }} />
+          ))
+        ) : creators.length === 0 ? (
+          <section className="panel" style={{ padding: 40, textAlign: "center" }}>
+            <div style={{ color: "rgba(170,182,232,.6)" }} data-testid="empty-creators">No creators available</div>
+          </section>
+        ) : (
+          <section className="panel" style={{ marginBottom: 20 }}>
+            <div style={{ padding: "10px 10px 12px" }} data-testid="list-creators">
+              {creators.map((creator) => {
+                const avatarGradient =
+                  creator.avatarColor === "cyan"
+                    ? "radial-gradient(circle at 30% 30%, rgba(108,240,255,.8), rgba(160,107,255,.35) 55%, rgba(255,79,216,.20))"
+                    : creator.avatarColor === "pink"
+                    ? "radial-gradient(circle at 30% 30%, rgba(255,79,216,.8), rgba(160,107,255,.35) 55%, rgba(108,240,255,.20))"
+                    : "radial-gradient(circle at 30% 30%, rgba(160,107,255,.8), rgba(108,240,255,.35) 55%, rgba(255,79,216,.20))";
+                return (
+                  <a
+                    key={creator.id}
+                    href={`/creator/${creator.id}`}
+                    className="row"
+                    style={{ textDecoration: "none", cursor: "pointer" }}
+                    data-testid={`link-creator-${creator.id}`}
+                  >
+                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: avatarGradient, border: "1px solid rgba(108,240,255,.2)", flexShrink: 0 }} />
+                    <div className="meta">
+                      <div className="title" data-testid={`text-creator-name-${creator.id}`}>{creator.name}</div>
+                      <div className="by">{creator.trackCount} track{creator.trackCount !== 1 ? "s" : ""}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#6cf0ff", fontSize: 13, fontWeight: 600, whiteSpace: "nowrap" }}>
+                      <Download style={{ width: 14, height: 14 }} />
+                      Download Music
+                      <ArrowRight style={{ width: 14, height: 14, opacity: 0.6 }} />
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         <div style={{ marginBottom: 20 }}>
           <h2 style={{ color: "#6cf0ff", fontSize: 20, fontWeight: 800, letterSpacing: 1, marginBottom: 4 }} data-testid="text-browse-by-genre">Browse by Genre</h2>
-          <p style={{ color: "rgba(170,182,232,.5)", fontSize: 13, margin: 0 }}>All tracks organized by genre for easy downloading</p>
+          <p style={{ color: "rgba(170,182,232,.5)", fontSize: 13, margin: 0 }}>All tracks organized by genre</p>
         </div>
 
         {allLoading ? (
@@ -146,7 +186,7 @@ export default function Downloads() {
               </div>
               <div style={{ padding: "10px 10px 12px" }}>
                 {genreGroups[genre].map((track) => (
-                  <DownloadTrackRow key={track.id} track={track} />
+                  <TrackRow key={track.id} track={track} />
                 ))}
               </div>
             </section>

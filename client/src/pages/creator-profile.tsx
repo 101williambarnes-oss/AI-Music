@@ -95,12 +95,12 @@ export default function CreatorProfile() {
                               display: "flex",
                               alignItems: "center",
                               gap: 6,
-                              padding: "6px 14px",
-                              background: "linear-gradient(135deg, rgba(108,240,255,.2), rgba(160,107,255,.2))",
-                              border: "1px solid rgba(108,240,255,.3)",
+                              padding: "8px 18px",
+                              background: "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)",
+                              border: "none",
                               borderRadius: 8,
-                              color: "#6cf0ff",
-                              fontSize: 12,
+                              color: "#050615",
+                              fontSize: 13,
                               fontWeight: 700,
                               cursor: "pointer",
                               whiteSpace: "nowrap" as const,
@@ -108,7 +108,7 @@ export default function CreatorProfile() {
                             data-testid={`button-download-${track.id}`}
                           >
                             <Download style={{ width: 14, height: 14 }} />
-                            Download
+                            Download Music Now
                           </button>
                         </div>
                       </div>
