@@ -9,6 +9,7 @@ import NewSongs from "@/pages/new-songs";
 import Top25 from "@/pages/top-25";
 import NewCreators from "@/pages/new-creators";
 import SignIn from "@/pages/sign-in";
+import SignUp from "@/pages/sign-up";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/top-25" component={Top25} />
       <Route path="/new-creators" component={NewCreators} />
       <Route path="/sign-in" component={SignIn} />
+      <Route path="/sign-up" component={SignUp} />
       <Route component={NotFound} />
     </Switch>
   );
