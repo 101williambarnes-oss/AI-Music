@@ -185,7 +185,7 @@ export default function NewSongs() {
               </div>
             ) : (
               filtered.map((track) => (
-                <TrackRow key={track.id} track={track} />
+                <TrackRow key={track.id} track={track} showDownload />
               ))
             )}
           </div>

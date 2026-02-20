@@ -185,7 +185,7 @@ export default function Top25() {
               </div>
             ) : (
               filtered.map((track) => (
-                <TrackRow key={track.id} track={track} showRank />
+                <TrackRow key={track.id} track={track} showRank showDownload />
               ))
             )}
           </div>

@@ -88,7 +88,7 @@ function TrackColumn({
           </div>
         ) : (
           tracks.map((track) => (
-            <TrackRow key={track.id} track={track} showRank={showRank} hideComments />
+            <TrackRow key={track.id} track={track} showRank={showRank} hideComments showDownload />
           ))
         )}
       </div>
@@ -417,7 +417,7 @@ export default function Home() {
                 </div>
               ) : (
                 filteredNew.map((track) => (
-                  <TrackRow key={track.id} track={track} hideComments />
+                  <TrackRow key={track.id} track={track} hideComments showDownload />
                 ))
               )}
             </div>

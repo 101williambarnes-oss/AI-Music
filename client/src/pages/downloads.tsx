@@ -1,28 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
 import { Download, ArrowRight } from "lucide-react";
-
-function formatPlays(plays: number) {
-  if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
-  return plays.toString();
-}
-
-function TrackRow({ track }: { track: Track }) {
-  return (
-    <div className="row" data-testid={`download-track-row-${track.id}`}>
-      <div className="thumb">
-        <div className="play-btn">&#9654;</div>
-      </div>
-      <div className="meta">
-        <div className="title" data-testid={`text-track-title-${track.id}`}>{track.title}</div>
-        <div className="by" data-testid={`text-track-artist-${track.id}`}>{track.artist}</div>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
-      </div>
-    </div>
-  );
-}
+import { TrackRow } from "@/components/track-row";
 
 export default function Downloads() {
   const { data: allTracks = [], isLoading: allLoading } = useQuery<Track[]>({
@@ -90,7 +69,7 @@ export default function Downloads() {
               </div>
             ) : (
               newTracks.map((track) => (
-                <TrackRow key={track.id} track={track} />
+                <TrackRow key={track.id} track={track} showDownload />
               ))
             )}
           </div>
@@ -186,7 +165,7 @@ export default function Downloads() {
               </div>
               <div style={{ padding: "10px 10px 12px" }}>
                 {genreGroups[genre].map((track) => (
-                  <TrackRow key={track.id} track={track} />
+                  <TrackRow key={track.id} track={track} showDownload />
                 ))}
               </div>
             </section>
