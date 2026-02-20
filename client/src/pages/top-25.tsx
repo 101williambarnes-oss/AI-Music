@@ -32,11 +32,14 @@ export default function Top25() {
       <div className="bg-lines" />
       <div className="wrap" style={{ paddingTop: 32, maxWidth: 900, margin: "0 auto" }}>
         <section className="panel" style={{ padding: "20px 24px" }}>
-          <div className="section-header" style={{ marginBottom: 16 }}>
+          <div className="section-header" style={{ marginBottom: 4 }}>
             <h3 data-testid="panel-header-top25" style={{ fontSize: "1.3rem" }}>
               Top 25
             </h3>
           </div>
+          <p style={{ color: "rgba(170,182,232,.5)", fontSize: "0.8rem", margin: "0 0 16px", padding: "0 2px" }} data-testid="text-top25-subtitle">
+            Ranked by this week's likes. Resets every Monday.
+          </p>
 
           <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
             <div
