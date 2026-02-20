@@ -886,6 +886,26 @@
   line-height: 1.4;
 }
 
+.genre-close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(234,240,255,.15);
+  background: rgba(7,10,20,.5);
+  color: rgba(234,240,255,.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: background .2s, border-color .2s;
+}
+.genre-close-btn:hover {
+  background: rgba(255,79,216,.2);
+  border-color: rgba(255,79,216,.4);
+}
+
 .video-modal-overlay {
   position: fixed;
   inset: 0;

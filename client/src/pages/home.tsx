@@ -42,17 +42,29 @@ function TrackColumn({
   isLoading: loading,
   showRank,
   testId,
+  onClose,
 }: {
   title: string;
   tracks: Track[];
   isLoading?: boolean;
   showRank?: boolean;
   testId: string;
+  onClose?: () => void;
 }) {
   return (
     <section className="panel column-panel" data-testid={`section-${testId}`}>
-      <div className="section-header">
+      <div className="section-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
         <h3 data-testid={`panel-header-${testId}`}>{title}</h3>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="genre-close-btn"
+            title="Back to Top 25"
+            data-testid="button-close-genre"
+          >
+            &#10005;
+          </button>
+        )}
       </div>
       <div className="list column-list" data-testid={`list-${testId}`}>
         {loading ? (
@@ -228,6 +240,7 @@ export default function Home() {
             tracks={filteredGenre}
             isLoading={tracksLoading}
             testId="genre-results"
+            onClose={() => setActiveGenre(null)}
           />
         ) : (
           <TrackColumn
