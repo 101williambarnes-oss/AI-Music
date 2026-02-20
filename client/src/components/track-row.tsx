@@ -1,7 +1,8 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { type Track } from "@shared/schema";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
+import { VideoModal } from "@/components/video-modal";
 
 function formatPlays(plays: number) {
   if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
@@ -14,6 +15,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
   const hasAudio = !!track.fileUrl;
   const videoRef = useRef<HTMLVideoElement>(null);
   const isVideo = !!track.fileUrl && /\.(mp4|webm|mov)$/i.test(track.fileUrl);
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   useEffect(() => {
     if (!videoRef.current || !isVideo) return;
@@ -23,6 +25,20 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
       videoRef.current.pause();
     }
   }, [isCurrentlyPlaying, isVideo]);
+
+  function handlePlay() {
+    if (!hasAudio) return;
+    if (isVideo) {
+      if (isCurrentlyPlaying) {
+        toggle(track.id, track.fileUrl!);
+      } else {
+        toggle(track.id, track.fileUrl!);
+        setShowVideoModal(true);
+      }
+    } else {
+      toggle(track.id, track.fileUrl!);
+    }
+  }
 
   return (
     <div data-testid={`track-row-${track.id}`}>
@@ -48,7 +64,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
           ) : null}
           {showRank && track.rank ? (
             <div
-              onClick={hasAudio ? () => toggle(track.id, track.fileUrl!) : undefined}
+              onClick={handlePlay}
               style={{
                 cursor: hasAudio ? "pointer" : "default",
                 position: "relative",
@@ -70,7 +86,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
           ) : (
             <div
               className="play-btn"
-              onClick={hasAudio ? () => toggle(track.id, track.fileUrl!) : undefined}
+              onClick={handlePlay}
               style={{
                 cursor: hasAudio ? "pointer" : "default",
                 opacity: hasAudio ? 1 : 0.4,
@@ -91,6 +107,9 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
         <div className="stat" data-testid={`text-track-plays-${track.id}`}>{formatPlays(track.plays)}</div>
       </div>
       <TrackActions track={track} />
+      {showVideoModal && isVideo && (
+        <VideoModal track={track} onClose={() => setShowVideoModal(false)} />
+      )}
     </div>
   );
 }

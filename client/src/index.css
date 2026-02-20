@@ -885,3 +885,88 @@
   color: rgba(234,240,255,.8);
   line-height: 1.4;
 }
+
+.video-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.85);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn .2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.video-modal {
+  position: relative;
+  width: 90vw;
+  max-width: 800px;
+  background: rgba(15,20,40,.95);
+  border: 1px solid rgba(162,106,255,.25);
+  border-radius: 16px;
+  box-shadow: 0 0 60px rgba(108,240,255,.12), 0 0 120px rgba(160,107,255,.08);
+  overflow: hidden;
+}
+
+.video-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(234,240,255,.2);
+  background: rgba(7,10,20,.7);
+  color: rgba(234,240,255,.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.video-modal-close:hover {
+  background: rgba(255,79,216,.25);
+  border-color: rgba(255,79,216,.5);
+}
+
+.video-modal-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+}
+
+.video-modal-play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.3);
+  cursor: pointer;
+  transition: background .2s;
+}
+.video-modal-play-overlay:hover {
+  background: rgba(0,0,0,.15);
+}
+
+.video-modal-info {
+  padding: 14px 16px 8px;
+}
+.video-modal-title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .3px;
+  color: #eaf0ff;
+}
+.video-modal-artist {
+  margin-top: 4px;
+  font-size: 14px;
+  color: rgba(170,182,232,.85);
+}
