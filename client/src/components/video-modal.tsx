@@ -12,7 +12,7 @@ export function VideoModal({
   onClose: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { currentTrackId, isPlaying, toggle } = useAudioPlayer();
+  const { currentTrackId, isPlaying, toggle, pause } = useAudioPlayer();
   const isThisTrack = currentTrackId === track.id;
   const isCurrentlyPlaying = isThisTrack && isPlaying;
 
@@ -27,11 +27,16 @@ export function VideoModal({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") { pause(); onClose(); }
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  function handleClose() {
+    pause();
+    onClose();
+  }
 
   function handleToggle() {
     if (track.fileUrl) {
@@ -40,9 +45,9 @@ export function VideoModal({
   }
 
   return (
-    <div className="video-modal-overlay" onClick={onClose} data-testid="video-modal-overlay">
+    <div className="video-modal-overlay" onClick={handleClose} data-testid="video-modal-overlay">
       <div className="video-modal" onClick={(e) => e.stopPropagation()} data-testid="video-modal">
-        <button className="video-modal-close" onClick={onClose} data-testid="button-close-video">
+        <button className="video-modal-close" onClick={handleClose} data-testid="button-close-video">
           <X style={{ width: 22, height: 22 }} />
         </button>
 
