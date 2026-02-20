@@ -386,12 +386,35 @@ export default function Home() {
         />
 
         <div className="stacked-column" data-testid="section-right-column">
-          <TrackColumn
-            title="New Songs of the Week"
-            tracks={filteredNew}
-            isLoading={newSongsLoading}
-            testId="new-songs"
-          />
+          <section className="panel column-panel" data-testid="section-new-songs">
+            <div className="section-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <a href="/new-songs" style={{ textDecoration: "none", color: "inherit" }} data-testid="link-new-songs-page">
+                <h3 data-testid="panel-header-new-songs" style={{ cursor: "pointer" }}>
+                  New Songs of the Week <span style={{ fontSize: "0.7em", color: "#6cf0ff", marginLeft: 6 }}>View All &rarr;</span>
+                </h3>
+              </a>
+            </div>
+            <div className="list column-list" data-testid="list-new-songs">
+              {newSongsLoading ? (
+                [1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="row"
+                    style={{ height: 74, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
+                    data-testid={`skeleton-track-${i}`}
+                  />
+                ))
+              ) : filteredNew.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-new-songs">
+                  No tracks found
+                </div>
+              ) : (
+                filteredNew.map((track) => (
+                  <TrackRow key={track.id} track={track} hideComments />
+                ))
+              )}
+            </div>
+          </section>
 
           <section className="panel column-panel" data-testid="section-creators">
             <div className="section-header">
