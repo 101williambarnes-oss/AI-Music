@@ -19,12 +19,13 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
 
   useEffect(() => {
     if (!videoRef.current || !isVideo) return;
-    if (isCurrentlyPlaying) {
+    if (isCurrentlyPlaying && !showVideoModal) {
       videoRef.current.play().catch(() => {});
     } else {
       videoRef.current.pause();
+      videoRef.current.currentTime = 0;
     }
-  }, [isCurrentlyPlaying, isVideo]);
+  }, [isCurrentlyPlaying, isVideo, showVideoModal]);
 
   function handleRowClick() {
     if (!hasAudio) return;
@@ -36,15 +37,23 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
     }
   }
 
+  function handleModalClose() {
+    setShowVideoModal(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  }
+
   return (
     <div data-testid={`track-row-${track.id}`}>
       <div className="row" onClick={handleRowClick} style={{ cursor: hasAudio ? "pointer" : "default" }} data-testid={`button-play-${track.id}`}>
-        <div className="thumb" style={{ position: "relative", overflow: "hidden" }}>
+        <div className="thumb" style={{ position: "relative", overflow: "hidden", flexShrink: 0, width: 54, height: 54 }}>
           {isVideo && !showRank ? (
             <video
               ref={videoRef}
               src={track.fileUrl!}
-              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+              style={{ width: 54, height: 54, objectFit: "cover", position: "absolute", top: 0, left: 0 }}
               muted
               loop
               playsInline
@@ -54,7 +63,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
             <img
               src={track.fileUrl}
               alt={track.title}
-              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+              style={{ width: 54, height: 54, objectFit: "cover", position: "absolute", top: 0, left: 0 }}
               data-testid={`img-thumb-${track.id}`}
             />
           ) : null}
@@ -98,7 +107,7 @@ export function TrackRow({ track, showRank }: { track: Track; showRank?: boolean
       </div>
       <TrackActions track={track} />
       {showVideoModal && isVideo && (
-        <VideoModal track={track} onClose={() => setShowVideoModal(false)} />
+        <VideoModal track={track} onClose={handleModalClose} />
       )}
     </div>
   );
