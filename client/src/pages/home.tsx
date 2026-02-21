@@ -229,10 +229,6 @@ export default function Home() {
       </header>
 
       <section className="hero" data-testid="section-hero" style={{ backgroundImage: `url(${heroBg})` }}>
-        <div className="heroContent" aria-hidden="true">
-          <h1 className="heroTitle sr-only" data-testid="text-hero-title">HIT WAVE MEDIA</h1>
-          <div className="heroSubtitle sr-only" data-testid="text-hero-subtitle">The Home of AI Music</div>
-        </div>
       </section>
 
       <nav className="quick-nav" data-testid="nav-quick-links">
