@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Track, type Comment } from "@shared/schema";
 import { Heart, MessageCircle, Send, Play, Share2, X, Copy, Check, Flag } from "lucide-react";
@@ -93,6 +93,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
   });
 
   const likeQueryKey = ["/api/tracks", String(track.id), "likes", identKey];
+  const likeLocked = useRef(false);
   const likeMutation = useMutation({
     mutationFn: async () => {
       const headers: Record<string, string> = { "Content-Type": "application/json", ...getHeaders() };
@@ -120,6 +121,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
       qc.setQueryData(likeQueryKey, data);
     },
     onSettled: () => {
+      setTimeout(() => { likeLocked.current = false; }, 800);
       qc.invalidateQueries({
         predicate: (query) => {
           const key = query.queryKey as string[];
@@ -130,6 +132,12 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
       });
     },
   });
+
+  const handleLike = () => {
+    if (likeLocked.current) return;
+    likeLocked.current = true;
+    likeMutation.mutate();
+  };
 
   const commentMutation = useMutation({
     mutationFn: async (text: string) => {
@@ -164,8 +172,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
         </span>
         <button
           className={`action-btn like-btn hover-elevate${likeData?.liked ? " liked" : ""}`}
-          onClick={() => { if (!likeMutation.isPending) likeMutation.mutate(); }}
-          disabled={likeMutation.isPending}
+          onClick={handleLike}
           title={likeData?.liked ? "Unlike" : "Like"}
           data-testid={`button-like-${track.id}`}
         >
