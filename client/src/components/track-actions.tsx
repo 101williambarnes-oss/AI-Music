@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Track, type Comment } from "@shared/schema";
-import { Heart, MessageCircle, Send, Play, Share2, X, Copy, Check } from "lucide-react";
+import { Heart, MessageCircle, Send, Play, Share2, X, Copy, Check, Flag } from "lucide-react";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -191,6 +191,15 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
         >
           <Share2 style={{ width: 14, height: 14 }} />
         </button>
+        <a
+          className="action-btn report-btn hover-elevate"
+          href={`mailto:hitwavemedia@yahoo.com?subject=${encodeURIComponent(`Copyright Report: "${track.title}" by ${track.artist}`)}&body=${encodeURIComponent(`I would like to report a potential copyright issue with the following track:\n\nTrack: ${track.title}\nArtist: ${track.artist}\nTrack ID: ${track.id}\n\nReason for report:\n\n`)}`}
+          title="Report copyright issue"
+          data-testid={`button-report-${track.id}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Flag style={{ width: 13, height: 13 }} />
+        </a>
       </div>
       {showShare && (
         <ShareDropdown track={track} onClose={() => setShowShare(false)} copied={copied} setCopied={setCopied} />
