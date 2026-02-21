@@ -65,15 +65,21 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
     };
   }, []);
 
-  const identKey = user ? `u${user.id}` : getVisitorId();
+  const [likeCount, setLikeCount] = useState(0);
+  const [liked, setLiked] = useState(false);
+  const [likeLoaded, setLikeLoaded] = useState(false);
+  const likeLocked = useRef(false);
 
-  const { data: likeData } = useQuery<{ count: number; liked: boolean }>({
-    queryKey: ["/api/tracks", String(track.id), "likes", identKey],
-    queryFn: async () => {
-      const res = await fetch(`/api/tracks/${track.id}/likes`, { headers: getHeaders(), credentials: "include" });
-      return res.json();
-    },
-  });
+  useEffect(() => {
+    fetch(`/api/tracks/${track.id}/likes`, { headers: getHeaders(), credentials: "include" })
+      .then(r => r.json())
+      .then((data: { count: number; liked: boolean }) => {
+        setLikeCount(data.count);
+        setLiked(data.liked);
+        setLikeLoaded(true);
+      })
+      .catch(() => {});
+  }, [track.id]);
 
   const { data: commentCountData } = useQuery<{ count: number }>({
     queryKey: ["/api/tracks", String(track.id), "comments", "count"],
@@ -92,51 +98,35 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
     enabled: showComments,
   });
 
-  const likeQueryKey = ["/api/tracks", String(track.id), "likes", identKey];
-  const likeLocked = useRef(false);
-  const likeMutation = useMutation({
-    mutationFn: async () => {
-      const headers: Record<string, string> = { "Content-Type": "application/json", ...getHeaders() };
-      const res = await fetch(`/api/tracks/${track.id}/likes`, { method: "POST", headers, credentials: "include" });
-      if (!res.ok) throw new Error("Failed to toggle like");
-      return res.json() as Promise<{ count: number; liked: boolean }>;
-    },
-    onMutate: async () => {
-      await qc.cancelQueries({ queryKey: likeQueryKey });
-      const previous = qc.getQueryData<{ count: number; liked: boolean }>(likeQueryKey);
-      if (previous) {
-        qc.setQueryData(likeQueryKey, {
-          count: previous.liked ? previous.count - 1 : previous.count + 1,
-          liked: !previous.liked,
-        });
-      }
-      return { previous };
-    },
-    onError: (_err, _vars, context) => {
-      if (context?.previous) {
-        qc.setQueryData(likeQueryKey, context.previous);
-      }
-    },
-    onSuccess: (data) => {
-      qc.setQueryData(likeQueryKey, data);
-    },
-    onSettled: () => {
-      setTimeout(() => { likeLocked.current = false; }, 800);
-      qc.invalidateQueries({
-        predicate: (query) => {
-          const key = query.queryKey as string[];
-          if (key[0] === "/api/tracks" && key[1] === "top25") return true;
-          if (key[0] === "/api/tracks" && key[1] === "trending") return true;
-          return false;
-        },
-      });
-    },
-  });
-
   const handleLike = () => {
     if (likeLocked.current) return;
     likeLocked.current = true;
-    likeMutation.mutate();
+    const newLiked = !liked;
+    const newCount = newLiked ? likeCount + 1 : likeCount - 1;
+    setLiked(newLiked);
+    setLikeCount(newCount);
+    const headers: Record<string, string> = { "Content-Type": "application/json", ...getHeaders() };
+    fetch(`/api/tracks/${track.id}/likes`, { method: "POST", headers, credentials: "include" })
+      .then(r => r.json())
+      .then((data: { count: number; liked: boolean }) => {
+        setLikeCount(data.count);
+        setLiked(data.liked);
+        qc.invalidateQueries({
+          predicate: (query) => {
+            const key = query.queryKey as string[];
+            if (key[0] === "/api/tracks" && key[1] === "top25") return true;
+            if (key[0] === "/api/tracks" && key[1] === "trending") return true;
+            return false;
+          },
+        });
+      })
+      .catch(() => {
+        setLiked(!newLiked);
+        setLikeCount(newLiked ? newCount - 1 : newCount + 1);
+      })
+      .finally(() => {
+        setTimeout(() => { likeLocked.current = false; }, 800);
+      });
   };
 
   const commentMutation = useMutation({
@@ -171,13 +161,13 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
           {formatPlays(track.plays)}
         </span>
         <button
-          className={`action-btn like-btn hover-elevate${likeData?.liked ? " liked" : ""}`}
+          className={`action-btn like-btn hover-elevate${liked ? " liked" : ""}`}
           onClick={handleLike}
-          title={likeData?.liked ? "Unlike" : "Like"}
+          title={liked ? "Unlike" : "Like"}
           data-testid={`button-like-${track.id}`}
         >
-          <Heart style={{ width: 14, height: 14, fill: likeData?.liked ? "#ff4fd8" : "none", stroke: likeData?.liked ? "#ff4fd8" : "currentColor" }} />
-          <span style={{ fontWeight: 900 }} data-testid={`text-like-count-${track.id}`}>{likeData?.count ?? 0}</span>
+          <Heart style={{ width: 14, height: 14, fill: liked ? "#ff4fd8" : "none", stroke: liked ? "#ff4fd8" : "currentColor" }} />
+          <span style={{ fontWeight: 900 }} data-testid={`text-like-count-${track.id}`}>{likeCount}</span>
         </button>
         {!hideComments && (
           <button

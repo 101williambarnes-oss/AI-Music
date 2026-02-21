@@ -38,7 +38,7 @@ export default function Top25() {
             </h3>
           </div>
           <p style={{ color: "rgba(170,182,232,.5)", fontSize: "0.8rem", margin: "0 0 16px", padding: "0 2px" }} data-testid="text-top25-subtitle">
-            Ranked by this week's likes. Resets every Monday.
+            Ranked by total likes. Updates automatically.
           </p>
 
           <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
