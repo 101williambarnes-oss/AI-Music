@@ -313,8 +313,8 @@
   flex-shrink: 0;
 }
 .site-logo-circle {
-  width: 64px;
-  height: 64px;
+  width: 74px;
+  height: 74px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid rgba(108,240,255,.35);
