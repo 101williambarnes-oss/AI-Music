@@ -317,8 +317,19 @@
   height: 74px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(108,240,255,.35);
-  box-shadow: 0 0 12px rgba(108,240,255,.25);
+  border: 2.5px solid rgba(108,240,255,.5);
+  box-shadow:
+    0 0 10px rgba(108,240,255,.35),
+    0 0 24px rgba(160,107,255,.25),
+    0 0 40px rgba(255,79,216,.12);
+  transition: box-shadow .3s, transform .3s;
+}
+.site-logo-circle:hover {
+  transform: scale(1.06);
+  box-shadow:
+    0 0 14px rgba(108,240,255,.5),
+    0 0 32px rgba(160,107,255,.35),
+    0 0 50px rgba(255,79,216,.2);
 }
 .logo {
   font-weight: 900;
