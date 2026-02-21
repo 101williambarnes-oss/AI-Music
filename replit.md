@@ -4,6 +4,7 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-02-21: PWA support - manifest.json, service worker, app icons; site is installable on phones as a home screen app
 - 2026-02-21: New Songs 7-day rotation - tracks auto-expire from New Songs page after 7 days; tracks table now has created_at column; getNewTracks filters by date
 - 2026-02-20: Trending Today dynamic ranking - tracks ranked by today's likes + plays, not a static list; track_plays log table tracks daily play events
 - 2026-02-20: Play counter & dynamic Top 25 - play count increments when a new song starts, Top 25 ranked dynamically by like count (ties broken by plays), songs move up/down as likes change
