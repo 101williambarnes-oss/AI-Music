@@ -272,6 +272,7 @@
 
 .hwm-app {
   min-height: 100vh;
+  min-width: 360px;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: #EAF0FF;
   background:
