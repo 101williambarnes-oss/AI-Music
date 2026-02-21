@@ -308,7 +308,17 @@
   border-bottom: 1px solid rgba(108,240,255,.12);
 }
 .topbar-left {
-  display: none;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.site-logo-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(108,240,255,.35);
+  box-shadow: 0 0 12px rgba(108,240,255,.25);
 }
 .logo {
   font-weight: 900;
