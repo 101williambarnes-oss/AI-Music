@@ -69,6 +69,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
   const [liked, setLiked] = useState(false);
   const [likeLoaded, setLikeLoaded] = useState(false);
   const likeLocked = useRef(false);
+  const [likePop, setLikePop] = useState(false);
 
   useEffect(() => {
     fetch(`/api/tracks/${track.id}/likes`, { headers: getHeaders(), credentials: "include" })
@@ -105,6 +106,8 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
     const newCount = newLiked ? likeCount + 1 : likeCount - 1;
     setLiked(newLiked);
     setLikeCount(newCount);
+    setLikePop(true);
+    setTimeout(() => setLikePop(false), 400);
     const headers: Record<string, string> = { "Content-Type": "application/json", ...getHeaders() };
     fetch(`/api/tracks/${track.id}/likes`, { method: "POST", headers, credentials: "include" })
       .then(r => r.json())
@@ -166,8 +169,12 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
           title={liked ? "Unlike" : "Like"}
           data-testid={`button-like-${track.id}`}
         >
-          <Heart style={{ width: 14, height: 14, fill: liked ? "#ff4fd8" : "none", stroke: liked ? "#ff4fd8" : "currentColor" }} />
-          <span style={{ fontWeight: 900 }} data-testid={`text-like-count-${track.id}`}>{likeCount}</span>
+          <Heart style={{ width: 14, height: 14, fill: liked ? "#ff4fd8" : "none", stroke: liked ? "#ff4fd8" : "currentColor", transition: "all 0.2s ease" }} />
+          <span
+            className={likePop ? "like-count-pop" : ""}
+            style={{ fontWeight: 900, fontSize: "0.85rem", minWidth: 12, transition: "color 0.2s ease", color: liked ? "#ff4fd8" : undefined }}
+            data-testid={`text-like-count-${track.id}`}
+          >{likeCount}</span>
         </button>
         {!hideComments && (
           <button

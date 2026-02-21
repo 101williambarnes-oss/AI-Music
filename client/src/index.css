@@ -951,6 +951,15 @@
 .action-btn.like-btn.liked {
   color: #ff4fd8;
 }
+.like-count-pop {
+  animation: likePopAnim 0.4s ease;
+}
+@keyframes likePopAnim {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.6); color: #ff4fd8; }
+  60% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
 .action-btn.comment-btn.active {
   color: #6cf0ff;
 }
