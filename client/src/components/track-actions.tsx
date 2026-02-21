@@ -92,6 +92,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
     enabled: showComments,
   });
 
+  const likeQueryKey = ["/api/tracks", String(track.id), "likes", identKey];
   const likeMutation = useMutation({
     mutationFn: async () => {
       const headers: Record<string, string> = { "Content-Type": "application/json", ...getHeaders() };
@@ -99,8 +100,26 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
       if (!res.ok) throw new Error("Failed to toggle like");
       return res.json() as Promise<{ count: number; liked: boolean }>;
     },
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: likeQueryKey });
+      const previous = qc.getQueryData<{ count: number; liked: boolean }>(likeQueryKey);
+      if (previous) {
+        qc.setQueryData(likeQueryKey, {
+          count: previous.liked ? previous.count - 1 : previous.count + 1,
+          liked: !previous.liked,
+        });
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        qc.setQueryData(likeQueryKey, context.previous);
+      }
+    },
     onSuccess: (data) => {
-      qc.setQueryData(["/api/tracks", String(track.id), "likes", identKey], data);
+      qc.setQueryData(likeQueryKey, data);
+    },
+    onSettled: () => {
       qc.invalidateQueries({
         predicate: (query) => {
           const key = query.queryKey as string[];

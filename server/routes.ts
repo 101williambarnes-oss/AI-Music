@@ -362,10 +362,12 @@ export async function registerRoutes(
         return res.json(allTracks);
       }
       if (category === "top25") {
+        res.set("Cache-Control", "no-store");
         const topTracks = await storage.getTop25ByLikes();
         return res.json(topTracks);
       }
       if (category === "trending") {
+        res.set("Cache-Control", "no-store");
         const trendingTracks = await storage.getTrendingTracks();
         return res.json(trendingTracks);
       }
@@ -464,6 +466,7 @@ export async function registerRoutes(
 
   app.get("/api/tracks/:id/likes", async (req, res) => {
     try {
+      res.set("Cache-Control", "no-store");
       const trackId = parseInt(req.params.id);
       if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
       const count = await storage.getLikeCount(trackId);

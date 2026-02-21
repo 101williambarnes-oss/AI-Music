@@ -164,21 +164,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTop25ByLikes(): Promise<Track[]> {
-    const now = new Date();
-    const day = now.getDay();
-    const diffToMonday = day === 0 ? 6 : day - 1;
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - diffToMonday);
-    weekStart.setHours(0, 0, 0, 0);
-
-    const weeklyLikes = sql<number>`COALESCE((SELECT count(*)::int FROM likes WHERE likes.track_id = ${tracks.id} AND likes.created_at >= ${weekStart}), 0) + COALESCE((SELECT count(*)::int FROM visitor_likes WHERE visitor_likes.track_id = ${tracks.id} AND visitor_likes.created_at >= ${weekStart}), 0)`;
+    const totalLikes = sql<number>`COALESCE((SELECT count(*)::int FROM likes WHERE likes.track_id = ${tracks.id}), 0) + COALESCE((SELECT count(*)::int FROM visitor_likes WHERE visitor_likes.track_id = ${tracks.id}), 0)`;
     const result = await db
       .select({
         track: tracks,
-        likeCount: weeklyLikes,
+        likeCount: totalLikes,
       })
       .from(tracks)
-      .orderBy(sql`${weeklyLikes} DESC`, desc(tracks.plays))
+      .orderBy(sql`${totalLikes} DESC`, desc(tracks.plays))
       .limit(25);
     return result.map((r, i) => ({ ...r.track, rank: i + 1 }));
   }
