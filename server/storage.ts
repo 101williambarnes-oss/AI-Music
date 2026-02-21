@@ -1,12 +1,13 @@
 import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser, type Like, type InsertLike, type Comment, type InsertComment } from "@shared/schema";
 import { tracks, creators, genres, users, likes, comments, visitorLikes, trackPlays } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, sql } from "drizzle-orm";
+import { eq, and, desc, asc, sql, gte } from "drizzle-orm";
 
 export interface IStorage {
   getTrack(id: number): Promise<Track | undefined>;
   getTracks(category: string): Promise<Track[]>;
   getAllTracks(): Promise<Track[]>;
+  getNewTracks(): Promise<Track[]>;
   getCreators(): Promise<Creator[]>;
   getCreatorById(id: number): Promise<Creator | undefined>;
   getCreatorByUserId(userId: number): Promise<Creator | undefined>;
@@ -56,6 +57,12 @@ export class DatabaseStorage implements IStorage {
 
   async getAllTracks(): Promise<Track[]> {
     return db.select().from(tracks).orderBy(desc(tracks.plays));
+  }
+
+  async getNewTracks(): Promise<Track[]> {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return db.select().from(tracks).where(gte(tracks.createdAt, sevenDaysAgo)).orderBy(desc(tracks.createdAt));
   }
 
   async getCreators(): Promise<Creator[]> {

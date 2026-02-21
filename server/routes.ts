@@ -371,6 +371,10 @@ export async function registerRoutes(
         const trendingTracks = await storage.getTrendingTracks();
         return res.json(trendingTracks);
       }
+      if (category === "new") {
+        const newTracks = await storage.getNewTracks();
+        return res.json(newTracks);
+      }
       const tracks = await storage.getTracks(category);
       res.json(tracks);
     } catch (error) {

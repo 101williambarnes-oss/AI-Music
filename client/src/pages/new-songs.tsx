@@ -32,11 +32,14 @@ export default function NewSongs() {
       <div className="bg-lines" />
       <div className="wrap" style={{ paddingTop: 32, maxWidth: 900, margin: "0 auto" }}>
         <section className="panel" style={{ padding: "20px 24px" }}>
-          <div className="section-header" style={{ marginBottom: 16 }}>
+          <div className="section-header" style={{ marginBottom: 4 }}>
             <h3 data-testid="panel-header-new-songs" style={{ fontSize: "1.3rem" }}>
               New Songs of the Week
             </h3>
           </div>
+          <p style={{ color: "rgba(170,182,232,.5)", fontSize: "0.8rem", margin: "0 0 16px", padding: "0 2px" }} data-testid="text-new-songs-subtitle">
+            Songs stay up for 7 days after upload, then rotate out for fresh music.
+          </p>
 
           <div style={{ display: "flex", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
             <div

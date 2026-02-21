@@ -28,6 +28,7 @@ export const tracks = pgTable("tracks", {
   creatorId: integer("creator_id"),
   fileUrl: text("file_url"),
   coverUrl: text("cover_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const creators = pgTable("creators", {
@@ -69,7 +70,7 @@ export const comments = pgTable("comments", {
 });
 
 export const insertGenreSchema = createInsertSchema(genres).omit({ id: true });
-export const insertTrackSchema = createInsertSchema(tracks).omit({ id: true });
+export const insertTrackSchema = createInsertSchema(tracks).omit({ id: true, createdAt: true });
 export const insertCreatorSchema = createInsertSchema(creators).omit({ id: true });
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, creatorId: true });
 export const insertLikeSchema = createInsertSchema(likes).omit({ id: true, createdAt: true });
