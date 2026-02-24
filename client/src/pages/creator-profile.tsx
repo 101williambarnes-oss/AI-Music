@@ -217,9 +217,15 @@ export default function CreatorProfile() {
                       <span style={{ color: "#a06bff", fontWeight: 700 }}>{followerCount}</span> Follower{followerCount !== 1 ? "s" : ""}
                     </div>
                   </div>
-                  {!isOwnProfile && user && (
+                  {!isOwnProfile && (
                     <button
-                      onClick={() => followMutation.mutate()}
+                      onClick={() => {
+                        if (!user) {
+                          window.location.href = "/sign-in";
+                          return;
+                        }
+                        followMutation.mutate();
+                      }}
                       disabled={followMutation.isPending}
                       style={{
                         display: "inline-flex",
