@@ -586,6 +586,54 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/creators/:id/followers", async (req, res) => {
+    try {
+      const creatorId = parseInt(req.params.id);
+      if (isNaN(creatorId)) return res.status(400).json({ message: "Invalid creator ID" });
+      const count = await storage.getFollowerCount(creatorId);
+      const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
+      let isFollowing = false;
+      if (userId && !isNaN(userId)) {
+        isFollowing = await storage.isFollowing(userId, creatorId);
+      }
+      res.json({ count, isFollowing });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get follower count" });
+    }
+  });
+
+  app.post("/api/creators/:id/follow", async (req, res) => {
+    const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
+    if (!userId || isNaN(userId)) {
+      return res.status(401).json({ message: "You must be signed in to follow creators" });
+    }
+    try {
+      const creatorId = parseInt(req.params.id);
+      if (isNaN(creatorId)) return res.status(400).json({ message: "Invalid creator ID" });
+      const alreadyFollowing = await storage.isFollowing(userId, creatorId);
+      if (alreadyFollowing) {
+        await storage.removeFollow(userId, creatorId);
+      } else {
+        await storage.addFollow(userId, creatorId);
+      }
+      const count = await storage.getFollowerCount(creatorId);
+      res.json({ count, isFollowing: !alreadyFollowing });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to toggle follow" });
+    }
+  });
+
+  app.get("/api/users/:id/following", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      if (isNaN(userId)) return res.status(400).json({ message: "Invalid user ID" });
+      const count = await storage.getFollowingCount(userId);
+      res.json({ count });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get following count" });
+    }
+  });
+
   app.delete("/api/comments/:id", async (req, res) => {
     const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
     if (!userId || isNaN(userId)) {

@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
-import { Upload, Camera } from "lucide-react";
+import { Upload, Camera, UserPlus, UserCheck } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { TrackRow } from "@/components/track-row";
 
@@ -76,6 +76,32 @@ export default function CreatorProfile() {
       queryClient.invalidateQueries({ queryKey: ["/api/creators"] });
     },
   });
+
+  const { data: followerData } = useQuery<{ count: number; isFollowing: boolean }>({
+    queryKey: ["/api/creators", creatorId, "followers"],
+    enabled: !!creatorId,
+  });
+
+  const followMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/creators/${creatorId}/follow`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "x-user-id": String(user?.id || "") },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ message: "Failed" }));
+        throw new Error(data.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/creators", creatorId, "followers"] });
+    },
+  });
+
+  const followerCount = followerData?.count ?? 0;
+  const isFollowing = followerData?.isFollowing ?? false;
 
   function handleAvatarClick() {
     if (isOwnProfile && avatarInputRef.current) {
@@ -183,9 +209,39 @@ export default function CreatorProfile() {
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <h1 style={{ color: "#6cf0ff", fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: 1 }} data-testid="text-creator-name">{creator.name}</h1>
-                  <div style={{ color: "rgba(170,182,232,.7)", fontSize: 14, marginTop: 6 }} data-testid="text-creator-stats">
-                    {creator.trackCount} Track{creator.trackCount !== 1 ? "s" : ""} Published
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 6 }}>
+                    <div style={{ color: "rgba(170,182,232,.7)", fontSize: 14 }} data-testid="text-creator-stats">
+                      {creator.trackCount} Track{creator.trackCount !== 1 ? "s" : ""}
+                    </div>
+                    <div style={{ color: "rgba(170,182,232,.7)", fontSize: 14 }} data-testid="text-follower-count">
+                      <span style={{ color: "#a06bff", fontWeight: 700 }}>{followerCount}</span> Follower{followerCount !== 1 ? "s" : ""}
+                    </div>
                   </div>
+                  {!isOwnProfile && user && (
+                    <button
+                      onClick={() => followMutation.mutate()}
+                      disabled={followMutation.isPending}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        marginTop: 10,
+                        padding: "7px 18px",
+                        borderRadius: 6,
+                        border: isFollowing ? "1px solid rgba(160,107,255,.4)" : "none",
+                        background: isFollowing ? "transparent" : "linear-gradient(135deg, #a06bff 0%, #ff4fd8 100%)",
+                        color: isFollowing ? "#a06bff" : "#fff",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        letterSpacing: 0.3,
+                      }}
+                      data-testid="button-follow"
+                    >
+                      {isFollowing ? <UserCheck size={14} /> : <UserPlus size={14} />}
+                      {followMutation.isPending ? "..." : isFollowing ? "Following" : "Follow"}
+                    </button>
+                  )}
                   {avatarMutation.isPending && (
                     <div style={{ color: "#6cf0ff", fontSize: 12, marginTop: 4 }}>Uploading photo...</div>
                   )}

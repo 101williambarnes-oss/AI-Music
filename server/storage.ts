@@ -1,5 +1,5 @@
-import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser, type Like, type InsertLike, type Comment, type InsertComment } from "@shared/schema";
-import { tracks, creators, genres, users, likes, comments, visitorLikes, trackPlays } from "@shared/schema";
+import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser, type Like, type InsertLike, type Comment, type InsertComment, type Follow, type InsertFollow } from "@shared/schema";
+import { tracks, creators, genres, users, likes, comments, visitorLikes, trackPlays, follows } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql, gte } from "drizzle-orm";
 
@@ -40,6 +40,11 @@ export interface IStorage {
   addComment(comment: InsertComment): Promise<Comment>;
   deleteComment(commentId: number): Promise<void>;
   updateCreatorAvatar(creatorId: number, avatarUrl: string): Promise<void>;
+  getFollowerCount(creatorId: number): Promise<number>;
+  getFollowingCount(userId: number): Promise<number>;
+  isFollowing(followerId: number, creatorId: number): Promise<boolean>;
+  addFollow(followerId: number, creatorId: number): Promise<Follow>;
+  removeFollow(followerId: number, creatorId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -237,6 +242,30 @@ export class DatabaseStorage implements IStorage {
 
   async updateCreatorAvatar(creatorId: number, avatarUrl: string): Promise<void> {
     await db.update(creators).set({ avatarUrl }).where(eq(creators.id, creatorId));
+  }
+
+  async getFollowerCount(creatorId: number): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`count(*)::int` }).from(follows).where(eq(follows.creatorId, creatorId));
+    return result?.count ?? 0;
+  }
+
+  async getFollowingCount(userId: number): Promise<number> {
+    const [result] = await db.select({ count: sql<number>`count(*)::int` }).from(follows).where(eq(follows.followerId, userId));
+    return result?.count ?? 0;
+  }
+
+  async isFollowing(followerId: number, creatorId: number): Promise<boolean> {
+    const [result] = await db.select().from(follows).where(and(eq(follows.followerId, followerId), eq(follows.creatorId, creatorId)));
+    return !!result;
+  }
+
+  async addFollow(followerId: number, creatorId: number): Promise<Follow> {
+    const [result] = await db.insert(follows).values({ followerId, creatorId }).returning();
+    return result;
+  }
+
+  async removeFollow(followerId: number, creatorId: number): Promise<void> {
+    await db.delete(follows).where(and(eq(follows.followerId, followerId), eq(follows.creatorId, creatorId)));
   }
 }
 

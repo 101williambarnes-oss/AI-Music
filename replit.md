@@ -4,6 +4,7 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-02-24: Follow system - users can follow/unfollow creators; follower count displayed on creator profiles; follows table in DB
 - 2026-02-21: PWA support - manifest.json, service worker, app icons; site is installable on phones as a home screen app
 - 2026-02-21: New Songs 7-day rotation - tracks auto-expire from New Songs page after 7 days; tracks table now has created_at column; getNewTracks filters by date
 - 2026-02-20: Trending Today dynamic ranking - tracks ranked by today's likes + plays, not a static list; track_plays log table tracks daily play events
@@ -35,7 +36,7 @@ client/src/pages/downloads.tsx    - Downloads page with genre sections
 client/src/App.tsx                - Router setup
 client/src/lib/audioPlayer.tsx     - Shared audio player context for track playback
 client/src/components/track-actions.tsx - Shared like/comment component for tracks
-shared/schema.ts                  - Database schema (tracks, creators, genres, users, likes, comments)
+shared/schema.ts                  - Database schema (tracks, creators, genres, users, likes, comments, follows)
 server/routes.ts                  - API endpoints (auth, tracks, creators, genres, likes, comments)
 server/storage.ts                 - Database storage layer
 server/db.ts                      - Database connection
@@ -59,6 +60,9 @@ server/seed.ts                    - Seed data for initial content
 - GET /api/tracks/:id/comments - Get comments for a track
 - POST /api/tracks/:id/comments - Add comment (auth required)
 - DELETE /api/comments/:id - Delete comment (auth required)
+- GET /api/creators/:id/followers - Get follower count and user's follow status
+- POST /api/creators/:id/follow - Toggle follow (auth required)
+- GET /api/users/:id/following - Get count of creators a user follows
 
 ## Theme
 Dark cyberpunk with neon cyan (#6cf0ff), purple (#a06bff), and pink (#ff4fd8) accent colors on deep dark background (#070a14).
