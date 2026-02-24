@@ -39,6 +39,12 @@ export async function seedDatabase() {
     { name: "Jazz", group: "Roots & Other" },
     { name: "Reggae", group: "Roots & Other" },
     { name: "Experimental", group: "Roots & Other" },
+    { name: "Gospel", group: "Religious & Spiritual" },
+    { name: "Christian Pop", group: "Religious & Spiritual" },
+    { name: "Christian Rock", group: "Religious & Spiritual" },
+    { name: "Worship", group: "Religious & Spiritual" },
+    { name: "Hymns", group: "Religious & Spiritual" },
+    { name: "Christian Hip Hop", group: "Religious & Spiritual" },
   ]);
 
   console.log("Database seeded successfully");
