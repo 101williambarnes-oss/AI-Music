@@ -9,4 +9,6 @@ export const ALL_GENRES = [
   "R&B", "Neo-Soul", "Soul",
   "Experimental", "Ambient", "Glitch", "Synthwave",
   "Electronic",
+  "Christian Pop", "Christian Rock",
+  "Easy Listening Rock", "Love Songs",
 ];
