@@ -25,34 +25,7 @@ function FloatingHomeButton() {
     <a
       href="/"
       data-testid="floating-back-home"
-      style={{
-        position: "fixed",
-        bottom: 24,
-        left: 24,
-        zIndex: 9999,
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        background: "rgba(7,10,20,.85)",
-        border: "1px solid rgba(108,240,255,.3)",
-        borderRadius: 40,
-        padding: "10px 18px 10px 14px",
-        color: "#6cf0ff",
-        textDecoration: "none",
-        fontSize: "0.85rem",
-        fontWeight: 600,
-        backdropFilter: "blur(12px)",
-        boxShadow: "0 4px 20px rgba(0,0,0,.5), 0 0 12px rgba(108,240,255,.15)",
-        transition: "transform .15s, box-shadow .15s",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.transform = "scale(1.05)";
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,.6), 0 0 20px rgba(108,240,255,.25)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.transform = "scale(1)";
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(0,0,0,.5), 0 0 12px rgba(108,240,255,.15)";
-      }}
+      className="floating-home-btn"
     >
       <ArrowLeft size={16} />
       Home
