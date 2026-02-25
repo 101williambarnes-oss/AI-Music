@@ -117,8 +117,6 @@ export default function Home() {
         <div className="topbar-left" style={{ display: "flex" }}>
           <a href="/" data-testid="link-logo" style={{ textDecoration: "none" }}>
             <img src={siteLogo} alt="Hit Wave Media" className="site-logo-banner" data-testid="img-logo" />
-            <div style={{ fontSize: "0.7rem", color: "rgba(170,182,232,.5)", letterSpacing: 2, marginTop: 2 }}>The Home of AI Music</div>
-            <div style={{ fontSize: "0.65rem", color: "rgba(108,240,255,.5)", letterSpacing: 3, marginTop: 2, fontWeight: 600 }}>Log in. Download. Share.</div>
           </a>
         </div>
         <div className="topbar-center">
@@ -234,6 +232,14 @@ export default function Home() {
       </header>
 
       <section className="hero" data-testid="section-hero" style={{ backgroundImage: `url(${heroBg})` }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center" }}>
+          <div style={{ fontSize: "1rem", color: "rgba(170,182,232,.7)", letterSpacing: 3, fontWeight: 500 }} data-testid="text-hero-tagline">
+            The Home of AI Music
+          </div>
+          <div style={{ fontSize: "0.85rem", color: "rgba(108,240,255,.7)", letterSpacing: 4, marginTop: 6, fontWeight: 700 }} data-testid="text-hero-cta">
+            Log in. Download. Share.
+          </div>
+        </div>
       </section>
 
       <nav className="quick-nav" data-testid="nav-quick-links">
