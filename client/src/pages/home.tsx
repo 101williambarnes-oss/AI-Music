@@ -232,14 +232,6 @@ export default function Home() {
       </header>
 
       <section className="hero" data-testid="section-hero" style={{ backgroundImage: `url(${heroBg})` }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", textAlign: "center" }}>
-          <div style={{ fontSize: "1rem", color: "rgba(170,182,232,.7)", letterSpacing: 3, fontWeight: 500 }} data-testid="text-hero-tagline">
-            The Home of AI Music
-          </div>
-          <div style={{ fontSize: "0.85rem", color: "rgba(108,240,255,.7)", letterSpacing: 4, marginTop: 6, fontWeight: 700 }} data-testid="text-hero-cta">
-            Log in. Download. Share.
-          </div>
-        </div>
       </section>
 
       <nav className="quick-nav" data-testid="nav-quick-links">
