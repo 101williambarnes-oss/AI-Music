@@ -332,6 +332,17 @@
     0 0 32px rgba(160,107,255,.35),
     0 0 50px rgba(255,79,216,.2);
 }
+.site-logo-banner {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(108,240,255,.3)) drop-shadow(0 0 20px rgba(160,107,255,.2));
+  transition: filter .3s, transform .3s;
+}
+.site-logo-banner:hover {
+  transform: scale(1.04);
+  filter: drop-shadow(0 0 12px rgba(108,240,255,.5)) drop-shadow(0 0 28px rgba(160,107,255,.3));
+}
 .logo {
   font-weight: 900;
   letter-spacing: 2px;

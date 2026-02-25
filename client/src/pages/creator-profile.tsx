@@ -5,6 +5,7 @@ import { type Track, type Creator } from "@shared/schema";
 import { Upload, Camera, UserPlus, UserCheck } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { TrackRow } from "@/components/track-row";
+import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 
 function formatPlays(plays: number) {
   if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
@@ -132,18 +133,7 @@ export default function CreatorProfile() {
 
       <div style={{ textAlign: "center", paddingTop: 24, paddingBottom: 8 }}>
         <a href="/" style={{ textDecoration: "none" }} data-testid="link-logo-home">
-          <div style={{
-            fontFamily: "'Inter', system-ui, sans-serif",
-            fontSize: "1.5rem",
-            fontWeight: 900,
-            letterSpacing: 3,
-            background: "linear-gradient(90deg, #6cf0ff 0%, #a06bff 50%, #ff4fd8 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }} data-testid="text-brand-logo">
-            HIT WAVE MEDIA
-          </div>
+          <img src={siteLogo} alt="Hit Wave Media" className="site-logo-banner" data-testid="img-logo" />
           <div style={{ fontSize: "0.7rem", color: "rgba(170,182,232,.5)", letterSpacing: 2, marginTop: 2 }}>
             The Home of AI Music
           </div>

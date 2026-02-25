@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
 import { Download, ArrowRight } from "lucide-react";
 import { TrackRow } from "@/components/track-row";
+import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 
 export default function Downloads() {
   const { data: allTracks = [], isLoading: allLoading } = useQuery<Track[]>({
@@ -33,7 +34,7 @@ export default function Downloads() {
       <header className="site-topbar" data-testid="header-downloads">
         <div className="topbar-left">
           <a href="/" style={{ textDecoration: "none" }}>
-            <div className="logo" data-testid="text-brand-name">HIT WAVE MEDIA</div>
+            <img src={siteLogo} alt="Hit Wave Media" className="site-logo-banner" data-testid="img-logo" />
           </a>
         </div>
         <div className="topbar-center">

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
 import { Search, Music, User, X } from "lucide-react";
 import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_1771460797070.png";
-import siteLogo from "@assets/ChatGPT_Image_Feb_20,_2026,_07_32_05_PM_1771641249104.png";
+import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { TrackRow } from "@/components/track-row";
 import { useLocation } from "wouter";
 import { ALL_GENRES } from "@/lib/genres";
@@ -116,7 +116,7 @@ export default function Home() {
       <header className="site-topbar" data-testid="header-main">
         <div className="topbar-left" style={{ display: "flex" }}>
           <a href="/" data-testid="link-logo">
-            <img src={siteLogo} alt="Hit Wave Media" className="site-logo-circle" data-testid="img-logo" />
+            <img src={siteLogo} alt="Hit Wave Media" className="site-logo-banner" data-testid="img-logo" />
           </a>
         </div>
         <div className="topbar-center">
