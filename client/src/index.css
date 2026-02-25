@@ -333,7 +333,7 @@
     0 0 50px rgba(255,79,216,.2);
 }
 .site-logo-banner {
-  height: 60px;
+  height: 120px;
   width: auto;
   object-fit: contain;
   filter: drop-shadow(0 0 8px rgba(108,240,255,.3)) drop-shadow(0 0 20px rgba(160,107,255,.2));
