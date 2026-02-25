@@ -137,6 +137,9 @@ export default function CreatorProfile() {
           <div style={{ fontSize: "0.7rem", color: "rgba(170,182,232,.5)", letterSpacing: 2, marginTop: 2 }}>
             The Home of AI Music
           </div>
+          <div style={{ fontSize: "0.65rem", color: "rgba(108,240,255,.5)", letterSpacing: 3, marginTop: 2, fontWeight: 600 }}>
+            Log in. Download. Share.
+          </div>
         </a>
       </div>
 

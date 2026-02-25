@@ -115,8 +115,10 @@ export default function Home() {
 
       <header className="site-topbar" data-testid="header-main">
         <div className="topbar-left" style={{ display: "flex" }}>
-          <a href="/" data-testid="link-logo">
+          <a href="/" data-testid="link-logo" style={{ textDecoration: "none" }}>
             <img src={siteLogo} alt="Hit Wave Media" className="site-logo-banner" data-testid="img-logo" />
+            <div style={{ fontSize: "0.7rem", color: "rgba(170,182,232,.5)", letterSpacing: 2, marginTop: 2 }}>The Home of AI Music</div>
+            <div style={{ fontSize: "0.65rem", color: "rgba(108,240,255,.5)", letterSpacing: 3, marginTop: 2, fontWeight: 600 }}>Log in. Download. Share.</div>
           </a>
         </div>
         <div className="topbar-center">
