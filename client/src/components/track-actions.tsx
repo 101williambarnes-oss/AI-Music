@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { type Track, type Comment } from "@shared/schema";
-import { Heart, MessageCircle, Send, Play, Share2, X, Copy, Check, Flag } from "lucide-react";
+import { Heart, MessageCircle, Send, Play, Share2, X, Copy, Check, Flag, UserPlus, UserCheck } from "lucide-react";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -64,6 +64,33 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
       clearInterval(interval);
     };
   }, []);
+
+  const isOwnTrack = user?.creatorId === track.creatorId;
+
+  const { data: followerData } = useQuery<{ count: number; isFollowing: boolean }>({
+    queryKey: ["/api/creators", String(track.creatorId), "followers"],
+    enabled: !!track.creatorId,
+  });
+
+  const followMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/creators/${track.creatorId}/follow`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "x-user-id": String(user?.id || "") },
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ message: "Failed" }));
+        throw new Error(data.message);
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["/api/creators", String(track.creatorId), "followers"] });
+    },
+  });
+
+  const isFollowing = followerData?.isFollowing ?? false;
 
   const [likeCount, setLikeCount] = useState(0);
   const [liked, setLiked] = useState(false);
@@ -204,6 +231,24 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
         >
           <Flag style={{ width: 13, height: 13 }} />
         </a>
+        {track.creatorId && !isOwnTrack && (
+          <button
+            className={`action-btn follow-btn hover-elevate${isFollowing ? " following" : ""}`}
+            onClick={() => {
+              if (!user) {
+                window.location.href = "/sign-in";
+                return;
+              }
+              followMutation.mutate();
+            }}
+            disabled={followMutation.isPending}
+            title={isFollowing ? "Unfollow creator" : "Follow creator"}
+            data-testid={`button-follow-track-${track.id}`}
+          >
+            {isFollowing ? <UserCheck style={{ width: 13, height: 13 }} /> : <UserPlus style={{ width: 13, height: 13 }} />}
+            <span>{isFollowing ? "Following" : "Follow"}</span>
+          </button>
+        )}
       </div>
       {showShare && (
         <ShareDropdown track={track} onClose={() => setShowShare(false)} copied={copied} setCopied={setCopied} />

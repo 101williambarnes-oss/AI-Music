@@ -954,6 +954,16 @@
 .action-btn.like-btn.liked {
   color: #ff4fd8;
 }
+.action-btn.follow-btn {
+  background: linear-gradient(135deg, rgba(160,107,255,.2), rgba(255,79,216,.15));
+  border: 1px solid rgba(160,107,255,.3);
+  color: #a06bff;
+}
+.action-btn.follow-btn.following {
+  background: transparent;
+  border: 1px solid rgba(160,107,255,.25);
+  color: rgba(160,107,255,.7);
+}
 .like-count-pop {
   animation: likePopAnim 0.4s ease;
 }
