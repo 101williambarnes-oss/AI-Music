@@ -1366,7 +1366,10 @@
     box-shadow: 0 4px 12px #050615, 0 8px 0 #050615;
   }
   .topbar-left {
-    display: none;
+    display: flex;
+  }
+  .site-logo-banner {
+    height: 40px;
   }
   .topbar-center {
     flex: 1;
