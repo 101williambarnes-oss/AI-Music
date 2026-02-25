@@ -290,24 +290,7 @@ function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; on
       url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
       testId: "facebook",
     },
-    {
-      name: "Instagram",
-      color: "#e1306c",
-      url: `https://www.instagram.com/`,
-      testId: "instagram",
-    },
-    {
-      name: "TikTok",
-      color: "#fe2c55",
-      url: `https://www.tiktok.com/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-      testId: "tiktok",
-    },
-    {
-      name: "Snapchat",
-      color: "#fffc00",
-      url: `https://www.snapchat.com/share?url=${encodeURIComponent(shareUrl)}`,
-      testId: "snapchat",
-    },
+    
     {
       name: "WhatsApp",
       color: "#25d366",
@@ -350,30 +333,7 @@ function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; on
       url: `https://www.tumblr.com/widgets/share/tool?canonicalUrl=${encodeURIComponent(shareUrl)}&caption=${encodeURIComponent(shareText)}`,
       testId: "tumblr",
     },
-    {
-      name: "Discord",
-      color: "#5865f2",
-      url: `https://discord.com/channels/@me`,
-      testId: "discord",
-    },
-    {
-      name: "YouTube",
-      color: "#ff0000",
-      url: `https://www.youtube.com/`,
-      testId: "youtube",
-    },
-    {
-      name: "Spotify",
-      color: "#1db954",
-      url: `https://open.spotify.com/`,
-      testId: "spotify",
-    },
-    {
-      name: "SoundCloud",
-      color: "#ff5500",
-      url: `https://soundcloud.com/`,
-      testId: "soundcloud",
-    },
+    
     {
       name: "Email",
       color: "#6cf0ff",
