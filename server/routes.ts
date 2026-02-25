@@ -592,9 +592,13 @@ export async function registerRoutes(
       if (isNaN(creatorId)) return res.status(400).json({ message: "Invalid creator ID" });
       const count = await storage.getFollowerCount(creatorId);
       const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
+      const visitorId = req.headers["x-visitor-id"] as string;
       let isFollowing = false;
       if (userId && !isNaN(userId)) {
         isFollowing = await storage.isFollowing(userId, creatorId);
+      } else if (visitorId) {
+        const existing = await storage.getVisitorFollow(visitorId, creatorId);
+        isFollowing = !!existing;
       }
       res.json({ count, isFollowing });
     } catch (error) {
@@ -604,20 +608,40 @@ export async function registerRoutes(
 
   app.post("/api/creators/:id/follow", async (req, res) => {
     const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
-    if (!userId || isNaN(userId)) {
-      return res.status(401).json({ message: "You must be signed in to follow creators" });
+    const visitorId = req.headers["x-visitor-id"] as string;
+    const effectiveId = (userId && !isNaN(userId)) ? userId : null;
+    const effectiveVisitor = visitorId || null;
+    if (!effectiveId && !effectiveVisitor) {
+      return res.status(400).json({ message: "An identifier is required to follow creators" });
     }
     try {
       const creatorId = parseInt(req.params.id);
       if (isNaN(creatorId)) return res.status(400).json({ message: "Invalid creator ID" });
-      const alreadyFollowing = await storage.isFollowing(userId, creatorId);
-      if (alreadyFollowing) {
-        await storage.removeFollow(userId, creatorId);
+      if (effectiveId) {
+        if (effectiveVisitor) {
+          const existingVisitor = await storage.getVisitorFollow(effectiveVisitor, creatorId);
+          if (existingVisitor) {
+            await storage.removeVisitorFollow(effectiveVisitor, creatorId);
+          }
+        }
+        const alreadyFollowing = await storage.isFollowing(effectiveId, creatorId);
+        if (alreadyFollowing) {
+          await storage.removeFollow(effectiveId, creatorId);
+        } else {
+          await storage.addFollow(effectiveId, creatorId);
+        }
+        const count = await storage.getFollowerCount(creatorId);
+        res.json({ count, isFollowing: !alreadyFollowing });
       } else {
-        await storage.addFollow(userId, creatorId);
+        const existing = await storage.getVisitorFollow(effectiveVisitor!, creatorId);
+        if (existing) {
+          await storage.removeVisitorFollow(effectiveVisitor!, creatorId);
+        } else {
+          await storage.addVisitorFollow(effectiveVisitor!, creatorId);
+        }
+        const count = await storage.getFollowerCount(creatorId);
+        res.json({ count, isFollowing: !existing });
       }
-      const count = await storage.getFollowerCount(creatorId);
-      res.json({ count, isFollowing: !alreadyFollowing });
     } catch (error) {
       res.status(500).json({ message: "Failed to toggle follow" });
     }

@@ -12,7 +12,25 @@ function formatPlays(plays: number) {
   return plays.toString();
 }
 
+function getVisitorId(): string {
+  let vid = localStorage.getItem("hwm_visitor_id");
+  if (!vid) {
+    vid = "v_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem("hwm_visitor_id", vid);
+  }
+  return vid;
+}
+
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
+
+function getHeaders(user: AuthUser | null): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (user) {
+    headers["x-user-id"] = String(user.id);
+  }
+  headers["x-visitor-id"] = getVisitorId();
+  return headers;
+}
 
 export default function CreatorProfile() {
   const [, params] = useRoute("/creator/:id");
@@ -81,6 +99,10 @@ export default function CreatorProfile() {
   const { data: followerData } = useQuery<{ count: number; isFollowing: boolean }>({
     queryKey: ["/api/creators", creatorId, "followers"],
     enabled: !!creatorId,
+    queryFn: async () => {
+      const res = await fetch(`/api/creators/${creatorId}/followers`, { headers: getHeaders(user), credentials: "include" });
+      return res.json();
+    },
   });
 
   const followMutation = useMutation({
@@ -88,7 +110,7 @@ export default function CreatorProfile() {
       const res = await fetch(`/api/creators/${creatorId}/follow`, {
         method: "POST",
         credentials: "include",
-        headers: { "x-user-id": String(user?.id || "") },
+        headers: getHeaders(user),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({ message: "Failed" }));
@@ -213,10 +235,6 @@ export default function CreatorProfile() {
                   {!isOwnProfile && (
                     <button
                       onClick={() => {
-                        if (!user) {
-                          window.location.href = "/sign-in";
-                          return;
-                        }
                         followMutation.mutate();
                       }}
                       disabled={followMutation.isPending}

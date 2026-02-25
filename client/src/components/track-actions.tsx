@@ -70,6 +70,10 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
   const { data: followerData } = useQuery<{ count: number; isFollowing: boolean }>({
     queryKey: ["/api/creators", String(track.creatorId), "followers"],
     enabled: !!track.creatorId,
+    queryFn: async () => {
+      const res = await fetch(`/api/creators/${track.creatorId}/followers`, { headers: getHeaders(), credentials: "include" });
+      return res.json();
+    },
   });
 
   const followMutation = useMutation({
@@ -77,7 +81,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
       const res = await fetch(`/api/creators/${track.creatorId}/follow`, {
         method: "POST",
         credentials: "include",
-        headers: { "x-user-id": String(user?.id || "") },
+        headers: getHeaders(),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({ message: "Failed" }));
@@ -235,10 +239,6 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
           <button
             className={`action-btn follow-btn hover-elevate${isFollowing ? " following" : ""}`}
             onClick={() => {
-              if (!user) {
-                window.location.href = "/sign-in";
-                return;
-              }
               followMutation.mutate();
             }}
             disabled={followMutation.isPending}

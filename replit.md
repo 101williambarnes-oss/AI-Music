@@ -4,6 +4,7 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-02-25: Visitor follows - visitors can follow/unfollow creators without signing in (visitor_follows table); follower count includes both user and visitor follows
 - 2026-02-24: Follow system - users can follow/unfollow creators; follower count displayed on creator profiles; follows table in DB
 - 2026-02-21: PWA support - manifest.json, service worker, app icons; site is installable on phones as a home screen app
 - 2026-02-21: New Songs 7-day rotation - tracks auto-expire from New Songs page after 7 days; tracks table now has created_at column; getNewTracks filters by date

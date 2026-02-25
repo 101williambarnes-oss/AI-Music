@@ -67,6 +67,13 @@ export const follows = pgTable("follows", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const visitorFollows = pgTable("visitor_follows", {
+  id: serial("id").primaryKey(),
+  visitorId: text("visitor_id").notNull(),
+  creatorId: integer("creator_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const comments = pgTable("comments", {
   id: serial("id").primaryKey(),
   trackId: integer("track_id").notNull(),
