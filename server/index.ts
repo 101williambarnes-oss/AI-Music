@@ -87,9 +87,18 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const { seedDatabase } = await import("./seed");
-  await seedDatabase();
-  await registerRoutes(httpServer, app);
+  try {
+    console.log("Starting server initialization...");
+    console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+    const { seedDatabase } = await import("./seed");
+    await seedDatabase();
+    console.log("Database ready");
+    await registerRoutes(httpServer, app);
+    console.log("Routes registered");
+  } catch (err) {
+    console.error("FATAL: Server initialization failed:", err);
+    process.exit(1);
+  }
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
