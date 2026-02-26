@@ -31,11 +31,13 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 
 const PgStore = connectPgSimple(session);
+const isProduction = process.env.NODE_ENV === "production";
 app.use(
   session({
     store: new PgStore({
       conString: process.env.DATABASE_URL,
       createTableIfMissing: true,
+      conObject: isProduction ? { ssl: { rejectUnauthorized: false } } : undefined,
     }),
     secret: process.env.SESSION_SECRET || "hwm-secret-key-change-me",
     resave: false,
