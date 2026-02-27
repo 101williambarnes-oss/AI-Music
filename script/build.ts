@@ -42,6 +42,7 @@ async function buildAll() {
 
   console.log("building client...");
   await viteBuild({
+    configFile: false,
     plugins: [react()],
     resolve: {
       alias: {
