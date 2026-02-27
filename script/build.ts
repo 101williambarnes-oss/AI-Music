@@ -76,7 +76,7 @@ async function buildAll() {
       "process.env.NODE_ENV": '"production"',
     },
     minify: true,
-    external: externals,
+    external: [...externals, "vite", "../vite.config", "@replit/vite-plugin-runtime-error-modal", "@replit/vite-plugin-cartographer", "@replit/vite-plugin-dev-banner"],
     logLevel: "info",
   });
 
