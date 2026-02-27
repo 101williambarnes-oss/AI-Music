@@ -50,16 +50,30 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     if (!audio) return;
 
     const isNewTrack = currentTrackIdRef.current !== trackId;
-    if (isNewTrack) {
-      audio.src = fileUrl;
-      audio.load();
-    }
     currentTrackIdRef.current = trackId;
     setCurrentTrackId(trackId);
     setIsPlaying(true);
-    audio.play().catch(() => {
-      setIsPlaying(false);
-    });
+
+    if (isNewTrack) {
+      audio.pause();
+      audio.src = fileUrl;
+      audio.load();
+      const tryPlay = () => {
+        audio.play().catch(() => {
+          setIsPlaying(false);
+        });
+      };
+      if (audio.readyState >= 2) {
+        tryPlay();
+      } else {
+        audio.addEventListener("canplay", tryPlay, { once: true });
+      }
+    } else {
+      audio.play().catch(() => {
+        setIsPlaying(false);
+      });
+    }
+
     if (isNewTrack && !countedPlaysRef.current.has(trackId)) {
       countedPlaysRef.current.add(trackId);
       fetch(`/api/tracks/${trackId}/play`, { method: "POST" }).then(() => {
