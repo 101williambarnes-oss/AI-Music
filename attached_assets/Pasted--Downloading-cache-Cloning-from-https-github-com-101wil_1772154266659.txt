@@ -1,0 +1,95 @@
+==> Downloading cache...
+==> Cloning from https://github.com/101williambarnes-oss/AI-Music
+==> Checking out commit e08952d429e7aa4f4d10ef8e6d00e8f71ceec14c in branch main
+==> Downloaded 123MB in 2s. Extraction took 3s.
+Menu
+==> Using Node.js version 20.20.0 via /opt/render/project/src/.node-version
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Running build command 'yarn install; yarn build'...
+yarn install v1.22.22
+info No lockfile found.
+[1/4] Resolving packages...
+warning archiver > archiver-utils > glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+warning drizzle-kit > @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+warning drizzle-kit > @esbuild-kit/esm-loader > @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+success Saved lockfile.
+Done in 46.74s.
+yarn run v1.22.22
+$ tsx script/build.ts
+building client...
+vite v7.3.1 building client environment for production...
+transforming...
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 1683 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                                                                     2.24 kB │ gzip:   0.80 kB
+../dist/public/assets/design-mockup-DIFF7qtq.png                                            968.45 kB
+../dist/public/assets/ChatGPT_Image_Feb_18__2026__05_26_22_PM_1771460797070-B6lr1liR.png  1,877.19 kB
+../dist/public/assets/ChatGPT_Image_Feb_25__2026__02_42_25_AM_1772012848904-CrhyMrYB.png  1,911.38 kB
+../dist/public/assets/index-D-mK3Le8.css                                                     88.59 kB │ gzip:  15.69 kB
+../dist/public/assets/index-BTk9rTlS.js                                                     350.59 kB │ gzip: 105.74 kB
+✓ built in 4.16s
+building server...
+  dist/index.cjs  1.3mb ⚠️
+Done in 5.61s.
+==> Uploading build...
+==> Uploaded in 6.9s. Compression took 6.9s
+==> Build successful 🎉
+==> Deploying...
+==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+==> Running 'npm install --include=dev && npm run build'
+added 13 packages, and audited 540 packages in 9s
+82 packages are looking for funding
+  run `npm fund` for details
+found 0 vulnerabilities
+> rest-express@1.0.0 build
+> tsx script/build.ts
+building client...
+vite v7.3.1 building client environment for production...
+transforming...
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 1683 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                                                                     2.24 kB │ gzip:   0.80 kB
+../dist/public/assets/design-mockup-DIFF7qtq.png                                            968.45 kB
+../dist/public/assets/ChatGPT_Image_Feb_18__2026__05_26_22_PM_1771460797070-B6lr1liR.png  1,877.19 kB
+../dist/public/assets/ChatGPT_Image_Feb_25__2026__02_42_25_AM_1772012848904-CrhyMrYB.png  1,911.38 kB
+../dist/public/assets/index-D-mK3Le8.css                                                     88.59 kB │ gzip:  15.69 kB
+../dist/public/assets/index-BTk9rTlS.js                                                     350.59 kB │ gzip: 105.74 kB
+✓ built in 17.68s
+building server...
+  dist/index.cjs  1.3mb ⚠️
+⚡ Done in 1294ms
+==> Application exited early
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Running 'npm install --include=dev && npm run build'
+added 13 packages, and audited 540 packages in 9s
+82 packages are looking for funding
+  run `npm fund` for details
+found 0 vulnerabilities
+> rest-express@1.0.0 build
+> tsx script/build.ts
+building client...
+vite v7.3.1 building client environment for production...
+transforming...
+==> No open ports detected, continuing to scan...
+==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 1683 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                                                                     2.24 kB │ gzip:   0.80 kB
+../dist/public/assets/design-mockup-DIFF7qtq.png                                            968.45 kB
+../dist/public/assets/ChatGPT_Image_Feb_18__2026__05_26_22_PM_1771460797070-B6lr1liR.png  1,877.19 kB
+../dist/public/assets/ChatGPT_Image_Feb_25__2026__02_42_25_AM_1772012848904-CrhyMrYB.png  1,911.38 kB
+../dist/public/assets/index-D-mK3Le8.css                                                     88.59 kB │ gzip:  15.69 kB
+../dist/public/assets/index-BTk9rTlS.js                                                     350.59 kB │ gzip: 105.74 kB
+✓ built in 17.59s
+building server...
+  dist/index.cjs  1.3mb ⚠️
+⚡ Done in 990ms
