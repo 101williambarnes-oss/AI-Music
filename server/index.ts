@@ -4,6 +4,7 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
+import createMemoryStore from "memorystore";
 
 const app = express();
 const httpServer = createServer(app);
@@ -75,15 +76,21 @@ app.use((req, res, next) => {
     await seedDatabase();
     console.log("Database ready");
 
-    const PgStore = connectPgSimple(session);
     const isProduction = process.env.NODE_ENV === "production";
+    let sessionStore;
+    if (isProduction) {
+      const MemoryStore = createMemoryStore(session);
+      sessionStore = new MemoryStore({ checkPeriod: 86400000 });
+    } else {
+      const PgStore = connectPgSimple(session);
+      sessionStore = new PgStore({
+        conString: process.env.DATABASE_URL,
+        createTableIfMissing: true,
+      });
+    }
     app.use(
       session({
-        store: new PgStore({
-          conString: process.env.DATABASE_URL,
-          createTableIfMissing: false,
-          conObject: isProduction ? { ssl: { rejectUnauthorized: false } } : undefined,
-        }),
+        store: sessionStore,
         secret: process.env.SESSION_SECRET || "hwm-secret-key-change-me",
         resave: false,
         saveUninitialized: false,
