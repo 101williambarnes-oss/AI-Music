@@ -32,21 +32,29 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const currentTrackIdRef = useRef<number | null>(null);
   const countedPlaysRef = useRef<Set<number>>(new Set());
 
+  const getAudio = useCallback(() => {
+    if (!audioRef.current) {
+      const audio = new Audio();
+      audio.setAttribute("playsinline", "true");
+      audio.addEventListener("ended", () => {
+        setIsPlaying(false);
+      });
+      audioRef.current = audio;
+    }
+    return audioRef.current;
+  }, []);
+
   useEffect(() => {
-    const audio = new Audio();
-    audioRef.current = audio;
-    audio.addEventListener("ended", () => {
-      setIsPlaying(false);
-    });
     return () => {
-      audio.pause();
-      audio.removeEventListener("ended", () => {});
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, []);
 
   const play = useCallback((trackId: number, fileUrl: string) => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const audio = getAudio();
 
     const isNewTrack = currentTrackIdRef.current !== trackId;
     if (isNewTrack) {
@@ -55,8 +63,16 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
     currentTrackIdRef.current = trackId;
     setCurrentTrackId(trackId);
-    setIsPlaying(true);
-    audio.play().catch(() => {});
+    const playPromise = audio.play();
+    if (playPromise) {
+      playPromise.then(() => {
+        setIsPlaying(true);
+      }).catch(() => {
+        setIsPlaying(false);
+      });
+    } else {
+      setIsPlaying(true);
+    }
     if (isNewTrack && !countedPlaysRef.current.has(trackId)) {
       countedPlaysRef.current.add(trackId);
       fetch(`/api/tracks/${trackId}/play`, { method: "POST" }).then(() => {
@@ -71,17 +87,15 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const pause = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
+    if (!audioRef.current) return;
+    audioRef.current.pause();
     setIsPlaying(false);
   }, []);
 
   const stop = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
-    audio.currentTime = 0;
+    if (!audioRef.current) return;
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
     setIsPlaying(false);
   }, []);
 
