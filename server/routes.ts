@@ -6,6 +6,22 @@ import bcrypt from "bcryptjs";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+async function uploadToCloudinary(filePath: string, resourceType: "video" | "image" | "raw" | "auto"): Promise<string> {
+  const result = await cloudinary.uploader.upload(filePath, {
+    resource_type: resourceType,
+    folder: "hitwavemedia",
+  });
+  fs.unlinkSync(filePath);
+  return result.secure_url;
+}
 
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
@@ -164,6 +180,10 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Track not found or has no file" });
       }
 
+      if (track.fileUrl.startsWith("http")) {
+        return res.redirect(track.fileUrl);
+      }
+
       const filePath = path.join(process.cwd(), track.fileUrl.replace(/^\//, ""));
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({ message: "File not found" });
@@ -221,7 +241,13 @@ export async function registerRoutes(
         await storage.updateUserCreatorId(user.id, creator.id);
       }
 
-      const fileUrl = req.file ? `/uploads/${req.file.filename}` : null;
+      let fileUrl: string | null = null;
+      if (req.file) {
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext);
+        const resourceType = isImage ? "image" as const : "video" as const;
+        fileUrl = await uploadToCloudinary(req.file.path, resourceType);
+      }
 
       const track = await storage.insertTrack({
         title,
@@ -280,7 +306,7 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Only image files are allowed for avatars" });
       }
 
-      const avatarUrl = `/uploads/${req.file.filename}`;
+      const avatarUrl = await uploadToCloudinary(req.file.path, "image");
       await storage.updateCreatorAvatar(creatorId, avatarUrl);
 
       res.json({ avatarUrl });
@@ -318,9 +344,22 @@ export async function registerRoutes(
       }
 
       if (track.fileUrl) {
-        const filePath = path.join(process.cwd(), track.fileUrl.replace(/^\//, ""));
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+        if (track.fileUrl.startsWith("http") && track.fileUrl.includes("cloudinary")) {
+          try {
+            const urlParts = track.fileUrl.split("/");
+            const folderAndFile = urlParts.slice(urlParts.indexOf("hitwavemedia")).join("/");
+            const publicId = folderAndFile.replace(/\.[^.]+$/, "");
+            const ext = path.extname(track.fileUrl).toLowerCase();
+            const resType = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext) ? "image" : "video";
+            await cloudinary.uploader.destroy(publicId, { resource_type: resType });
+          } catch (e) {
+            console.error("Cloudinary delete error:", e);
+          }
+        } else {
+          const filePath = path.join(process.cwd(), track.fileUrl.replace(/^\//, ""));
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
         }
       }
 

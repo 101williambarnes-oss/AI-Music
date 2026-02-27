@@ -4,6 +4,8 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-02-27: Cloudinary integration - uploads now stored in Cloudinary cloud storage instead of local disk; files persist across Render redeploys; env vars: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+- 2026-02-27: Audio player mobile fix - wait for canplay event before playing on new tracks; playsinline attribute for iOS
 - 2026-02-25: Visitor follows - visitors can follow/unfollow creators without signing in (visitor_follows table); follower count includes both user and visitor follows
 - 2026-02-24: Follow system - users can follow/unfollow creators; follower count displayed on creator profiles; follows table in DB
 - 2026-02-21: PWA support - manifest.json, service worker, app icons; site is installable on phones as a home screen app
@@ -23,6 +25,7 @@ Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark them
 - Frontend: React + Vite + TailwindCSS + shadcn/ui
 - Backend: Express.js
 - Database: PostgreSQL with Drizzle ORM
+- File Storage: Cloudinary (cloud-based, persists across deploys)
 - Routing: wouter
 - State: TanStack React Query
 
