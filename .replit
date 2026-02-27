@@ -38,3 +38,9 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[userenv]
+
+[userenv.shared]
+CLOUDINARY_CLOUD_NAME = "dc1fkoosp"
+CLOUDINARY_API_KEY = "653566921657838"
