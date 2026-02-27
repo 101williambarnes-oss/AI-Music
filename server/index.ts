@@ -30,27 +30,6 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
-const PgStore = connectPgSimple(session);
-const isProduction = process.env.NODE_ENV === "production";
-app.use(
-  session({
-    store: new PgStore({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
-      conObject: isProduction ? { ssl: { rejectUnauthorized: false } } : undefined,
-    }),
-    secret: process.env.SESSION_SECRET || "hwm-secret-key-change-me",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-    },
-  }),
-);
-
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -95,6 +74,29 @@ app.use((req, res, next) => {
     const { seedDatabase } = await import("./seed");
     await seedDatabase();
     console.log("Database ready");
+
+    const PgStore = connectPgSimple(session);
+    const isProduction = process.env.NODE_ENV === "production";
+    app.use(
+      session({
+        store: new PgStore({
+          conString: process.env.DATABASE_URL,
+          createTableIfMissing: false,
+          conObject: isProduction ? { ssl: { rejectUnauthorized: false } } : undefined,
+        }),
+        secret: process.env.SESSION_SECRET || "hwm-secret-key-change-me",
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+          maxAge: 30 * 24 * 60 * 60 * 1000,
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+        },
+      }),
+    );
+    console.log("Session store ready");
+
     await registerRoutes(httpServer, app);
     console.log("Routes registered");
   } catch (err) {
