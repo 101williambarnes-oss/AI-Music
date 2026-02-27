@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { type Track } from "@shared/schema";
-import { Trash2, Download } from "lucide-react";
+import { Trash2, Download, Library } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
@@ -107,7 +107,33 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
         </div>
         <div className="meta" style={{ minWidth: 0, overflow: "hidden" }}>
           <div className="title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-title-${track.id}`}>{track.title}</div>
-          <div className="by" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-artist-${track.id}`}>{track.artist}</div>
+          <div className="by" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }} data-testid={`text-track-artist-${track.id}`}>
+            {track.artist}
+            {track.creatorId && (
+              <a
+                href={`/creator/${track.creatorId}`}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 3,
+                  fontSize: "0.65rem",
+                  color: "#6cf0ff",
+                  textDecoration: "none",
+                  opacity: 0.8,
+                  padding: "1px 6px",
+                  borderRadius: 4,
+                  background: "rgba(108,240,255,.08)",
+                  border: "1px solid rgba(108,240,255,.15)",
+                  whiteSpace: "nowrap",
+                }}
+                title="View creator's library"
+                data-testid={`link-library-${track.id}`}
+              >
+                <Library size={10} /> Library
+              </a>
+            )}
+          </div>
         </div>
         {showDownload && track.fileUrl && (
           <a
