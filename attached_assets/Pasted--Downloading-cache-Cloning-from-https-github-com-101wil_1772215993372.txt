@@ -1,0 +1,63 @@
+==> Downloading cache...
+==> Cloning from https://github.com/101williambarnes-oss/AI-Music
+Menu
+==> Checking out commit 358f37026631399c7de4278f7e24ae7f6cacc41f in branch main
+==> Downloaded 108MB in 2s. Extraction took 3s.
+==> Using Node.js version 20.20.0 via /opt/render/project/src/.node-version
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Running build command 'yarn install; yarn build'...
+yarn install v1.22.22
+info No lockfile found.
+[1/4] Resolving packages...
+warning archiver > archiver-utils > glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+warning drizzle-kit > @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+warning drizzle-kit > @esbuild-kit/esm-loader > @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+success Saved lockfile.
+Done in 54.59s.
+yarn run v1.22.22
+$ tsx script/build.ts
+building client...
+vite v7.3.1 building client environment for production...
+transforming...
+✓ 6 modules transformed.
+✗ Build failed in 1.02s
+[vite:css] Failed to load PostCSS config (searchPath: /opt/render/project/src/client): [Error] Loading PostCSS Plugin failed: Cannot find module 'autoprefixer'
+Require stack:
+- /opt/render/project/src/postcss.config.js
+(@/opt/render/project/src/postcss.config.js)
+Error: Loading PostCSS Plugin failed: Cannot find module 'autoprefixer'
+Require stack:
+- /opt/render/project/src/postcss.config.js
+(@/opt/render/project/src/postcss.config.js)
+    at load (/opt/render/project/src/node_modules/vite/dist/node/chunks/config.js:7660:10)
+    at async Promise.all (index 1)
+    at async plugins (/opt/render/project/src/node_modules/vite/dist/node/chunks/config.js:7682:11)
+    at async processResult (/opt/render/project/src/node_modules/vite/dist/node/chunks/config.js:7721:13)
+file: /opt/render/project/src/client/src/index.css
+ {
+  code: 'PLUGIN_ERROR',
+  plugin: 'vite:css',
+  hook: 'transform',
+  id: '/opt/render/project/src/client/src/index.css',
+  watchFiles: [
+    '/opt/render/project/src/client/index.html',
+    '/opt/render/project/src/client/src/main.tsx',
+    '/opt/render/project/src/package.json',
+    '/opt/render/project/src/node_modules/react/jsx-runtime.js',
+    '/opt/render/project/src/node_modules/react-dom/client.js',
+    '/opt/render/project/src/node_modules/react/cjs/react-jsx-runtime.production.min.js',
+    '/opt/render/project/src/node_modules/react-dom/index.js',
+    '/opt/render/project/src/node_modules/react/index.js',
+    '/opt/render/project/src/node_modules/react/cjs/react.production.min.js',
+    '/opt/render/project/src/node_modules/react-dom/cjs/react-dom.production.min.js',
+    '/opt/render/project/src/client/src/App.tsx',
+    '/opt/render/project/src/client/src/index.css'
+  ]
+}
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+==> Build failed 😞
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
