@@ -22,7 +22,7 @@ export default function Upload() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
-  const TOOLS = ["Suno", "Udio", "Stable Audio", "AIVA", "Other"];
+  const TOOLS = ["Suno", "Udio", "Beatoven.ai", "Soundraw", "Stable Audio", "Mubert", "Riffusion", "Uberduck AI", "MusicGen", "Producer AI", "Boomy", "Ecrett Music", "Soundful", "Other"];
 
   useEffect(() => {
     const stored = localStorage.getItem("hwm_user");
