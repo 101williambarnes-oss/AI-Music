@@ -600,7 +600,7 @@
   gap: 6px;
   padding: 2px 22px 0;
   flex-wrap: wrap;
-  margin-top: -10px;
+  margin-top: 2px;
 }
 .quick-nav-tab {
   display: inline-flex;
