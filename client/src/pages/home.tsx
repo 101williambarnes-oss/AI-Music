@@ -239,6 +239,7 @@ export default function Home() {
 
       <section className="hero" data-testid="section-hero">
         <img src={siteLogo} alt="Hit Wave Media" className="hero-logo" data-testid="img-hero-logo" />
+        <div style={{ color: "#6cf0ff", fontSize: 16, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", marginTop: 6, textShadow: "0 0 12px rgba(108,240,255,.5)" }} data-testid="text-tagline">The Home of AI Music</div>
       </section>
 
       <nav className="quick-nav" data-testid="nav-quick-links">
