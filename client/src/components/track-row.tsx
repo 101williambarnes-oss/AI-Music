@@ -11,6 +11,7 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
   const hasAudio = !!track.fileUrl;
   const videoRef = useRef<HTMLVideoElement>(null);
   const isVideo = !!track.fileUrl && /\.(mp4|webm|mov)$/i.test(track.fileUrl);
+  const isMedia = !!track.fileUrl;
   const [showVideoModal, setShowVideoModal] = useState(false);
   const wantModalRef = useRef(false);
 
@@ -33,7 +34,7 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
 
   const handleRowClick = useCallback(() => {
     if (!hasAudio) return;
-    if (isVideo) {
+    if (isMedia) {
       wantModalRef.current = true;
       if (currentTrackId !== track.id) {
         play(track.id, track.fileUrl!);
@@ -44,7 +45,7 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
     } else {
       toggle(track.id, track.fileUrl!);
     }
-  }, [hasAudio, isVideo, track.id, track.fileUrl, play, toggle, currentTrackId, isPlaying]);
+  }, [hasAudio, isMedia, track.id, track.fileUrl, play, toggle, currentTrackId, isPlaying]);
 
   function handleModalClose() {
     wantModalRef.current = false;
@@ -186,7 +187,7 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
         )}
       </div>
       <TrackActions track={track} hideComments={hideComments} />
-      {showVideoModal && isVideo && (
+      {showVideoModal && isMedia && (
         <VideoModal track={track} onClose={handleModalClose} />
       )}
     </div>

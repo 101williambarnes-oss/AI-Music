@@ -24,6 +24,7 @@ export function VideoModal({
   const { currentTrackId, isPlaying, toggle, stop, seek, getCurrentTime, getDuration } = useAudioPlayer();
   const isThisTrack = currentTrackId === track.id;
   const isCurrentlyPlaying = isThisTrack && isPlaying;
+  const isVideoFile = !!track.fileUrl && /\.(mp4|webm|mov)$/i.test(track.fileUrl);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -142,19 +143,67 @@ export function VideoModal({
 
         <div className="video-modal-scroll" data-testid="video-modal-scroll">
           <div className="video-modal-player" data-testid="video-modal-player">
-            <video
-              ref={videoRef}
-              src={track.fileUrl!}
-              muted
-              loop
-              playsInline
-              onClick={handleToggle}
-              style={{ width: "100%", height: "100%", objectFit: "contain", cursor: "pointer", background: "#000" }}
-              data-testid={`video-modal-video-${track.id}`}
-            />
-            {!isCurrentlyPlaying && (
-              <div className="video-modal-play-overlay" onClick={handleToggle} data-testid="button-video-play-overlay">
-                <Play style={{ width: 48, height: 48, color: "rgba(234,240,255,.9)", fill: "rgba(234,240,255,.9)" }} />
+            {isVideoFile ? (
+              <>
+                <video
+                  ref={videoRef}
+                  src={track.fileUrl!}
+                  muted
+                  loop
+                  playsInline
+                  onClick={handleToggle}
+                  style={{ width: "100%", height: "100%", objectFit: "contain", cursor: "pointer", background: "#000" }}
+                  data-testid={`video-modal-video-${track.id}`}
+                />
+                {!isCurrentlyPlaying && (
+                  <div className="video-modal-play-overlay" onClick={handleToggle} data-testid="button-video-play-overlay">
+                    <Play style={{ width: 48, height: 48, color: "rgba(234,240,255,.9)", fill: "rgba(234,240,255,.9)" }} />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div
+                onClick={handleToggle}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  background: "radial-gradient(ellipse at center, rgba(108,240,255,.08) 0%, rgba(7,10,20,.95) 70%)",
+                }}
+                data-testid={`audio-modal-display-${track.id}`}
+              >
+                <div style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: "50%",
+                  background: isCurrentlyPlaying
+                    ? "linear-gradient(135deg, #6cf0ff, #a06bff, #ff4fd8)"
+                    : "linear-gradient(135deg, rgba(108,240,255,.3), rgba(160,107,255,.3), rgba(255,79,216,.3))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: isCurrentlyPlaying
+                    ? "0 0 40px rgba(108,240,255,.4), 0 0 80px rgba(160,107,255,.2)"
+                    : "0 0 20px rgba(108,240,255,.15)",
+                  transition: "all 0.3s ease",
+                  animation: isCurrentlyPlaying ? "pulse 2s ease-in-out infinite" : "none",
+                }}>
+                  {isCurrentlyPlaying ? (
+                    <Pause style={{ width: 48, height: 48, color: "#fff", fill: "#fff" }} />
+                  ) : (
+                    <Play style={{ width: 48, height: 48, color: "#fff", fill: "#fff", marginLeft: 4 }} />
+                  )}
+                </div>
+                <div style={{ marginTop: 24, fontSize: "1.3rem", fontWeight: 700, color: "#eaf0ff", textAlign: "center" }}>
+                  {track.title}
+                </div>
+                <div style={{ marginTop: 8, fontSize: "0.9rem", color: "rgba(234,240,255,.6)" }}>
+                  {track.artist}
+                </div>
               </div>
             )}
           </div>
