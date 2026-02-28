@@ -524,7 +524,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, rgba(7,10,20,.3) 0%, rgba(7,10,20,.85) 60%, #070a14 100%);
+  background: radial-gradient(ellipse at center, rgba(7,10,20,.05) 0%, rgba(7,10,20,.5) 55%, #070a14 100%);
   z-index: 2;
 }
 .hero::after {
