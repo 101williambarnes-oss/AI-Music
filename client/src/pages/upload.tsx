@@ -17,7 +17,10 @@ export default function Upload() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
   const TOOLS = ["Suno", "Udio", "Stable Audio", "AIVA", "Other"];
@@ -77,6 +80,25 @@ export default function Upload() {
     }
   }
 
+  function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = e.target.files?.[0] || null;
+    if (!selected) return;
+    if (coverPreview) URL.revokeObjectURL(coverPreview);
+    const ext = selected.name.substring(selected.name.lastIndexOf(".")).toLowerCase();
+    if (![".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm", ".mov"].includes(ext)) {
+      setError("Cover must be an image (JPG, PNG, GIF, WEBP) or video (MP4, WEBM, MOV)");
+      return;
+    }
+    if (selected.size > 50 * 1024 * 1024) {
+      setError("File is too large. Maximum size is 50MB.");
+      return;
+    }
+    setError("");
+    setCoverFile(selected);
+    const isImg = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext);
+    setCoverPreview(isImg ? URL.createObjectURL(selected) : "video");
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -99,6 +121,7 @@ export default function Upload() {
       formData.append("genre", genre);
       formData.append("aiTools", JSON.stringify(aiTools));
       formData.append("file", file);
+      if (coverFile) formData.append("cover", coverFile);
       if (userData?.id) formData.append("userId", String(userData.id));
 
       const res = await fetch("/api/tracks/upload", {
@@ -240,6 +263,49 @@ export default function Upload() {
                   </div>
                 )}
               </div>
+              {file && /\.(mp3|wav|ogg|flac|m4a|aac)$/i.test(file.name) && (
+                <div style={{ marginTop: 10 }}>
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov"
+                    onChange={handleCoverChange}
+                    style={{ display: "none" }}
+                    data-testid="input-cover-file"
+                  />
+                  <div
+                    onClick={() => coverInputRef.current?.click()}
+                    style={{
+                      width: "100%",
+                      padding: coverFile ? "10px 14px" : "12px 14px",
+                      background: coverFile ? "rgba(108,240,255,.08)" : "rgba(255,255,255,.04)",
+                      border: `1px dashed ${coverFile ? "rgba(108,240,255,.4)" : "rgba(108,240,255,.15)"}`,
+                      borderRadius: 6,
+                      color: coverFile ? "#6cf0ff" : "rgba(170,182,232,.5)",
+                      fontSize: 13,
+                      textAlign: "center",
+                      cursor: "pointer",
+                      boxSizing: "border-box" as const,
+                    }}
+                    data-testid="button-choose-cover"
+                  >
+                    {coverFile ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        {coverPreview && coverPreview !== "video" && (
+                          <img src={coverPreview} alt="Cover" style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4 }} />
+                        )}
+                        {coverPreview === "video" && (
+                          <span style={{ background: "rgba(108,240,255,.15)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>Video</span>
+                        )}
+                        <span>{coverFile.name}</span>
+                        <span style={{ color: "rgba(170,182,232,.4)", fontSize: 11, marginLeft: "auto" }}>Click to change</span>
+                      </div>
+                    ) : (
+                      <div>Add image or video to go with your song (optional)</div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div style={{ marginBottom: 16 }}>

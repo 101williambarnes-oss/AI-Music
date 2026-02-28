@@ -258,7 +258,10 @@ export async function registerRoutes(
       let coverUrl: string | null = null;
       if (files?.cover?.[0]) {
         const coverFile = files.cover[0];
-        coverUrl = await uploadToCloudinary(coverFile.path, "image");
+        const coverExt = path.extname(coverFile.originalname).toLowerCase();
+        const isCoverImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(coverExt);
+        const coverResourceType = isCoverImage ? "image" as const : "video" as const;
+        coverUrl = await uploadToCloudinary(coverFile.path, coverResourceType);
       }
 
       const track = await storage.insertTrack({
