@@ -238,6 +238,7 @@ export default function Home() {
       </header>
 
       <section className="hero" data-testid="section-hero" style={{ backgroundImage: `url(${heroBg})` }}>
+        <img src={siteLogo} alt="Hit Wave Media" className="hero-logo" data-testid="img-hero-logo" />
       </section>
 
       <nav className="quick-nav" data-testid="nav-quick-links">

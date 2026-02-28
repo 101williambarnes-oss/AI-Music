@@ -509,6 +509,16 @@
   background-color: #050615;
 }
 
+.hero-logo {
+  position: relative;
+  z-index: 3;
+  width: 70%;
+  max-width: 700px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(108,240,255,.35)) drop-shadow(0 0 30px rgba(160,107,255,.2));
+}
+
 .hero::before {
   content: "";
   position: absolute;
@@ -1451,6 +1461,9 @@
   .hero {
     min-height: 180px;
     background-position: center 60%;
+  }
+  .hero-logo {
+    width: 85%;
   }
   .heroTitle {
     font-size: 28px !important;
