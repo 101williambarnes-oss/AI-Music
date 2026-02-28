@@ -512,8 +512,8 @@
 .hero-logo {
   position: relative;
   z-index: 3;
-  width: 70%;
-  max-width: 700px;
+  width: 90%;
+  max-width: 900px;
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 0 12px rgba(108,240,255,.35)) drop-shadow(0 0 30px rgba(160,107,255,.2));
@@ -1463,7 +1463,7 @@
     background-position: center 60%;
   }
   .hero-logo {
-    width: 85%;
+    width: 95%;
   }
   .heroTitle {
     font-size: 28px !important;
