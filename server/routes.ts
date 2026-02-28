@@ -7,6 +7,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { v2 as cloudinary } from "cloudinary";
+import * as mm from "music-metadata";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -21,6 +22,24 @@ async function uploadToCloudinary(filePath: string, resourceType: "video" | "ima
   });
   fs.unlinkSync(filePath);
   return result.secure_url;
+}
+
+async function extractEmbeddedArtwork(filePath: string): Promise<string | null> {
+  try {
+    const metadata = await mm.parseFile(filePath);
+    const picture = metadata.common.picture?.[0];
+    if (!picture || !picture.data || picture.data.length < 100) return null;
+
+    const ext = picture.format?.includes("png") ? ".png" : ".jpg";
+    const tempPath = path.join(uploadsDir, `cover-${Date.now()}${ext}`);
+    fs.writeFileSync(tempPath, picture.data);
+
+    const coverUrl = await uploadToCloudinary(tempPath, "image");
+    return coverUrl;
+  } catch (err) {
+    console.error("Failed to extract embedded artwork:", err);
+    return null;
+  }
 }
 
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -247,21 +266,28 @@ export async function registerRoutes(
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
       let fileUrl: string | null = null;
-      if (files?.file?.[0]) {
-        const mainFile = files.file[0];
-        const ext = path.extname(mainFile.originalname).toLowerCase();
-        const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext);
-        const resourceType = isImage ? "image" as const : "video" as const;
-        fileUrl = await uploadToCloudinary(mainFile.path, resourceType);
-      }
-
       let coverUrl: string | null = null;
+
       if (files?.cover?.[0]) {
         const coverFile = files.cover[0];
         const coverExt = path.extname(coverFile.originalname).toLowerCase();
         const isCoverImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(coverExt);
         const coverResourceType = isCoverImage ? "image" as const : "video" as const;
         coverUrl = await uploadToCloudinary(coverFile.path, coverResourceType);
+      }
+
+      if (files?.file?.[0]) {
+        const mainFile = files.file[0];
+        const ext = path.extname(mainFile.originalname).toLowerCase();
+        const isAudio = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"].includes(ext);
+        const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext);
+        const resourceType = isImage ? "image" as const : "video" as const;
+
+        if (isAudio && !coverUrl) {
+          coverUrl = await extractEmbeddedArtwork(mainFile.path);
+        }
+
+        fileUrl = await uploadToCloudinary(mainFile.path, resourceType);
       }
 
       const track = await storage.insertTrack({
