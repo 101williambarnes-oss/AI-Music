@@ -336,12 +336,12 @@
   height: 120px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 0 8px rgba(108,240,255,.3)) drop-shadow(0 0 20px rgba(160,107,255,.2));
-  transition: filter .3s, transform .3s;
+  filter: brightness(1) drop-shadow(0 0 6px rgba(108,240,255,.2)) drop-shadow(0 0 16px rgba(160,107,255,.15));
+  transition: filter .45s ease, transform .45s ease;
 }
 .site-logo-banner:hover {
-  transform: scale(1.04);
-  filter: drop-shadow(0 0 12px rgba(108,240,255,.5)) drop-shadow(0 0 28px rgba(160,107,255,.3));
+  transform: scale(1.02);
+  filter: brightness(1.15) drop-shadow(0 0 10px rgba(108,240,255,.45)) drop-shadow(0 0 24px rgba(108,240,255,.25)) drop-shadow(0 0 40px rgba(160,107,255,.3));
 }
 .logo {
   font-weight: 900;
