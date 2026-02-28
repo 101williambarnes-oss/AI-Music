@@ -498,13 +498,13 @@
 
 .hero {
   position: relative;
-  min-height: 300px;
+  min-height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   background-size: cover;
-  background-position: center;
+  background-position: center 30%;
   background-repeat: no-repeat;
   background-color: #050615;
 }
@@ -1459,8 +1459,8 @@
   }
 
   .hero {
-    min-height: 180px;
-    background-position: center 60%;
+    min-height: 120px;
+    background-position: center 30%;
   }
   .hero-logo {
     width: 95%;
@@ -1594,8 +1594,8 @@
   }
 
   .hero {
-    min-height: 140px;
-    background-position: center 65%;
+    min-height: 100px;
+    background-position: center 30%;
   }
   .heroTitle {
     font-size: 24px !important;
