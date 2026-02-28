@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
-import { Search, Music, User, X } from "lucide-react";
+import { Search, Music, User, X, Library } from "lucide-react";
 import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_1771460797070.png";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { TrackRow } from "@/components/track-row";
@@ -247,6 +247,12 @@ export default function Home() {
         <a href="/new-creators" className="quick-nav-tab" data-testid="link-quick-new-creators">
           New Creators
         </a>
+        {user && user.creatorId && (
+          <a href={`/creator/${user.creatorId}`} className="quick-nav-tab quick-nav-library" data-testid="link-quick-my-library">
+            <Library style={{ width: 14, height: 14 }} />
+            My Library
+          </a>
+        )}
       </nav>
 
       <div className="five-columns" data-testid="section-content">

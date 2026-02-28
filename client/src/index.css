@@ -602,6 +602,19 @@
   border-color: rgba(108,240,255,.3);
 }
 
+.quick-nav-library {
+  margin-left: auto;
+  gap: 6px;
+  background: rgba(160,107,255,.12);
+  border-color: rgba(160,107,255,.25);
+  color: #c9a0ff;
+}
+.quick-nav-library:hover {
+  background: rgba(160,107,255,.22);
+  color: #dfc0ff;
+  border-color: rgba(160,107,255,.45);
+}
+
 .five-columns {
   display: grid;
   grid-template-columns: 1fr;
