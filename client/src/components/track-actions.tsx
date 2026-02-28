@@ -194,19 +194,26 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
           <Play style={{ width: 13, height: 13, fill: "currentColor" }} />
           {formatPlays(track.plays)}
         </span>
-        <button
-          className={`action-btn like-btn hover-elevate${liked ? " liked" : ""}`}
-          onClick={handleLike}
-          title={liked ? "Unlike" : "Like"}
-          data-testid={`button-like-${track.id}`}
-        >
-          <Heart style={{ width: 14, height: 14, fill: liked ? "#ff4fd8" : "none", stroke: liked ? "#ff4fd8" : "currentColor", transition: "all 0.2s ease" }} />
-          <span
-            className={likePop ? "like-count-pop" : ""}
-            style={{ fontWeight: 900, fontSize: "0.85rem", minWidth: 12, transition: "color 0.2s ease", color: liked ? "#ff4fd8" : undefined }}
-            data-testid={`text-like-count-${track.id}`}
-          >{likeCount}</span>
-        </button>
+        {isOwnTrack ? (
+          <span className="action-btn" style={{ opacity: 0.4, cursor: "default" }} title="Like count" data-testid={`text-like-count-${track.id}`}>
+            <Heart style={{ width: 14, height: 14, fill: "none", stroke: "currentColor" }} />
+            <span style={{ fontWeight: 900, fontSize: "0.85rem", minWidth: 12 }}>{likeCount}</span>
+          </span>
+        ) : (
+          <button
+            className={`action-btn like-btn hover-elevate${liked ? " liked" : ""}`}
+            onClick={handleLike}
+            title={liked ? "Unlike" : "Like"}
+            data-testid={`button-like-${track.id}`}
+          >
+            <Heart style={{ width: 14, height: 14, fill: liked ? "#ff4fd8" : "none", stroke: liked ? "#ff4fd8" : "currentColor", transition: "all 0.2s ease" }} />
+            <span
+              className={likePop ? "like-count-pop" : ""}
+              style={{ fontWeight: 900, fontSize: "0.85rem", minWidth: 12, transition: "color 0.2s ease", color: liked ? "#ff4fd8" : undefined }}
+              data-testid={`text-like-count-${track.id}`}
+            >{likeCount}</span>
+          </button>
+        )}
         {!hideComments && (
           <button
             className={`action-btn comment-btn hover-elevate${showComments ? " active" : ""}`}
