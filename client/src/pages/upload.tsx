@@ -5,17 +5,6 @@ import { Upload as UploadIcon } from "lucide-react";
 const ALLOWED_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".mp4", ".webm", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
 const ACCEPT = ALLOWED_EXTS.join(",");
 
-const DEFAULT_COVERS = [
-  { id: "neon-wave", label: "Neon Wave", gradient: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)" },
-  { id: "cyber-pink", label: "Cyber Pink", gradient: "linear-gradient(135deg, #1a0a2e 0%, #6b1d5e 40%, #ff4fd8 100%)" },
-  { id: "ocean-glow", label: "Ocean Glow", gradient: "linear-gradient(135deg, #0a1628 0%, #0d4f6e 50%, #6cf0ff 100%)" },
-  { id: "purple-haze", label: "Purple Haze", gradient: "linear-gradient(135deg, #0d0221 0%, #4a1a8a 50%, #a06bff 100%)" },
-  { id: "sunset-fire", label: "Sunset Fire", gradient: "linear-gradient(135deg, #1a0a0a 0%, #8b2500 40%, #ff6b35 100%)" },
-  { id: "electric-green", label: "Electric Green", gradient: "linear-gradient(135deg, #0a1a0a 0%, #1b5e20 50%, #00ff88 100%)" },
-  { id: "midnight-gold", label: "Midnight Gold", gradient: "linear-gradient(135deg, #0a0a1a 0%, #4a3800 50%, #ffd700 100%)" },
-  { id: "deep-space", label: "Deep Space", gradient: "linear-gradient(135deg, #000000 0%, #1a0033 40%, #6cf0ff 70%, #ff4fd8 100%)" },
-];
-
 export default function Upload() {
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
@@ -30,7 +19,6 @@ export default function Upload() {
   const [preview, setPreview] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [selectedDefaultCover, setSelectedDefaultCover] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
@@ -112,7 +100,6 @@ export default function Upload() {
     setError("");
     setCoverFile(selected);
     setCoverPreview(URL.createObjectURL(selected));
-    setSelectedDefaultCover(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -139,8 +126,6 @@ export default function Upload() {
       formData.append("file", file);
       if (coverFile) {
         formData.append("cover", coverFile);
-      } else if (selectedDefaultCover) {
-        formData.append("defaultCover", selectedDefaultCover);
       }
       if (userData?.id) formData.append("userId", String(userData.id));
 
@@ -329,37 +314,6 @@ export default function Upload() {
                   </div>
                 )}
               </div>
-              {!coverFile && (
-                <div style={{ marginTop: 10 }}>
-                  <div style={{ color: "rgba(170,182,232,.5)", fontSize: 12, marginBottom: 8 }}>Or pick a background:</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-                    {DEFAULT_COVERS.map((cover) => (
-                      <div
-                        key={cover.id}
-                        onClick={() => setSelectedDefaultCover(selectedDefaultCover === cover.id ? null : cover.id)}
-                        style={{
-                          width: "100%",
-                          aspectRatio: "1",
-                          background: cover.gradient,
-                          borderRadius: 8,
-                          cursor: "pointer",
-                          border: selectedDefaultCover === cover.id ? "2px solid #6cf0ff" : "2px solid rgba(108,240,255,.12)",
-                          boxShadow: selectedDefaultCover === cover.id ? "0 0 12px rgba(108,240,255,.4)" : "none",
-                          transition: "border-color .2s, box-shadow .2s",
-                          display: "flex",
-                          alignItems: "flex-end",
-                          justifyContent: "center",
-                          padding: 4,
-                        }}
-                        title={cover.label}
-                        data-testid={`button-default-cover-${cover.id}`}
-                      >
-                        <span style={{ fontSize: 9, color: "rgba(255,255,255,.6)", textAlign: "center" }}>{cover.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             <div style={{ marginBottom: 16 }}>

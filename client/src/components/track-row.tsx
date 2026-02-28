@@ -6,23 +6,6 @@ import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
 import { useQuery } from "@tanstack/react-query";
 
-const GRADIENT_MAP: Record<string, string> = {
-  "neon-wave": "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
-  "cyber-pink": "linear-gradient(135deg, #1a0a2e 0%, #6b1d5e 40%, #ff4fd8 100%)",
-  "ocean-glow": "linear-gradient(135deg, #0a1628 0%, #0d4f6e 50%, #6cf0ff 100%)",
-  "purple-haze": "linear-gradient(135deg, #0d0221 0%, #4a1a8a 50%, #a06bff 100%)",
-  "sunset-fire": "linear-gradient(135deg, #1a0a0a 0%, #8b2500 40%, #ff6b35 100%)",
-  "electric-green": "linear-gradient(135deg, #0a1a0a 0%, #1b5e20 50%, #00ff88 100%)",
-  "midnight-gold": "linear-gradient(135deg, #0a0a1a 0%, #4a3800 50%, #ffd700 100%)",
-  "deep-space": "linear-gradient(135deg, #000000 0%, #1a0033 40%, #6cf0ff 70%, #ff4fd8 100%)",
-};
-
-function getGradientFromCoverUrl(coverUrl: string | null): string | null {
-  if (!coverUrl || !coverUrl.startsWith("gradient:")) return null;
-  const id = coverUrl.replace("gradient:", "");
-  return GRADIENT_MAP[id] || null;
-}
-
 export function TrackRow({ track, showRank, hideComments, onDelete, showDownload }: { track: Track; showRank?: boolean; hideComments?: boolean; onDelete?: (trackId: number) => void; showDownload?: boolean }) {
   const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
     queryKey: ["/api/creators", track.creatorId],
@@ -78,12 +61,7 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
     <div data-testid={`track-row-${track.id}`}>
       <div className="row" onClick={handleRowClick} style={{ cursor: hasAudio ? "pointer" : "default" }} data-testid={`button-play-${track.id}`}>
         <div className="thumb" style={{ position: "relative", overflow: "hidden", flexShrink: 0 }}>
-          {track.coverUrl && !showRank && getGradientFromCoverUrl(track.coverUrl) ? (
-            <div
-              style={{ width: "100%", height: "100%", background: getGradientFromCoverUrl(track.coverUrl)!, position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-              data-testid={`div-gradient-thumb-${track.id}`}
-            />
-          ) : track.coverUrl && !showRank && !track.coverUrl.startsWith("gradient:") ? (
+          {track.coverUrl && !showRank ? (
             <img
               src={track.coverUrl}
               alt={track.title}

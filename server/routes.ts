@@ -259,8 +259,6 @@ export async function registerRoutes(
       if (files?.cover?.[0]) {
         const coverFile = files.cover[0];
         coverUrl = await uploadToCloudinary(coverFile.path, "image");
-      } else if (req.body.defaultCover) {
-        coverUrl = `gradient:${req.body.defaultCover}`;
       }
 
       const track = await storage.insertTrack({

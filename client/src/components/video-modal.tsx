@@ -5,22 +5,6 @@ import { type Track } from "@shared/schema";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
 
-const GRADIENT_MAP: Record<string, string> = {
-  "neon-wave": "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)",
-  "cyber-pink": "linear-gradient(135deg, #1a0a2e 0%, #6b1d5e 40%, #ff4fd8 100%)",
-  "ocean-glow": "linear-gradient(135deg, #0a1628 0%, #0d4f6e 50%, #6cf0ff 100%)",
-  "purple-haze": "linear-gradient(135deg, #0d0221 0%, #4a1a8a 50%, #a06bff 100%)",
-  "sunset-fire": "linear-gradient(135deg, #1a0a0a 0%, #8b2500 40%, #ff6b35 100%)",
-  "electric-green": "linear-gradient(135deg, #0a1a0a 0%, #1b5e20 50%, #00ff88 100%)",
-  "midnight-gold": "linear-gradient(135deg, #0a0a1a 0%, #4a3800 50%, #ffd700 100%)",
-  "deep-space": "linear-gradient(135deg, #000000 0%, #1a0033 40%, #6cf0ff 70%, #ff4fd8 100%)",
-};
-
-function getGradient(coverUrl: string | null): string | null {
-  if (!coverUrl || !coverUrl.startsWith("gradient:")) return null;
-  return GRADIENT_MAP[coverUrl.replace("gradient:", "")] || null;
-}
-
 function formatTime(seconds: number) {
   if (!seconds || !isFinite(seconds)) return "0:00";
   const m = Math.floor(seconds / 60);
@@ -194,52 +178,62 @@ export function VideoModal({
                 }}
                 data-testid={`audio-modal-display-${track.id}`}
               >
-                {(() => {
-                  const gradientBg = getGradient(track.coverUrl);
-                  const hasImageCover = track.coverUrl && !track.coverUrl.startsWith("gradient:");
-                  const imgSrc = hasImageCover ? track.coverUrl : creatorAvatarUrl;
-
-                  if (gradientBg) {
-                    return (
-                      <div style={{
-                        width: 180, height: 180, borderRadius: 16, overflow: "hidden", position: "relative",
-                        background: gradientBg,
-                        boxShadow: isCurrentlyPlaying ? "0 0 40px rgba(108,240,255,.4), 0 0 80px rgba(160,107,255,.2)" : "0 0 20px rgba(108,240,255,.15)",
-                        transition: "all 0.3s ease",
-                      }}>
-                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.2)" }}>
-                          {isCurrentlyPlaying ? <Pause style={{ width: 48, height: 48, color: "#fff", fill: "#fff" }} /> : <Play style={{ width: 48, height: 48, color: "#fff", fill: "#fff", marginLeft: 4 }} />}
-                        </div>
-                      </div>
-                    );
-                  }
-                  if (imgSrc) {
-                    return (
-                      <div style={{
-                        width: 180, height: 180, borderRadius: 16, overflow: "hidden", position: "relative",
-                        boxShadow: isCurrentlyPlaying ? "0 0 40px rgba(108,240,255,.4), 0 0 80px rgba(160,107,255,.2)" : "0 0 20px rgba(108,240,255,.15)",
-                        transition: "all 0.3s ease",
-                      }}>
-                        <img src={imgSrc!} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.3)" }}>
-                          {isCurrentlyPlaying ? <Pause style={{ width: 48, height: 48, color: "#fff", fill: "#fff" }} /> : <Play style={{ width: 48, height: 48, color: "#fff", fill: "#fff", marginLeft: 4 }} />}
-                        </div>
-                      </div>
-                    );
-                  }
-                  return (
-                    <div style={{
-                      width: 120, height: 120, borderRadius: "50%",
-                      background: isCurrentlyPlaying ? "linear-gradient(135deg, #6cf0ff, #a06bff, #ff4fd8)" : "linear-gradient(135deg, rgba(108,240,255,.3), rgba(160,107,255,.3), rgba(255,79,216,.3))",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      boxShadow: isCurrentlyPlaying ? "0 0 40px rgba(108,240,255,.4), 0 0 80px rgba(160,107,255,.2)" : "0 0 20px rgba(108,240,255,.15)",
-                      transition: "all 0.3s ease",
-                      animation: isCurrentlyPlaying ? "pulse 2s ease-in-out infinite" : "none",
-                    }}>
-                      {isCurrentlyPlaying ? <Pause style={{ width: 48, height: 48, color: "#fff", fill: "#fff" }} /> : <Play style={{ width: 48, height: 48, color: "#fff", fill: "#fff", marginLeft: 4 }} />}
-                    </div>
-                  );
-                })()}
+                {(track.coverUrl || creatorAvatarUrl) ? (
+                <div style={{
+                  width: 180,
+                  height: 180,
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  position: "relative",
+                  boxShadow: isCurrentlyPlaying
+                    ? "0 0 40px rgba(108,240,255,.4), 0 0 80px rgba(160,107,255,.2)"
+                    : "0 0 20px rgba(108,240,255,.15)",
+                  transition: "all 0.3s ease",
+                }}>
+                  <img
+                    src={track.coverUrl || creatorAvatarUrl!}
+                    alt={track.title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(0,0,0,.3)",
+                  }}>
+                    {isCurrentlyPlaying ? (
+                      <Pause style={{ width: 48, height: 48, color: "#fff", fill: "#fff" }} />
+                    ) : (
+                      <Play style={{ width: 48, height: 48, color: "#fff", fill: "#fff", marginLeft: 4 }} />
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: "50%",
+                  background: isCurrentlyPlaying
+                    ? "linear-gradient(135deg, #6cf0ff, #a06bff, #ff4fd8)"
+                    : "linear-gradient(135deg, rgba(108,240,255,.3), rgba(160,107,255,.3), rgba(255,79,216,.3))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: isCurrentlyPlaying
+                    ? "0 0 40px rgba(108,240,255,.4), 0 0 80px rgba(160,107,255,.2)"
+                    : "0 0 20px rgba(108,240,255,.15)",
+                  transition: "all 0.3s ease",
+                  animation: isCurrentlyPlaying ? "pulse 2s ease-in-out infinite" : "none",
+                }}>
+                  {isCurrentlyPlaying ? (
+                    <Pause style={{ width: 48, height: 48, color: "#fff", fill: "#fff" }} />
+                  ) : (
+                    <Play style={{ width: 48, height: 48, color: "#fff", fill: "#fff", marginLeft: 4 }} />
+                  )}
+                </div>
+              )}
                 <div style={{ marginTop: 24, fontSize: "1.3rem", fontWeight: 700, color: "#eaf0ff", textAlign: "center" }}>
                   {track.title}
                 </div>
