@@ -237,7 +237,7 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="hero" data-testid="section-hero" style={{ backgroundImage: `url(${heroBg})` }}>
+      <section className="hero" data-testid="section-hero">
         <img src={siteLogo} alt="Hit Wave Media" className="hero-logo" data-testid="img-hero-logo" />
       </section>
 
