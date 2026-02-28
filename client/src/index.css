@@ -304,9 +304,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 14px 10px;
+  padding: 10px 14px 30px;
   background: #050615;
-  border-bottom: 1px solid rgba(108,240,255,.12);
+  border-bottom: none;
+  margin-bottom: -20px;
 }
 .topbar-left {
   display: flex;
