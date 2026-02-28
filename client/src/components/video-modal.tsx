@@ -15,9 +15,11 @@ function formatTime(seconds: number) {
 export function VideoModal({
   track,
   onClose,
+  creatorAvatarUrl,
 }: {
   track: Track;
   onClose: () => void;
+  creatorAvatarUrl?: string | null;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
@@ -176,6 +178,39 @@ export function VideoModal({
                 }}
                 data-testid={`audio-modal-display-${track.id}`}
               >
+                {(track.coverUrl || creatorAvatarUrl) ? (
+                <div style={{
+                  width: 180,
+                  height: 180,
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  position: "relative",
+                  boxShadow: isCurrentlyPlaying
+                    ? "0 0 40px rgba(108,240,255,.4), 0 0 80px rgba(160,107,255,.2)"
+                    : "0 0 20px rgba(108,240,255,.15)",
+                  transition: "all 0.3s ease",
+                }}>
+                  <img
+                    src={track.coverUrl || creatorAvatarUrl!}
+                    alt={track.title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(0,0,0,.3)",
+                  }}>
+                    {isCurrentlyPlaying ? (
+                      <Pause style={{ width: 48, height: 48, color: "#fff", fill: "#fff" }} />
+                    ) : (
+                      <Play style={{ width: 48, height: 48, color: "#fff", fill: "#fff", marginLeft: 4 }} />
+                    )}
+                  </div>
+                </div>
+              ) : (
                 <div style={{
                   width: 120,
                   height: 120,
@@ -198,6 +233,7 @@ export function VideoModal({
                     <Play style={{ width: 48, height: 48, color: "#fff", fill: "#fff", marginLeft: 4 }} />
                   )}
                 </div>
+              )}
                 <div style={{ marginTop: 24, fontSize: "1.3rem", fontWeight: 700, color: "#eaf0ff", textAlign: "center" }}>
                   {track.title}
                 </div>

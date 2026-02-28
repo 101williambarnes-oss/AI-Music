@@ -4,8 +4,13 @@ import { Trash2, Download, Library } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
+import { useQuery } from "@tanstack/react-query";
 
 export function TrackRow({ track, showRank, hideComments, onDelete, showDownload }: { track: Track; showRank?: boolean; hideComments?: boolean; onDelete?: (trackId: number) => void; showDownload?: boolean }) {
+  const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
+    queryKey: ["/api/creators", track.creatorId],
+    enabled: !!track.creatorId,
+  });
   const { currentTrackId, isPlaying, toggle, play } = useAudioPlayer();
   const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
   const hasAudio = !!track.fileUrl;
@@ -188,7 +193,7 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
       </div>
       <TrackActions track={track} hideComments={hideComments} />
       {showVideoModal && isMedia && (
-        <VideoModal track={track} onClose={handleModalClose} />
+        <VideoModal track={track} onClose={handleModalClose} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
       )}
     </div>
   );
