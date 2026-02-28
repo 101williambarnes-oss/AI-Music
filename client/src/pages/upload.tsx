@@ -17,10 +17,7 @@ export default function Upload() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
   const TOOLS = ["Suno", "Udio", "Stable Audio", "AIVA", "Other"];
@@ -80,28 +77,6 @@ export default function Upload() {
     }
   }
 
-  function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = e.target.files?.[0] || null;
-    if (!selected) return;
-
-    if (coverPreview) URL.revokeObjectURL(coverPreview);
-    setCoverPreview(null);
-
-    const ext = selected.name.substring(selected.name.lastIndexOf(".")).toLowerCase();
-    if (![".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext)) {
-      setError("Cover image must be JPG, PNG, GIF, or WEBP");
-      return;
-    }
-    if (selected.size > 10 * 1024 * 1024) {
-      setError("Cover image is too large. Maximum size is 10MB.");
-      return;
-    }
-
-    setError("");
-    setCoverFile(selected);
-    setCoverPreview(URL.createObjectURL(selected));
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -124,9 +99,6 @@ export default function Upload() {
       formData.append("genre", genre);
       formData.append("aiTools", JSON.stringify(aiTools));
       formData.append("file", file);
-      if (coverFile) {
-        formData.append("cover", coverFile);
-      }
       if (userData?.id) formData.append("userId", String(userData.id));
 
       const res = await fetch("/api/tracks/upload", {
@@ -265,52 +237,6 @@ export default function Upload() {
                     <div style={{ fontSize: 15, marginBottom: 4 }}>Click to upload your file</div>
                     <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)" }}>Upload your song, video, or image</div>
                     <div style={{ fontSize: 11, marginTop: 6, color: "rgba(170,182,232,.3)" }}>MP3, WAV, OGG, FLAC, M4A, AAC, MP4, WEBM, MOV, JPG, PNG, GIF, WEBP (max 50MB)</div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Cover Image (optional)</label>
-              <input
-                ref={coverInputRef}
-                type="file"
-                accept=".jpg,.jpeg,.png,.gif,.webp"
-                onChange={handleCoverChange}
-                style={{ display: "none" }}
-                data-testid="input-cover-file"
-              />
-              <div
-                onClick={() => coverInputRef.current?.click()}
-                style={{
-                  width: "100%",
-                  padding: coverFile ? "12px 14px" : "16px 14px",
-                  background: coverFile ? "rgba(108,240,255,.08)" : "rgba(255,255,255,.04)",
-                  border: `2px dashed ${coverFile ? "rgba(108,240,255,.4)" : "rgba(108,240,255,.15)"}`,
-                  borderRadius: 6,
-                  color: coverFile ? "#6cf0ff" : "rgba(170,182,232,.5)",
-                  fontSize: 14,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  boxSizing: "border-box" as const,
-                  transition: "border-color 0.2s, background 0.2s",
-                }}
-                data-testid="button-choose-cover"
-              >
-                {coverFile ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    {coverPreview && (
-                      <img src={coverPreview} alt="Cover" style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 6 }} data-testid="img-cover-preview" />
-                    )}
-                    <div style={{ textAlign: "left" }}>
-                      <div style={{ color: "#6cf0ff", fontSize: 14 }}>{coverFile.name}</div>
-                      <div style={{ color: "rgba(170,182,232,.4)", fontSize: 12, marginTop: 2 }}>Click to change</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div style={{ fontSize: 14, marginBottom: 2 }}>Add a cover image for the player</div>
-                    <div style={{ fontSize: 11, color: "rgba(170,182,232,.3)" }}>JPG, PNG, GIF, WEBP (max 10MB)</div>
                   </div>
                 )}
               </div>
