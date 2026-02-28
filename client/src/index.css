@@ -304,7 +304,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 14px 14px 18px;
+  padding: 10px 14px 10px;
   background: #050615;
   border-bottom: 1px solid rgba(108,240,255,.12);
 }
@@ -333,7 +333,7 @@
     0 0 50px rgba(255,79,216,.2);
 }
 .site-logo-banner {
-  height: 120px;
+  height: 90px;
   width: auto;
   object-fit: contain;
   filter: brightness(1) drop-shadow(0 0 6px rgba(108,240,255,.2)) drop-shadow(0 0 16px rgba(160,107,255,.15));
@@ -498,7 +498,7 @@
 
 .hero {
   position: relative;
-  min-height: 160px;
+  min-height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -507,6 +507,7 @@
   background-position: center center;
   background-repeat: no-repeat;
   background-color: #050615;
+  margin-top: -8px;
 }
 
 .hero-logo {
@@ -596,9 +597,9 @@
   display: flex;
   justify-content: center;
   gap: 6px;
-  padding: 4px 22px 0;
+  padding: 2px 22px 0;
   flex-wrap: wrap;
-  margin-top: -4px;
+  margin-top: -2px;
 }
 .quick-nav-tab {
   display: inline-flex;
@@ -649,7 +650,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
-  padding: 6px 12px 30px;
+  padding: 2px 12px 30px;
   max-width: 900px;
   margin: 0 auto;
   height: auto;
