@@ -304,10 +304,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 14px 30px;
+  padding: 10px 14px;
   background: #050615;
-  border-bottom: none;
-  margin-bottom: -20px;
+  border-bottom: 1px solid rgba(108,240,255,.12);
 }
 .topbar-left {
   display: flex;
@@ -1420,8 +1419,8 @@
   }
   .site-topbar {
     flex-wrap: wrap;
-    padding: 10px 10px 12px;
-    gap: 8px;
+    padding: 8px 8px 8px;
+    gap: 6px;
     background: #050615;
     backdrop-filter: none;
     box-shadow: none;
@@ -1435,12 +1434,14 @@
     flex-shrink: 0;
   }
   .site-logo-banner {
-    height: 40px;
+    height: 36px;
   }
   .topbar-actions {
+    display: flex !important;
     flex-shrink: 0;
     gap: 5px;
     margin-left: auto;
+    align-items: center;
   }
   .topbar-center {
     flex-basis: 100%;
