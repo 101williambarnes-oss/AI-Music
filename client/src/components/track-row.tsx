@@ -111,19 +111,18 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
                 <span className="rankBadge" data-testid={`text-rank-${track.rank}`}>#{track.rank}</span>
               )}
             </div>
-          ) : (
-            <div
-              className="play-btn"
-              style={{
-                opacity: hasAudio ? 1 : 0.4,
-                color: isCurrentlyPlaying ? "#ff4fd8" : undefined,
-                position: "relative",
-                zIndex: 1,
-              }}
-            >
-              {isCurrentlyPlaying ? "\u275A\u275A" : "\u25B6"}
-            </div>
-          )}
+          ) : !isCurrentlyPlaying ? (
+              <div
+                className="play-btn"
+                style={{
+                  opacity: hasAudio ? 1 : 0.4,
+                  position: "relative",
+                  zIndex: 1,
+                }}
+              >
+                {"\u25B6"}
+              </div>
+          ) : null}
         </div>
         <div className="meta" style={{ minWidth: 0, overflow: "hidden" }}>
           <div className="title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-title-${track.id}`}>{track.title}</div>
