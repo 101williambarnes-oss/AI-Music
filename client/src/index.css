@@ -498,13 +498,13 @@
 
 .hero {
   position: relative;
-  min-height: 200px;
+  min-height: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   background-size: cover;
-  background-position: center 30%;
+  background-position: center center;
   background-repeat: no-repeat;
   background-color: #050615;
 }
@@ -522,10 +522,17 @@
 .hero::before {
   content: "";
   position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(7,10,20,.3) 0%, rgba(7,10,20,.85) 60%, #070a14 100%);
+  z-index: 2;
+}
+.hero::after {
+  content: "";
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 60px;
   background: linear-gradient(to bottom, transparent, #070a14);
   z-index: 2;
 }
@@ -589,8 +596,9 @@
   display: flex;
   justify-content: center;
   gap: 6px;
-  padding: 12px 22px 0;
+  padding: 4px 22px 0;
   flex-wrap: wrap;
+  margin-top: -4px;
 }
 .quick-nav-tab {
   display: inline-flex;
@@ -641,7 +649,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
-  padding: 10px 12px 30px;
+  padding: 6px 12px 30px;
   max-width: 900px;
   margin: 0 auto;
   height: auto;
@@ -1459,8 +1467,8 @@
   }
 
   .hero {
-    min-height: 120px;
-    background-position: center 30%;
+    min-height: 100px;
+    background-position: center center;
   }
   .hero-logo {
     width: 95%;
@@ -1594,8 +1602,8 @@
   }
 
   .hero {
-    min-height: 100px;
-    background-position: center 30%;
+    min-height: 80px;
+    background-position: center center;
   }
   .heroTitle {
     font-size: 24px !important;
