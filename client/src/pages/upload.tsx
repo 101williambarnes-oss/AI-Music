@@ -20,7 +20,6 @@ export default function Upload() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
   const TOOLS = ["Suno", "Udio", "Stable Audio", "AIVA", "Other"];
@@ -53,50 +52,60 @@ export default function Upload() {
     );
   }
 
+  const AUDIO_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
+  const VIDEO_EXTS = [".mp4", ".webm", ".mov"];
+  const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = e.target.files?.[0] || null;
-    if (!selected) return;
+    const selectedFiles = e.target.files;
+    if (!selectedFiles || selectedFiles.length === 0) return;
 
     if (preview) URL.revokeObjectURL(preview);
+    if (coverPreview && coverPreview !== "video") URL.revokeObjectURL(coverPreview);
     setPreview(null);
+    setCoverFile(null);
+    setCoverPreview(null);
 
-    const ext = selected.name.substring(selected.name.lastIndexOf(".")).toLowerCase();
-    if (!ALLOWED_EXTS.includes(ext)) {
-      setError("Unsupported file type. Supported: MP3, WAV, OGG, FLAC, M4A, AAC, MP4, WEBM, MOV, JPG, PNG, GIF, WEBP");
-      setFile(null);
-      return;
-    }
-    if (selected.size > 50 * 1024 * 1024) {
-      setError("File is too large. Maximum size is 50MB.");
-      setFile(null);
-      return;
+    let audioFile: File | null = null;
+    let videoFile: File | null = null;
+    let imageFile: File | null = null;
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const f = selectedFiles[i];
+      const ext = f.name.substring(f.name.lastIndexOf(".")).toLowerCase();
+      if (!ALLOWED_EXTS.includes(ext)) {
+        setError("Unsupported file: " + f.name);
+        return;
+      }
+      if (f.size > 50 * 1024 * 1024) {
+        setError("File too large: " + f.name + " (max 50MB)");
+        return;
+      }
+      if (AUDIO_EXTS.includes(ext)) audioFile = f;
+      else if (VIDEO_EXTS.includes(ext)) videoFile = f;
+      else if (IMAGE_EXTS.includes(ext)) imageFile = f;
     }
 
     setError("");
-    setFile(selected);
 
-    if ([".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext)) {
-      setPreview(URL.createObjectURL(selected));
+    if (audioFile && (imageFile || videoFile)) {
+      setFile(audioFile);
+      const cover = imageFile || videoFile!;
+      setCoverFile(cover);
+      const coverExt = cover.name.substring(cover.name.lastIndexOf(".")).toLowerCase();
+      setCoverPreview(IMAGE_EXTS.includes(coverExt) ? URL.createObjectURL(cover) : "video");
+    } else if (audioFile) {
+      setFile(audioFile);
+    } else if (videoFile) {
+      setFile(videoFile);
+    } else if (imageFile) {
+      setFile(imageFile);
+      setPreview(URL.createObjectURL(imageFile));
+    } else if (selectedFiles.length === 1) {
+      setFile(selectedFiles[0]);
+      const ext = selectedFiles[0].name.substring(selectedFiles[0].name.lastIndexOf(".")).toLowerCase();
+      if (IMAGE_EXTS.includes(ext)) setPreview(URL.createObjectURL(selectedFiles[0]));
     }
-  }
-
-  function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = e.target.files?.[0] || null;
-    if (!selected) return;
-    if (coverPreview) URL.revokeObjectURL(coverPreview);
-    const ext = selected.name.substring(selected.name.lastIndexOf(".")).toLowerCase();
-    if (![".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm", ".mov"].includes(ext)) {
-      setError("Cover must be an image (JPG, PNG, GIF, WEBP) or video (MP4, WEBM, MOV)");
-      return;
-    }
-    if (selected.size > 50 * 1024 * 1024) {
-      setError("File is too large. Maximum size is 50MB.");
-      return;
-    }
-    setError("");
-    setCoverFile(selected);
-    const isImg = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext);
-    setCoverPreview(isImg ? URL.createObjectURL(selected) : "video");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -221,6 +230,7 @@ export default function Upload() {
                 ref={fileInputRef}
                 type="file"
                 accept={ACCEPT}
+                multiple
                 onChange={handleFileChange}
                 style={{ display: "none" }}
                 data-testid="input-file"
@@ -244,68 +254,36 @@ export default function Upload() {
               >
                 {file ? (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-                    {preview && (
+                    {coverPreview && coverPreview !== "video" && (
+                      <img src={coverPreview} alt="Cover" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6 }} />
+                    )}
+                    {preview && !coverFile && (
                       <img src={preview} alt="Preview" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6 }} data-testid="img-file-preview" />
                     )}
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
                       <span style={{ background: "rgba(108,240,255,.15)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{getFileLabel(file)}</span>
                       <span>{file.name}</span>
                       <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(file.size / (1024 * 1024)).toFixed(1)} MB)</span>
                     </div>
-                    <div style={{ color: "rgba(170,182,232,.4)", fontSize: 12, marginTop: 2 }}>Click to change file</div>
+                    {coverFile && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ background: "rgba(160,107,255,.15)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, color: "#c9a0ff" }}>
+                          {coverPreview === "video" ? "Video" : "Image"}
+                        </span>
+                        <span style={{ fontSize: 13 }}>{coverFile.name}</span>
+                      </div>
+                    )}
+                    <div style={{ color: "rgba(170,182,232,.4)", fontSize: 12, marginTop: 2 }}>Click to change files</div>
                   </div>
                 ) : (
                   <div>
                     <UploadIcon size={28} style={{ marginBottom: 8, opacity: 0.5 }} />
-                    <div style={{ fontSize: 15, marginBottom: 4 }}>Click to upload your file</div>
-                    <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)" }}>Upload your song, video, or image</div>
-                    <div style={{ fontSize: 11, marginTop: 6, color: "rgba(170,182,232,.3)" }}>MP3, WAV, OGG, FLAC, M4A, AAC, MP4, WEBM, MOV, JPG, PNG, GIF, WEBP (max 50MB)</div>
+                    <div style={{ fontSize: 15, marginBottom: 4 }}>Click to upload your files</div>
+                    <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)" }}>Select your song + image or video together</div>
+                    <div style={{ fontSize: 11, marginTop: 6, color: "rgba(170,182,232,.3)" }}>You can select multiple files at once (max 50MB each)</div>
                   </div>
                 )}
               </div>
-              {file && /\.(mp3|wav|ogg|flac|m4a|aac)$/i.test(file.name) && (
-                <div style={{ marginTop: 10 }}>
-                  <input
-                    ref={coverInputRef}
-                    type="file"
-                    accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov"
-                    onChange={handleCoverChange}
-                    style={{ display: "none" }}
-                    data-testid="input-cover-file"
-                  />
-                  <div
-                    onClick={() => coverInputRef.current?.click()}
-                    style={{
-                      width: "100%",
-                      padding: coverFile ? "10px 14px" : "12px 14px",
-                      background: coverFile ? "rgba(108,240,255,.08)" : "rgba(255,255,255,.04)",
-                      border: `1px dashed ${coverFile ? "rgba(108,240,255,.4)" : "rgba(108,240,255,.15)"}`,
-                      borderRadius: 6,
-                      color: coverFile ? "#6cf0ff" : "rgba(170,182,232,.5)",
-                      fontSize: 13,
-                      textAlign: "center",
-                      cursor: "pointer",
-                      boxSizing: "border-box" as const,
-                    }}
-                    data-testid="button-choose-cover"
-                  >
-                    {coverFile ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        {coverPreview && coverPreview !== "video" && (
-                          <img src={coverPreview} alt="Cover" style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 4 }} />
-                        )}
-                        {coverPreview === "video" && (
-                          <span style={{ background: "rgba(108,240,255,.15)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>Video</span>
-                        )}
-                        <span>{coverFile.name}</span>
-                        <span style={{ color: "rgba(170,182,232,.4)", fontSize: 11, marginLeft: "auto" }}>Click to change</span>
-                      </div>
-                    ) : (
-                      <div>Add image or video to go with your song (optional)</div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
 
             <div style={{ marginBottom: 16 }}>
