@@ -324,29 +324,22 @@ function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; on
 
   const socials = [
     {
+      name: "Facebook",
+      color: "#1877f2",
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
+      testId: "facebook",
+    },
+    {
       name: "X (Twitter)",
       color: "#1da1f2",
       url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`,
       testId: "twitter",
     },
     {
-      name: "Facebook",
-      color: "#1877f2",
-      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
-      testId: "facebook",
-    },
-    
-    {
-      name: "WhatsApp",
-      color: "#25d366",
-      url: `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
-      testId: "whatsapp",
-    },
-    {
-      name: "Telegram",
-      color: "#0088cc",
-      url: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
-      testId: "telegram",
+      name: "Reddit",
+      color: "#ff4500",
+      url: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
+      testId: "reddit",
     },
     {
       name: "LinkedIn",
@@ -359,37 +352,6 @@ function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; on
       color: "#e60023",
       url: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(shareUrl)}&description=${encodeURIComponent(shareText)}`,
       testId: "pinterest",
-    },
-    {
-      name: "Threads",
-      color: "#ffffff",
-      url: `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
-      testId: "threads",
-    },
-    {
-      name: "Reddit",
-      color: "#ff4500",
-      url: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(shareText)}`,
-      testId: "reddit",
-    },
-    {
-      name: "Tumblr",
-      color: "#35465c",
-      url: `https://www.tumblr.com/widgets/share/tool?canonicalUrl=${encodeURIComponent(shareUrl)}&caption=${encodeURIComponent(shareText)}`,
-      testId: "tumblr",
-    },
-    
-    {
-      name: "Email",
-      color: "#6cf0ff",
-      url: `mailto:?subject=${encodeURIComponent(`Check out ${track.title} on Hit Wave Media`)}&body=${encodeURIComponent(shareText + "\n\n" + shareUrl)}`,
-      testId: "email",
-    },
-    {
-      name: "SMS",
-      color: "#34c759",
-      url: `sms:?body=${encodeURIComponent(shareText + " " + shareUrl)}`,
-      testId: "sms",
     },
   ];
 
