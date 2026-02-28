@@ -1394,7 +1394,11 @@
     gap: 8px;
     background: #050615;
     backdrop-filter: none;
-    box-shadow: 0 4px 12px #050615, 0 8px 0 #050615;
+    box-shadow: none;
+    border-bottom: 1px solid rgba(108,240,255,.12);
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
   .topbar-left {
     display: flex;
