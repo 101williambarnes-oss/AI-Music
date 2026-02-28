@@ -253,6 +253,12 @@ export default function Home() {
         <a href="/new-creators" className="quick-nav-tab" data-testid="link-quick-new-creators">
           New Creators
         </a>
+        {user && user.creatorId && (
+          <a href={`/creator/${user.creatorId}`} className="quick-nav-tab quick-nav-mobile-library" data-testid="link-mobile-my-library">
+            <Library style={{ width: 14, height: 14 }} />
+            My Library
+          </a>
+        )}
       </nav>
 
       <div className="five-columns" data-testid="section-content">

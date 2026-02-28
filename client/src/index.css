@@ -623,6 +623,10 @@
   border-color: rgba(160,107,255,.45);
 }
 
+.quick-nav-mobile-library {
+  display: none !important;
+}
+
 .five-columns {
   display: grid;
   grid-template-columns: 1fr;
@@ -1384,6 +1388,13 @@
     padding: 8px 14px;
     font-size: 12px;
     min-height: 36px;
+  }
+  .quick-nav-mobile-library {
+    display: inline-flex !important;
+    gap: 6px;
+    background: rgba(160,107,255,.12);
+    border-color: rgba(160,107,255,.25);
+    color: #c9a0ff;
   }
   .quick-nav-desktop-only {
     display: none;
