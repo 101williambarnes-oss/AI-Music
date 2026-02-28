@@ -195,20 +195,18 @@ export function VideoModal({
                     alt={track.title}
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
-                  <div style={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "rgba(0,0,0,.3)",
-                  }}>
-                    {isCurrentlyPlaying ? (
-                      <Pause style={{ width: 48, height: 48, color: "#fff", fill: "#fff" }} />
-                    ) : (
+                  {!isCurrentlyPlaying && (
+                    <div style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "rgba(0,0,0,.3)",
+                    }}>
                       <Play style={{ width: 48, height: 48, color: "#fff", fill: "#fff", marginLeft: 4 }} />
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div style={{
@@ -227,9 +225,7 @@ export function VideoModal({
                   transition: "all 0.3s ease",
                   animation: isCurrentlyPlaying ? "pulse 2s ease-in-out infinite" : "none",
                 }}>
-                  {isCurrentlyPlaying ? (
-                    <Pause style={{ width: 48, height: 48, color: "#fff", fill: "#fff" }} />
-                  ) : (
+                  {!isCurrentlyPlaying && (
                     <Play style={{ width: 48, height: 48, color: "#fff", fill: "#fff", marginLeft: 4 }} />
                   )}
                 </div>
