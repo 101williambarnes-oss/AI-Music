@@ -581,6 +581,7 @@
   gap: 6px;
   padding: 12px 22px 0;
   flex-wrap: wrap;
+  position: relative;
 }
 .quick-nav-tab {
   display: inline-flex;
@@ -603,7 +604,9 @@
 }
 
 .quick-nav-library {
-  margin-left: auto;
+  position: absolute;
+  right: 22px;
+  top: 12px;
   gap: 6px;
   background: rgba(160,107,255,.12);
   border-color: rgba(160,107,255,.25);
@@ -1376,6 +1379,9 @@
     padding: 10px 16px;
     font-size: 13px;
     min-height: 40px;
+  }
+  .quick-nav-library {
+    position: static;
   }
   .quick-nav-desktop-only {
     display: none;
