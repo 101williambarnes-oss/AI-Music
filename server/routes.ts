@@ -373,6 +373,19 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/admin/cleanup-broken-tracks", async (_req, res) => {
+    try {
+      const allTracks = await storage.getAllTracks();
+      const broken = allTracks.filter(t => t.fileUrl && t.fileUrl.startsWith("/uploads/"));
+      for (const t of broken) {
+        await storage.deleteTrack(t.id);
+      }
+      res.json({ deleted: broken.length, tracks: broken.map(t => t.title) });
+    } catch (error) {
+      res.status(500).json({ message: "Cleanup failed" });
+    }
+  });
+
   app.get("/api/tracks", async (_req, res) => {
     try {
       const allTracks = await storage.getAllTracks();
