@@ -61,7 +61,14 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
     <div data-testid={`track-row-${track.id}`}>
       <div className="row" onClick={handleRowClick} style={{ cursor: hasAudio ? "pointer" : "default" }} data-testid={`button-play-${track.id}`}>
         <div className="thumb" style={{ position: "relative", overflow: "hidden", flexShrink: 0 }}>
-          {isVideo && !showRank ? (
+          {track.coverUrl && !showRank ? (
+            <img
+              src={track.coverUrl}
+              alt={track.title}
+              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+              data-testid={`img-cover-thumb-${track.id}`}
+            />
+          ) : isVideo && !showRank ? (
             <video
               ref={videoRef}
               src={track.fileUrl!}
@@ -77,6 +84,13 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
               alt={track.title}
               style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
               data-testid={`img-thumb-${track.id}`}
+            />
+          ) : !showRank && creatorData?.creator?.avatarUrl ? (
+            <img
+              src={creatorData.creator.avatarUrl}
+              alt={track.artist}
+              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+              data-testid={`img-avatar-thumb-${track.id}`}
             />
           ) : null}
           {showRank && track.rank ? (
