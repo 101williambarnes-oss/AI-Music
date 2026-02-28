@@ -83,6 +83,21 @@ export const comments = pgTable("comments", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const weeklyWinners = pgTable("weekly_winners", {
+  id: serial("id").primaryKey(),
+  trackId: integer("track_id").notNull(),
+  trackTitle: text("track_title").notNull(),
+  artist: text("artist").notNull(),
+  creatorId: integer("creator_id"),
+  weekStart: timestamp("week_start").notNull(),
+  weekEnd: timestamp("week_end").notNull(),
+  likeCount: integer("like_count").notNull().default(0),
+  playCount: integer("play_count").notNull().default(0),
+  coverUrl: text("cover_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertWeeklyWinnerSchema = createInsertSchema(weeklyWinners).omit({ id: true, createdAt: true });
 export const insertGenreSchema = createInsertSchema(genres).omit({ id: true });
 export const insertTrackSchema = createInsertSchema(tracks).omit({ id: true, createdAt: true });
 export const insertCreatorSchema = createInsertSchema(creators).omit({ id: true });
@@ -122,3 +137,5 @@ export type User = typeof users.$inferSelect;
 export type Like = typeof likes.$inferSelect;
 export type Follow = typeof follows.$inferSelect;
 export type Comment = typeof comments.$inferSelect;
+export type WeeklyWinner = typeof weeklyWinners.$inferSelect;
+export type InsertWeeklyWinner = z.infer<typeof insertWeeklyWinnerSchema>;

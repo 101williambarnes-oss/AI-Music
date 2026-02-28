@@ -4,6 +4,13 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-02-28: Weekly Top 25 winner system - #1 song each week is crowned, logged in weekly_winners table, and retired from Top 25; Hall of Fame section shows past champions; creators must bring new songs to compete
+- 2026-02-28: Embedded artwork extraction - MP3 uploads auto-extract ID3 cover art via music-metadata; uploaded to Cloudinary as coverUrl
+- 2026-02-28: Creators can't like own songs - like button hidden for track creators, only shows like count
+- 2026-02-28: Share platforms trimmed to Facebook, X, Reddit, LinkedIn, Pinterest only
+- 2026-02-28: AI tools list expanded - Suno, Udio, Beatoven.ai, Soundraw, Stable Audio, Mubert, Riffusion, Uberduck AI, MusicGen, Producer AI, Boomy, Ecrett Music, Soundful, Other
+- 2026-02-28: Pause button removed from thumbnail/modal during playback
+- 2026-02-28: Tagline changed to "AI-Only Music Platform"
 - 2026-02-27: Cloudinary integration - uploads now stored in Cloudinary cloud storage instead of local disk; files persist across Render redeploys; env vars: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 - 2026-02-27: Audio player mobile fix - wait for canplay event before playing on new tracks; playsinline attribute for iOS
 - 2026-02-25: Visitor follows - visitors can follow/unfollow creators without signing in (visitor_follows table); follower count includes both user and visitor follows
@@ -40,7 +47,7 @@ client/src/pages/downloads.tsx    - Downloads page with genre sections
 client/src/App.tsx                - Router setup
 client/src/lib/audioPlayer.tsx     - Shared audio player context for track playback
 client/src/components/track-actions.tsx - Shared like/comment component for tracks
-shared/schema.ts                  - Database schema (tracks, creators, genres, users, likes, comments, follows)
+shared/schema.ts                  - Database schema (tracks, creators, genres, users, likes, comments, follows, weeklyWinners)
 server/routes.ts                  - API endpoints (auth, tracks, creators, genres, likes, comments)
 server/storage.ts                 - Database storage layer
 server/db.ts                      - Database connection

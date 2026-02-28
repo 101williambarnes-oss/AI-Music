@@ -443,6 +443,7 @@ export async function registerRoutes(
       }
       if (category === "top25") {
         res.set("Cache-Control", "no-store");
+        await storage.checkAndCrownWeeklyWinner();
         const topTracks = await storage.getTop25ByLikes();
         return res.json(topTracks);
       }
@@ -459,6 +460,16 @@ export async function registerRoutes(
       res.json(tracks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch tracks" });
+    }
+  });
+
+  app.get("/api/weekly-winners", async (_req, res) => {
+    try {
+      const winners = await storage.getWeeklyWinners();
+      res.json(winners);
+    } catch (error) {
+      console.error("Failed to get weekly winners:", error);
+      res.status(500).json({ message: "Failed to get weekly winners" });
     }
   });
 

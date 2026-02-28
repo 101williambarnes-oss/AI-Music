@@ -1,5 +1,5 @@
-import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser, type Like, type InsertLike, type Comment, type InsertComment, type Follow, type InsertFollow } from "@shared/schema";
-import { tracks, creators, genres, users, likes, comments, visitorLikes, trackPlays, follows, visitorFollows } from "@shared/schema";
+import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser, type Like, type InsertLike, type Comment, type InsertComment, type Follow, type InsertFollow, type WeeklyWinner, type InsertWeeklyWinner } from "@shared/schema";
+import { tracks, creators, genres, users, likes, comments, visitorLikes, trackPlays, follows, visitorFollows, weeklyWinners } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql, gte } from "drizzle-orm";
 
@@ -48,6 +48,11 @@ export interface IStorage {
   getVisitorFollow(visitorId: string, creatorId: number): Promise<any>;
   addVisitorFollow(visitorId: string, creatorId: number): Promise<any>;
   removeVisitorFollow(visitorId: string, creatorId: number): Promise<void>;
+  getWeeklyWinners(): Promise<WeeklyWinner[]>;
+  getWeeklyWinnerTrackIds(): Promise<number[]>;
+  addWeeklyWinner(winner: InsertWeeklyWinner): Promise<WeeklyWinner>;
+  getLatestWeeklyWinner(): Promise<WeeklyWinner | undefined>;
+  checkAndCrownWeeklyWinner(): Promise<WeeklyWinner | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -179,13 +184,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTop25ByLikes(): Promise<Track[]> {
+    const winnerIds = await this.getWeeklyWinnerTrackIds();
     const totalLikes = sql<number>`COALESCE((SELECT count(*)::int FROM likes WHERE likes.track_id = ${tracks.id}), 0) + COALESCE((SELECT count(*)::int FROM visitor_likes WHERE visitor_likes.track_id = ${tracks.id}), 0)`;
-    const result = await db
+    let query = db
       .select({
         track: tracks,
         likeCount: totalLikes,
       })
-      .from(tracks)
+      .from(tracks);
+
+    if (winnerIds.length > 0) {
+      query = query.where(sql`${tracks.id} NOT IN (${sql.raw(winnerIds.join(","))})`) as any;
+    }
+
+    const result = await query
       .orderBy(sql`${totalLikes} DESC`, desc(tracks.plays))
       .limit(25);
     return result.map((r, i) => ({ ...r.track, rank: i + 1 }));
@@ -284,6 +296,73 @@ export class DatabaseStorage implements IStorage {
 
   async removeVisitorFollow(visitorId: string, creatorId: number): Promise<void> {
     await db.delete(visitorFollows).where(and(eq(visitorFollows.visitorId, visitorId), eq(visitorFollows.creatorId, creatorId)));
+  }
+
+  async getWeeklyWinners(): Promise<WeeklyWinner[]> {
+    return db.select().from(weeklyWinners).orderBy(desc(weeklyWinners.weekEnd));
+  }
+
+  async getWeeklyWinnerTrackIds(): Promise<number[]> {
+    const winners = await db.select({ trackId: weeklyWinners.trackId }).from(weeklyWinners);
+    return winners.map(w => w.trackId);
+  }
+
+  async addWeeklyWinner(winner: InsertWeeklyWinner): Promise<WeeklyWinner> {
+    const [result] = await db.insert(weeklyWinners).values(winner).returning();
+    return result;
+  }
+
+  async getLatestWeeklyWinner(): Promise<WeeklyWinner | undefined> {
+    const [result] = await db.select().from(weeklyWinners).orderBy(desc(weeklyWinners.weekEnd)).limit(1);
+    return result;
+  }
+
+  async checkAndCrownWeeklyWinner(): Promise<WeeklyWinner | null> {
+    const now = new Date();
+    const latest = await this.getLatestWeeklyWinner();
+
+    if (latest && latest.weekEnd > now) {
+      return null;
+    }
+
+    const weekStart = latest ? new Date(latest.weekEnd) : new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+
+    if (now < weekEnd) {
+      return null;
+    }
+
+    const winnerIds = await this.getWeeklyWinnerTrackIds();
+    const totalLikes = sql<number>`COALESCE((SELECT count(*)::int FROM likes WHERE likes.track_id = ${tracks.id}), 0) + COALESCE((SELECT count(*)::int FROM visitor_likes WHERE visitor_likes.track_id = ${tracks.id}), 0)`;
+    let query = db
+      .select({ track: tracks, likeCount: totalLikes })
+      .from(tracks);
+
+    if (winnerIds.length > 0) {
+      query = query.where(sql`${tracks.id} NOT IN (${sql.raw(winnerIds.join(","))})`) as any;
+    }
+
+    const result = await query
+      .orderBy(sql`${totalLikes} DESC`, desc(tracks.plays))
+      .limit(1);
+
+    if (result.length === 0) return null;
+
+    const topTrack = result[0];
+    const winner = await this.addWeeklyWinner({
+      trackId: topTrack.track.id,
+      trackTitle: topTrack.track.title,
+      artist: topTrack.track.artist,
+      creatorId: topTrack.track.creatorId,
+      weekStart,
+      weekEnd,
+      likeCount: topTrack.likeCount,
+      playCount: topTrack.track.plays,
+      coverUrl: topTrack.track.coverUrl,
+    });
+
+    return winner;
   }
 }
 
