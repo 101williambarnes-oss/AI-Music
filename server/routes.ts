@@ -200,7 +200,10 @@ export async function registerRoutes(
   });
 
   app.post("/api/tracks/upload", (req, res, next) => {
-    upload.single("file")(req, res, (err) => {
+    upload.fields([
+      { name: "file", maxCount: 1 },
+      { name: "cover", maxCount: 1 },
+    ])(req, res, (err) => {
       if (err instanceof multer.MulterError) {
         if (err.code === "LIMIT_FILE_SIZE") {
           return res.status(400).json({ message: "File is too large. Maximum size is 50MB." });
@@ -241,12 +244,21 @@ export async function registerRoutes(
         await storage.updateUserCreatorId(user.id, creator.id);
       }
 
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
       let fileUrl: string | null = null;
-      if (req.file) {
-        const ext = path.extname(req.file.originalname).toLowerCase();
+      if (files?.file?.[0]) {
+        const mainFile = files.file[0];
+        const ext = path.extname(mainFile.originalname).toLowerCase();
         const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext);
         const resourceType = isImage ? "image" as const : "video" as const;
-        fileUrl = await uploadToCloudinary(req.file.path, resourceType);
+        fileUrl = await uploadToCloudinary(mainFile.path, resourceType);
+      }
+
+      let coverUrl: string | null = null;
+      if (files?.cover?.[0]) {
+        const coverFile = files.cover[0];
+        coverUrl = await uploadToCloudinary(coverFile.path, "image");
       }
 
       const track = await storage.insertTrack({
@@ -258,7 +270,7 @@ export async function registerRoutes(
         category: "new",
         creatorId: creator.id,
         fileUrl,
-        coverUrl: null,
+        coverUrl,
       });
 
       await storage.incrementCreatorTrackCount(creator.id);
