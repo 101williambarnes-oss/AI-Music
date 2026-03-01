@@ -42,15 +42,15 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
     if (isMedia) {
       wantModalRef.current = true;
       if (currentTrackId !== track.id) {
-        play(track.id, track.fileUrl!);
+        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
       } else if (!isPlaying) {
-        play(track.id, track.fileUrl!);
+        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
       }
       setShowVideoModal(true);
     } else {
-      toggle(track.id, track.fileUrl!);
+      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
     }
-  }, [hasAudio, isMedia, track.id, track.fileUrl, play, toggle, currentTrackId, isPlaying]);
+  }, [hasAudio, isMedia, track.id, track.fileUrl, track.title, track.artist, track.coverUrl, play, toggle, currentTrackId, isPlaying]);
 
   function handleModalClose() {
     wantModalRef.current = false;

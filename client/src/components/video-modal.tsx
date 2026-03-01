@@ -76,7 +76,7 @@ export function VideoModal({
 
   function handleToggle() {
     if (track.fileUrl) {
-      toggle(track.id, track.fileUrl);
+      toggle(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
     }
   }
 

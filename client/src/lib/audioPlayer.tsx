@@ -1,13 +1,19 @@
 import { createContext, useContext, useState, useRef, useCallback, useEffect } from "react";
 import { queryClient } from "@/lib/queryClient";
 
+type TrackMeta = {
+  title?: string;
+  artist?: string;
+  coverUrl?: string | null;
+};
+
 type AudioPlayerState = {
   currentTrackId: number | null;
   isPlaying: boolean;
-  play: (trackId: number, fileUrl: string) => void;
+  play: (trackId: number, fileUrl: string, meta?: TrackMeta) => void;
   pause: () => void;
   stop: () => void;
-  toggle: (trackId: number, fileUrl: string) => void;
+  toggle: (trackId: number, fileUrl: string, meta?: TrackMeta) => void;
   seek: (time: number) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
@@ -45,7 +51,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     };
   }, []);
 
-  const play = useCallback((trackId: number, fileUrl: string) => {
+  const play = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta) => {
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -53,6 +59,19 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     currentTrackIdRef.current = trackId;
     setCurrentTrackId(trackId);
     setIsPlaying(true);
+
+    if (isNewTrack && "mediaSession" in navigator) {
+      const artwork: MediaImage[] = [];
+      if (meta?.coverUrl) {
+        artwork.push({ src: meta.coverUrl, sizes: "512x512", type: "image/jpeg" });
+      }
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: meta?.title || "Unknown Track",
+        artist: meta?.artist || "Unknown Artist",
+        album: "Hit Wave Media",
+        artwork,
+      });
+    }
 
     if (isNewTrack) {
       audio.pause();
@@ -105,11 +124,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const isPlayingRef = useRef(false);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
-  const toggle = useCallback((trackId: number, fileUrl: string) => {
+  const toggle = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta) => {
     if (currentTrackIdRef.current === trackId && isPlayingRef.current) {
       pause();
     } else {
-      play(trackId, fileUrl);
+      play(trackId, fileUrl, meta);
     }
   }, [play, pause]);
 
