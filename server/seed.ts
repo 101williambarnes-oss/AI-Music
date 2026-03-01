@@ -5,7 +5,8 @@ import { sql } from "drizzle-orm";
 async function createTablesIfMissing() {
   await db.execute(sql`CREATE TABLE IF NOT EXISTS genres (id SERIAL PRIMARY KEY, name TEXT NOT NULL, group_name TEXT NOT NULL)`);
   await db.execute(sql`CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, creator_id INTEGER)`);
-  await db.execute(sql`CREATE TABLE IF NOT EXISTS tracks (id SERIAL PRIMARY KEY, title TEXT NOT NULL, artist TEXT NOT NULL, genre TEXT NOT NULL, plays INTEGER NOT NULL DEFAULT 0, rank INTEGER, category TEXT NOT NULL DEFAULT 'trending', creator_id INTEGER, file_url TEXT, cover_url TEXT, created_at TIMESTAMP NOT NULL DEFAULT NOW())`);
+  await db.execute(sql`CREATE TABLE IF NOT EXISTS tracks (id SERIAL PRIMARY KEY, title TEXT NOT NULL, artist TEXT NOT NULL, genre TEXT NOT NULL, plays INTEGER NOT NULL DEFAULT 0, rank INTEGER, category TEXT NOT NULL DEFAULT 'trending', creator_id INTEGER, file_url TEXT, cover_url TEXT, ai_tool TEXT, created_at TIMESTAMP NOT NULL DEFAULT NOW())`);
+  await db.execute(sql`ALTER TABLE tracks ADD COLUMN IF NOT EXISTS ai_tool TEXT`);
   await db.execute(sql`CREATE TABLE IF NOT EXISTS creators (id SERIAL PRIMARY KEY, name TEXT NOT NULL, track_count INTEGER NOT NULL DEFAULT 0, avatar_color TEXT NOT NULL DEFAULT 'purple', user_id INTEGER, avatar_url TEXT)`);
   await db.execute(sql`CREATE TABLE IF NOT EXISTS likes (id SERIAL PRIMARY KEY, track_id INTEGER NOT NULL, user_id INTEGER NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT NOW())`);
   await db.execute(sql`CREATE TABLE IF NOT EXISTS visitor_likes (id SERIAL PRIMARY KEY, track_id INTEGER NOT NULL, visitor_id TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT NOW())`);

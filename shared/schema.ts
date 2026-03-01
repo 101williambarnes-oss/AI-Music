@@ -28,6 +28,7 @@ export const tracks = pgTable("tracks", {
   creatorId: integer("creator_id"),
   fileUrl: text("file_url"),
   coverUrl: text("cover_url"),
+  aiTool: text("ai_tool"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

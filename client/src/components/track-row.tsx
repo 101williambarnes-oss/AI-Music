@@ -153,6 +153,11 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
               </a>
             )}
           </div>
+          {track.aiTool && (
+            <div style={{ fontSize: "0.65rem", color: "rgba(160,107,255,.7)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-aitool-${track.id}`}>
+              Created with {track.aiTool}
+            </div>
+          )}
         </div>
         {showDownload && track.fileUrl && (
           <a

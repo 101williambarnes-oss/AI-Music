@@ -4,6 +4,9 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-03-01: AI tool display - "Created with Suno" (or whichever tool) shown under artist name on every track; aiTool column added to tracks table; saved from upload form
+- 2026-03-01: Media Session API - car/Bluetooth displays now show song title, artist, and "Hit Wave Media" as album instead of page title
+- 2026-03-01: Library button hidden inside creator profile pages (already in the library)
 - 2026-02-28: Weekly Top 25 winner system - #1 song each week is crowned, logged in weekly_winners table, and retired from Top 25; Hall of Fame section shows past champions; creators must bring new songs to compete
 - 2026-02-28: Embedded artwork extraction - MP3 uploads auto-extract ID3 cover art via music-metadata; uploaded to Cloudinary as coverUrl
 - 2026-02-28: Creators can't like own songs - like button hidden for track creators, only shows like count

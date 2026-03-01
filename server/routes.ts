@@ -290,6 +290,10 @@ export async function registerRoutes(
         fileUrl = await uploadToCloudinary(mainFile.path, resourceType);
       }
 
+      let parsedTools: string[] = [];
+      try { parsedTools = aiTools ? JSON.parse(aiTools) : []; } catch {}
+      const aiToolStr = parsedTools.length > 0 ? parsedTools.join(", ") : null;
+
       const track = await storage.insertTrack({
         title,
         artist: creator.name,
@@ -300,6 +304,7 @@ export async function registerRoutes(
         creatorId: creator.id,
         fileUrl,
         coverUrl,
+        aiTool: aiToolStr,
       });
 
       await storage.incrementCreatorTrackCount(creator.id);
