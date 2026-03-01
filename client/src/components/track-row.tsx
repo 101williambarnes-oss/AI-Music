@@ -6,7 +6,7 @@ import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
 import { useQuery } from "@tanstack/react-query";
 
-export function TrackRow({ track, showRank, hideComments, onDelete, showDownload }: { track: Track; showRank?: boolean; hideComments?: boolean; onDelete?: (trackId: number) => void; showDownload?: boolean }) {
+export function TrackRow({ track, showRank, hideComments, onDelete, showDownload, hideLibrary }: { track: Track; showRank?: boolean; hideComments?: boolean; onDelete?: (trackId: number) => void; showDownload?: boolean; hideLibrary?: boolean }) {
   const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
     queryKey: ["/api/creators", track.creatorId],
     enabled: !!track.creatorId,
@@ -128,7 +128,7 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
           <div className="title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-title-${track.id}`}>{track.title}</div>
           <div className="by" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }} data-testid={`text-track-artist-${track.id}`}>
             {track.artist}
-            {track.creatorId && (
+            {track.creatorId && !hideLibrary && (
               <a
                 href={`/creator/${track.creatorId}`}
                 onClick={(e) => e.stopPropagation()}

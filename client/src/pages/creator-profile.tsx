@@ -311,6 +311,7 @@ export default function CreatorProfile() {
                         key={track.id}
                         track={track}
                         showDownload
+                        hideLibrary
                         onDelete={isOwnProfile ? (trackId) => deleteTrackMutation.mutate(trackId) : undefined}
                       />
                     ))}
