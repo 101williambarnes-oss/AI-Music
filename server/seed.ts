@@ -13,6 +13,7 @@ async function createTablesIfMissing() {
   await db.execute(sql`CREATE TABLE IF NOT EXISTS follows (id SERIAL PRIMARY KEY, follower_id INTEGER NOT NULL, creator_id INTEGER NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT NOW())`);
   await db.execute(sql`CREATE TABLE IF NOT EXISTS visitor_follows (id SERIAL PRIMARY KEY, visitor_id TEXT NOT NULL, creator_id INTEGER NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT NOW())`);
   await db.execute(sql`CREATE TABLE IF NOT EXISTS comments (id SERIAL PRIMARY KEY, track_id INTEGER NOT NULL, user_id INTEGER NOT NULL, user_name TEXT NOT NULL, text TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT NOW())`);
+  await db.execute(sql`CREATE TABLE IF NOT EXISTS weekly_winners (id SERIAL PRIMARY KEY, track_id INTEGER NOT NULL, track_title TEXT NOT NULL, artist TEXT NOT NULL, creator_id INTEGER, week_start TIMESTAMP NOT NULL, week_end TIMESTAMP NOT NULL, like_count INTEGER NOT NULL DEFAULT 0, play_count INTEGER NOT NULL DEFAULT 0, cover_url TEXT, created_at TIMESTAMP NOT NULL DEFAULT NOW())`);
   await db.execute(sql`CREATE TABLE IF NOT EXISTS "session" ("sid" VARCHAR NOT NULL PRIMARY KEY, "sess" JSON NOT NULL, "expire" TIMESTAMP(6) NOT NULL)`);
   await db.execute(sql`CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")`);
   console.log("Database tables verified");
