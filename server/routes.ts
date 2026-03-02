@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { signupSchema, signinSchema } from "@shared/schema";
@@ -8,6 +8,38 @@ import path from "path";
 import fs from "fs";
 import { v2 as cloudinary } from "cloudinary";
 import * as mm from "music-metadata";
+
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of rateLimitStore) {
+    if (val.resetAt <= now) rateLimitStore.delete(key);
+  }
+}, 60000);
+
+function rateLimit(prefix: string, maxRequests: number, windowMs: number) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const ip = req.ip || req.socket.remoteAddress || "unknown";
+    const key = `${prefix}:${ip}`;
+    const now = Date.now();
+    const entry = rateLimitStore.get(key);
+
+    if (!entry || entry.resetAt <= now) {
+      rateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
+
+    if (entry.count >= maxRequests) {
+      const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
+      res.set("Retry-After", String(retryAfter));
+      return res.status(429).json({ message: "Too many requests. Please try again later." });
+    }
+
+    entry.count++;
+    return next();
+  };
+}
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -82,7 +114,7 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
 
-  app.post("/api/auth/signup", async (req, res) => {
+  app.post("/api/auth/signup", rateLimit("signup", 5, 3600000), async (req, res) => {
     try {
       const parsed = signupSchema.safeParse(req.body);
       if (!parsed.success) {
@@ -123,7 +155,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/auth/signin", async (req, res) => {
+  app.post("/api/auth/signin", rateLimit("signin", 10, 900000), async (req, res) => {
     try {
       const parsed = signinSchema.safeParse(req.body);
       if (!parsed.success) {
@@ -218,7 +250,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/tracks/upload", (req, res, next) => {
+  app.post("/api/tracks/upload", rateLimit("upload", 10, 3600000), (req, res, next) => {
     upload.fields([
       { name: "file", maxCount: 1 },
       { name: "cover", maxCount: 1 },
@@ -428,7 +460,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/tracks/:id/play", async (req, res) => {
+  app.post("/api/tracks/:id/play", rateLimit("play", 60, 60000), async (req, res) => {
     try {
       const trackId = parseInt(req.params.id);
       if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
@@ -586,7 +618,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/tracks/:id/likes", async (req, res) => {
+  app.post("/api/tracks/:id/likes", rateLimit("like", 30, 60000), async (req, res) => {
     const visitorId = req.headers["x-visitor-id"] as string;
     const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
     const effectiveId = (userId && !isNaN(userId)) ? userId : null;
@@ -649,7 +681,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/tracks/:id/comments", async (req, res) => {
+  app.post("/api/tracks/:id/comments", rateLimit("comment", 15, 60000), async (req, res) => {
     const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
     const hasUser = userId && !isNaN(userId);
     try {
@@ -702,7 +734,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/creators/:id/follow", async (req, res) => {
+  app.post("/api/creators/:id/follow", rateLimit("follow", 30, 60000), async (req, res) => {
     const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
     const visitorId = req.headers["x-visitor-id"] as string;
     const effectiveId = (userId && !isNaN(userId)) ? userId : null;
