@@ -188,7 +188,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
   });
 
   return (
-    <div className="track-actions-wrap" onClick={(e) => e.stopPropagation()}>
+    <div className="track-actions-wrap" onClick={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
       <div className="track-actions" data-testid={`track-actions-${track.id}`}>
         <span className="action-stat" title="Plays" data-testid={`text-track-plays-${track.id}`}>
           <Play style={{ width: 13, height: 13, fill: "currentColor" }} />
@@ -228,10 +228,13 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
         <button
           className={`action-btn share-btn hover-elevate${showShare ? " active" : ""}`}
           onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowShare(!showShare); setCopied(false); }}
+          onTouchEnd={(e) => { e.stopPropagation(); }}
           title="Share"
+          style={{ minWidth: 36, minHeight: 36, justifyContent: "center" }}
           data-testid={`button-share-${track.id}`}
         >
           <Share2 style={{ width: 14, height: 14 }} />
+          <span>Share</span>
         </button>
         <a
           className="action-btn report-btn hover-elevate"
@@ -317,6 +320,16 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
 }
 
 function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; onClose: () => void; copied: boolean; setCopied: (v: boolean) => void }) {
+  const overlayReady = useRef(false);
+  useEffect(() => {
+    const t = setTimeout(() => { overlayReady.current = true; }, 100);
+    return () => clearTimeout(t);
+  }, []);
+  function handleOverlayClose(e: React.MouseEvent | React.TouchEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+    if (overlayReady.current) onClose();
+  }
   const shareUrl = `${window.location.origin}/track/${track.id}`;
   const shareText = `Check out "${track.title}" by ${track.artist} on Hit Wave Media!`;
 
@@ -369,12 +382,12 @@ function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; on
   return (
     <>
       <div
-        onMouseDown={(e) => { e.stopPropagation(); onClose(); }}
-        onTouchStart={(e) => { e.stopPropagation(); onClose(); }}
+        onMouseDown={handleOverlayClose}
+        onTouchEnd={handleOverlayClose}
         style={{ position: "fixed", inset: 0, zIndex: 998 }}
         data-testid={`share-overlay-${track.id}`}
       />
-      <div className="share-dropdown" style={{ position: "relative", zIndex: 999 }} onClick={(e) => e.stopPropagation()} data-testid={`share-dropdown-${track.id}`}>
+      <div className="share-dropdown" style={{ position: "relative", zIndex: 999 }} onClick={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()} data-testid={`share-dropdown-${track.id}`}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#6cf0ff", letterSpacing: 0.5 }}>Share this track</span>
           <button
