@@ -45,8 +45,8 @@ function Router() {
       <Route path="/sign-in" component={SignIn} />
       <Route path="/sign-up" component={SignUp} />
       <Route path="/upload" component={Upload} />
-      <Route path="/creator/:id" component={CreatorProfile} />
       <Route path="/creator/:id/dashboard" component={CreatorDashboard} />
+      <Route path="/creator/:id" component={CreatorProfile} />
       <Route path="/downloads" component={Downloads} />
       <Route path="/mockup" component={Mockup} />
       <Route component={NotFound} />
