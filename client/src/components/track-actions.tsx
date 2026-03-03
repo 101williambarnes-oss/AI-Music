@@ -227,7 +227,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
         )}
         <button
           className={`action-btn share-btn hover-elevate${showShare ? " active" : ""}`}
-          onClick={() => { setShowShare(!showShare); setCopied(false); }}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowShare(!showShare); setCopied(false); }}
           title="Share"
           data-testid={`button-share-${track.id}`}
         >
@@ -369,11 +369,12 @@ function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; on
   return (
     <>
       <div
-        onClick={onClose}
+        onMouseDown={(e) => { e.stopPropagation(); onClose(); }}
+        onTouchStart={(e) => { e.stopPropagation(); onClose(); }}
         style={{ position: "fixed", inset: 0, zIndex: 998 }}
         data-testid={`share-overlay-${track.id}`}
       />
-      <div className="share-dropdown" style={{ position: "relative", zIndex: 999 }} data-testid={`share-dropdown-${track.id}`}>
+      <div className="share-dropdown" style={{ position: "relative", zIndex: 999 }} onClick={(e) => e.stopPropagation()} data-testid={`share-dropdown-${track.id}`}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#6cf0ff", letterSpacing: 0.5 }}>Share this track</span>
           <button
