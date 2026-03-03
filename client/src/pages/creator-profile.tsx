@@ -64,7 +64,7 @@ export default function CreatorProfile() {
 
   const creator = data?.creator;
   const tracks = data?.tracks || [];
-  const isOwnProfile = user?.creatorId === creator?.id;
+  const isOwnProfile = (user?.creatorId != null && user.creatorId === creator?.id) || (user?.id != null && creator?.userId != null && user.id === creator.userId);
 
   const deleteTrackMutation = useMutation({
     mutationFn: async (trackId: number) => {
