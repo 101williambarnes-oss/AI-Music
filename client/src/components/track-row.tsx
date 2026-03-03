@@ -57,194 +57,197 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
     setShowVideoModal(false);
   }
 
+  function handleShareClick() {
+    const shareUrl = `${window.location.origin}/track/${track.id}`;
+    const shareText = `Check out "${track.title}" by ${track.artist} on Hit Wave Media!`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      navigator.share({ title: `${track.title} — Hit Wave Media`, text: shareText, url: shareUrl }).catch(() => {});
+    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        alert("Link copied!");
+      }).catch(() => {
+        prompt("Copy this link:", shareUrl);
+      });
+    } else {
+      prompt("Copy this link:", shareUrl);
+    }
+  }
+
   return (
     <div data-testid={`track-row-${track.id}`}>
-      <div className="row" onClick={handleRowClick} style={{ cursor: hasAudio ? "pointer" : "default" }} data-testid={`button-play-${track.id}`}>
-        <div className="thumb" style={{ position: "relative", overflow: "hidden", flexShrink: 0 }}>
-          {track.coverUrl && !showRank ? (
-            <img
-              src={track.coverUrl}
-              alt={track.title}
-              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-              data-testid={`img-cover-thumb-${track.id}`}
-            />
-          ) : isVideo && !showRank ? (
-            <video
-              ref={videoRef}
-              src={track.fileUrl!}
-              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-              muted
-              loop
-              playsInline
-              data-testid={`video-thumb-${track.id}`}
-            />
-          ) : track.fileUrl && !showRank && /\.(jpg|jpeg|png|gif|webp)$/i.test(track.fileUrl) ? (
-            <img
-              src={track.fileUrl}
-              alt={track.title}
-              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-              data-testid={`img-thumb-${track.id}`}
-            />
-          ) : !showRank && creatorData?.creator?.avatarUrl ? (
-            <img
-              src={creatorData.creator.avatarUrl}
-              alt={track.artist}
-              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-              data-testid={`img-avatar-thumb-${track.id}`}
-            />
-          ) : null}
-          {showRank && track.rank ? (
-            <div
-              style={{
-                position: "relative",
-                zIndex: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "100%",
-                height: "100%",
-              }}
-            >
-              {isCurrentlyPlaying ? (
-                <span style={{ color: "#ff4fd8", fontSize: "1.2rem" }}>{"\u275A\u275A"}</span>
-              ) : (
-                <span className="rankBadge" data-testid={`text-rank-${track.rank}`}>#{track.rank}</span>
-              )}
-            </div>
-          ) : !isCurrentlyPlaying ? (
+      <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
+        <div className="row" onClick={handleRowClick} style={{ cursor: hasAudio ? "pointer" : "default", flex: 1, minWidth: 0, marginBottom: 0 }} data-testid={`button-play-${track.id}`}>
+          <div className="thumb" style={{ position: "relative", overflow: "hidden", flexShrink: 0 }}>
+            {track.coverUrl && !showRank ? (
+              <img
+                src={track.coverUrl}
+                alt={track.title}
+                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+                data-testid={`img-cover-thumb-${track.id}`}
+              />
+            ) : isVideo && !showRank ? (
+              <video
+                ref={videoRef}
+                src={track.fileUrl!}
+                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+                muted
+                loop
+                playsInline
+                data-testid={`video-thumb-${track.id}`}
+              />
+            ) : track.fileUrl && !showRank && /\.(jpg|jpeg|png|gif|webp)$/i.test(track.fileUrl) ? (
+              <img
+                src={track.fileUrl}
+                alt={track.title}
+                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+                data-testid={`img-thumb-${track.id}`}
+              />
+            ) : !showRank && creatorData?.creator?.avatarUrl ? (
+              <img
+                src={creatorData.creator.avatarUrl}
+                alt={track.artist}
+                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+                data-testid={`img-avatar-thumb-${track.id}`}
+              />
+            ) : null}
+            {showRank && track.rank ? (
               <div
-                className="play-btn"
                 style={{
-                  opacity: hasAudio ? 1 : 0.4,
                   position: "relative",
                   zIndex: 1,
-                }}
-              >
-                {"\u25B6"}
-              </div>
-          ) : null}
-        </div>
-        <div className="meta" style={{ minWidth: 0, overflow: "hidden" }}>
-          <div className="title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-title-${track.id}`}>{track.title}</div>
-          <div className="by" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }} data-testid={`text-track-artist-${track.id}`}>
-            {track.artist}
-            {track.creatorId && !hideLibrary && (
-              <a
-                href={`/creator/${track.creatorId}`}
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  display: "inline-flex",
+                  display: "flex",
                   alignItems: "center",
-                  gap: 3,
-                  fontSize: "0.65rem",
-                  color: "#6cf0ff",
-                  textDecoration: "none",
-                  opacity: 0.8,
-                  padding: "1px 6px",
-                  borderRadius: 4,
-                  background: "rgba(108,240,255,.08)",
-                  border: "1px solid rgba(108,240,255,.15)",
-                  whiteSpace: "nowrap",
+                  justifyContent: "center",
+                  width: "100%",
+                  height: "100%",
                 }}
-                title="View creator's library"
-                data-testid={`link-library-${track.id}`}
               >
-                <Library size={10} /> Library
-              </a>
+                {isCurrentlyPlaying ? (
+                  <span style={{ color: "#ff4fd8", fontSize: "1.2rem" }}>{"\u275A\u275A"}</span>
+                ) : (
+                  <span className="rankBadge" data-testid={`text-rank-${track.rank}`}>#{track.rank}</span>
+                )}
+              </div>
+            ) : !isCurrentlyPlaying ? (
+                <div
+                  className="play-btn"
+                  style={{
+                    opacity: hasAudio ? 1 : 0.4,
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                >
+                  {"\u25B6"}
+                </div>
+            ) : null}
+          </div>
+          <div className="meta" style={{ minWidth: 0, overflow: "hidden" }}>
+            <div className="title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-title-${track.id}`}>{track.title}</div>
+            <div className="by" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }} data-testid={`text-track-artist-${track.id}`}>
+              {track.artist}
+              {track.creatorId && !hideLibrary && (
+                <a
+                  href={`/creator/${track.creatorId}`}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 3,
+                    fontSize: "0.65rem",
+                    color: "#6cf0ff",
+                    textDecoration: "none",
+                    opacity: 0.8,
+                    padding: "1px 6px",
+                    borderRadius: 4,
+                    background: "rgba(108,240,255,.08)",
+                    border: "1px solid rgba(108,240,255,.15)",
+                    whiteSpace: "nowrap",
+                  }}
+                  title="View creator's library"
+                  data-testid={`link-library-${track.id}`}
+                >
+                  <Library size={10} /> Library
+                </a>
+              )}
+            </div>
+            {track.aiTool && (
+              <div style={{ fontSize: "0.65rem", color: "rgba(160,107,255,.7)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-aitool-${track.id}`}>
+                Created with {track.aiTool}
+              </div>
             )}
           </div>
-          {track.aiTool && (
-            <div style={{ fontSize: "0.65rem", color: "rgba(160,107,255,.7)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-aitool-${track.id}`}>
-              Created with {track.aiTool}
-            </div>
-          )}
         </div>
         {showDownload && (
-          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, justifyContent: "center", padding: "0 6px", flexShrink: 0 }}>
             {track.fileUrl && (
               <a
                 href={`/api/tracks/${track.id}/download`}
-                onClick={(e) => e.stopPropagation()}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: 32,
-                  height: 32,
-                  borderRadius: 6,
+                  width: 38,
+                  height: 38,
+                  borderRadius: 8,
                   background: "rgba(108,240,255,.1)",
                   border: "1px solid rgba(108,240,255,.2)",
                   color: "#6cf0ff",
                   cursor: "pointer",
-                  flexShrink: 0,
+                  textDecoration: "none",
                 }}
                 title="Download"
                 data-testid={`button-download-track-${track.id}`}
               >
-                <Download size={14} />
+                <Download size={16} />
               </a>
             )}
             <button
+              onClick={handleShareClick}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 38,
+                height: 38,
+                borderRadius: 8,
+                background: "rgba(160,107,255,.1)",
+                border: "1px solid rgba(160,107,255,.2)",
+                color: "#a06bff",
+                cursor: "pointer",
+              }}
+              title="Share"
+              data-testid={`button-share-row-${track.id}`}
+            >
+              <Share2 size={16} />
+            </button>
+          </div>
+        )}
+        {onDelete && (
+          <div style={{ display: "flex", alignItems: "center", padding: "0 6px", flexShrink: 0 }}>
+            <button
               onClick={(e) => {
                 e.stopPropagation();
-                e.preventDefault();
-                const shareUrl = `${window.location.origin}/track/${track.id}`;
-                const shareText = `Check out "${track.title}" by ${track.artist} on Hit Wave Media!`;
-                if (navigator.share) {
-                  navigator.share({ title: `${track.title} — Hit Wave Media`, text: shareText, url: shareUrl }).catch(() => {});
-                } else {
-                  navigator.clipboard.writeText(shareUrl).then(() => {
-                    alert("Link copied!");
-                  }).catch(() => {
-                    prompt("Copy this link:", shareUrl);
-                  });
+                if (confirm("Are you sure you want to delete this track?")) {
+                  onDelete(track.id);
                 }
               }}
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 32,
-                height: 32,
-                borderRadius: 6,
-                background: "rgba(160,107,255,.1)",
-                border: "1px solid rgba(160,107,255,.2)",
-                color: "#a06bff",
+                width: 38,
+                height: 38,
+                borderRadius: 8,
+                background: "rgba(255,79,216,.1)",
+                border: "1px solid rgba(255,79,216,.2)",
+                color: "#ff4fd8",
                 cursor: "pointer",
-                flexShrink: 0,
               }}
-              title="Share"
-              data-testid={`button-share-row-${track.id}`}
+              data-testid={`button-delete-track-${track.id}`}
             >
-              <Share2 size={14} />
+              <Trash2 size={16} />
             </button>
           </div>
-        )}
-        {onDelete && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (confirm("Are you sure you want to delete this track?")) {
-                onDelete(track.id);
-              }
-            }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 32,
-              height: 32,
-              borderRadius: 6,
-              background: "rgba(255,79,216,.1)",
-              border: "1px solid rgba(255,79,216,.2)",
-              color: "#ff4fd8",
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
-            data-testid={`button-delete-track-${track.id}`}
-          >
-            <Trash2 size={14} />
-          </button>
         )}
       </div>
       <TrackActions track={track} hideComments={hideComments} />
