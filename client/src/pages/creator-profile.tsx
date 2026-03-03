@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
-import { Upload, Camera, UserPlus, UserCheck } from "lucide-react";
+import { Upload, Camera, UserPlus, UserCheck, BarChart3 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { TrackRow } from "@/components/track-row";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
@@ -269,30 +269,54 @@ export default function CreatorProfile() {
               </div>
 
               {isOwnProfile && (
-                <a
-                  href="/upload"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 10,
-                    width: "100%",
-                    padding: "14px 0",
-                    background: "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)",
-                    border: "none",
-                    borderRadius: 8,
-                    color: "#050615",
-                    fontSize: 16,
-                    fontWeight: 800,
-                    textDecoration: "none",
-                    letterSpacing: 0.5,
-                    marginBottom: 24,
-                  }}
-                  data-testid="button-download-music"
-                >
-                  <Upload style={{ width: 20, height: 20 }} />
-                  Upload Your Music Now
-                </a>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
+                  <a
+                    href="/upload"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 10,
+                      width: "100%",
+                      padding: "14px 0",
+                      background: "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)",
+                      border: "none",
+                      borderRadius: 8,
+                      color: "#050615",
+                      fontSize: 16,
+                      fontWeight: 800,
+                      textDecoration: "none",
+                      letterSpacing: 0.5,
+                    }}
+                    data-testid="button-download-music"
+                  >
+                    <Upload style={{ width: 20, height: 20 }} />
+                    Upload Your Music Now
+                  </a>
+                  <a
+                    href={`/creator/${creatorId}/dashboard`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 10,
+                      width: "100%",
+                      padding: "12px 0",
+                      background: "rgba(160,107,255,.12)",
+                      border: "1px solid rgba(160,107,255,.3)",
+                      borderRadius: 8,
+                      color: "#c9a0ff",
+                      fontSize: 15,
+                      fontWeight: 700,
+                      textDecoration: "none",
+                      letterSpacing: 0.5,
+                    }}
+                    data-testid="button-creator-dashboard"
+                  >
+                    <BarChart3 style={{ width: 18, height: 18 }} />
+                    Creator Dashboard
+                  </a>
+                </div>
               )}
 
               <div style={{ borderTop: "1px solid rgba(108,240,255,.1)", paddingTop: 20 }}>

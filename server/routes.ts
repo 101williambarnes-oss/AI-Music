@@ -801,5 +801,109 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/creators/:id/dashboard", async (req, res) => {
+    const creatorId = parseInt(req.params.id);
+    if (isNaN(creatorId)) return res.status(400).json({ message: "Invalid creator ID" });
+
+    try {
+      const creator = await storage.getCreatorById(creatorId);
+      if (!creator) return res.status(404).json({ message: "Creator not found" });
+
+      const creatorTracks = await storage.getTracksByCreatorId(creatorId);
+      const now = new Date();
+      const weekStart = new Date(now);
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+      weekStart.setHours(0, 0, 0, 0);
+
+      let totalPlays = 0;
+      let totalLikes = 0;
+      let mostPlayedTrack = { title: "-", plays: 0 };
+      let mostLikedTrack = { title: "-", likes: 0 };
+
+      const trackStats = [];
+
+      for (const track of creatorTracks) {
+        const likeCount = await storage.getLikeCount(track.id);
+        totalPlays += track.plays;
+        totalLikes += likeCount;
+
+        if (track.plays > mostPlayedTrack.plays) {
+          mostPlayedTrack = { title: track.title, plays: track.plays };
+        }
+        if (likeCount > mostLikedTrack.likes) {
+          mostLikedTrack = { title: track.title, likes: likeCount };
+        }
+
+        let status = "-";
+        const trackAge = (now.getTime() - new Date(track.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+        if (trackAge <= 7) status = "New";
+
+        const trendingTracks = await storage.getTrendingTracks();
+        if (trendingTracks.some(t => t.id === track.id)) status = "Trending";
+
+        trackStats.push({
+          id: track.id,
+          title: track.title,
+          plays: track.plays,
+          likes: likeCount,
+          status,
+        });
+      }
+
+      const followers = await storage.getFollowerCount(creatorId);
+      const conversionRate = totalPlays > 0 ? Math.round((totalLikes / totalPlays) * 100) : 0;
+
+      const top25 = await storage.getTop25ByLikes();
+      const creatorInTop25 = top25.some(t => t.creatorId === creatorId);
+      let likesAwayFromTop25 = 0;
+      if (!creatorInTop25 && top25.length >= 25) {
+        const last = top25[top25.length - 1];
+        const lastLikeCount = await storage.getLikeCount(last.id);
+        const bestCreatorLikes = trackStats.length > 0 ? Math.max(...trackStats.map(t => t.likes)) : 0;
+        likesAwayFromTop25 = Math.max(0, lastLikeCount - bestCreatorLikes + 1);
+      }
+
+      let rankStatus = "-";
+      if (creatorInTop25) rankStatus = "Top 25";
+      const trendingCheck = await storage.getTrendingTracks();
+      if (trendingCheck.some(t => t.creatorId === creatorId)) rankStatus = "Trending";
+
+      const nextSunday = new Date(now);
+      nextSunday.setDate(nextSunday.getDate() + (7 - nextSunday.getDay()));
+      nextSunday.setHours(0, 0, 0, 0);
+      const msUntilReset = nextSunday.getTime() - now.getTime();
+      const daysUntil = Math.floor(msUntilReset / (1000 * 60 * 60 * 24));
+      const hoursUntil = Math.floor((msUntilReset % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutesUntil = Math.floor((msUntilReset % (1000 * 60 * 60)) / (1000 * 60));
+
+      res.json({
+        thisWeek: {
+          plays: totalPlays,
+          likes: totalLikes,
+          followers,
+          rankStatus,
+        },
+        performance: {
+          mostPlayedTrack,
+          mostLikedTrack,
+          conversionRate,
+        },
+        tracks: trackStats,
+        motivation: {
+          likesAwayFromTop25,
+          inTop25: creatorInTop25,
+        },
+        nextReset: {
+          days: daysUntil,
+          hours: hoursUntil,
+          minutes: minutesUntil,
+        },
+      });
+    } catch (error) {
+      console.error("Dashboard error:", error);
+      res.status(500).json({ message: "Failed to load dashboard" });
+    }
+  });
+
   return httpServer;
 }

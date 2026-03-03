@@ -13,6 +13,7 @@ import SignIn from "@/pages/sign-in";
 import SignUp from "@/pages/sign-up";
 import Upload from "@/pages/upload";
 import CreatorProfile from "@/pages/creator-profile";
+import CreatorDashboard from "@/pages/creator-dashboard";
 import Downloads from "@/pages/downloads";
 import Mockup from "@/pages/mockup";
 import NotFound from "@/pages/not-found";
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/sign-up" component={SignUp} />
       <Route path="/upload" component={Upload} />
       <Route path="/creator/:id" component={CreatorProfile} />
+      <Route path="/creator/:id/dashboard" component={CreatorDashboard} />
       <Route path="/downloads" component={Downloads} />
       <Route path="/mockup" component={Mockup} />
       <Route component={NotFound} />
