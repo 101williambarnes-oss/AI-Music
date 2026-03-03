@@ -188,7 +188,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
   });
 
   return (
-    <div className="track-actions-wrap">
+    <div className="track-actions-wrap" onClick={(e) => e.stopPropagation()}>
       <div className="track-actions" data-testid={`track-actions-${track.id}`}>
         <span className="action-stat" title="Plays" data-testid={`text-track-plays-${track.id}`}>
           <Play style={{ width: 13, height: 13, fill: "currentColor" }} />
