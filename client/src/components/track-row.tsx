@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { type Track } from "@shared/schema";
-import { Trash2, Download, Library } from "lucide-react";
+import { Trash2, Download, Library, Share2 } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
@@ -159,28 +159,66 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
             </div>
           )}
         </div>
-        {showDownload && track.fileUrl && (
-          <a
-            href={`/api/tracks/${track.id}/download`}
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 32,
-              height: 32,
-              borderRadius: 6,
-              background: "rgba(108,240,255,.1)",
-              border: "1px solid rgba(108,240,255,.2)",
-              color: "#6cf0ff",
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
-            title="Download"
-            data-testid={`button-download-track-${track.id}`}
-          >
-            <Download size={14} />
-          </a>
+        {showDownload && (
+          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+            {track.fileUrl && (
+              <a
+                href={`/api/tracks/${track.id}/download`}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 6,
+                  background: "rgba(108,240,255,.1)",
+                  border: "1px solid rgba(108,240,255,.2)",
+                  color: "#6cf0ff",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+                title="Download"
+                data-testid={`button-download-track-${track.id}`}
+              >
+                <Download size={14} />
+              </a>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                const shareUrl = `${window.location.origin}/track/${track.id}`;
+                const shareText = `Check out "${track.title}" by ${track.artist} on Hit Wave Media!`;
+                if (navigator.share) {
+                  navigator.share({ title: `${track.title} — Hit Wave Media`, text: shareText, url: shareUrl }).catch(() => {});
+                } else {
+                  navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert("Link copied!");
+                  }).catch(() => {
+                    prompt("Copy this link:", shareUrl);
+                  });
+                }
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 32,
+                height: 32,
+                borderRadius: 6,
+                background: "rgba(160,107,255,.1)",
+                border: "1px solid rgba(160,107,255,.2)",
+                color: "#a06bff",
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+              title="Share"
+              data-testid={`button-share-row-${track.id}`}
+            >
+              <Share2 size={14} />
+            </button>
+          </div>
         )}
         {onDelete && (
           <button
