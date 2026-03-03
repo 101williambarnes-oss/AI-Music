@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
@@ -44,6 +44,18 @@ export default function CreatorProfile() {
     }
   });
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me", { credentials: "include" })
+      .then(r => { if (r.ok) return r.json(); throw new Error(); })
+      .then((data: { user: AuthUser }) => {
+        if (data?.user) {
+          localStorage.setItem("hwm_user", JSON.stringify(data.user));
+          setUser(data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const { data, isLoading, error } = useQuery<{ creator: Creator; tracks: Track[] }>({
     queryKey: ["/api/creators", creatorId],
