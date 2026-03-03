@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hitwave-v3';
+const CACHE_NAME = 'hitwave-v4';
 const STATIC_ASSETS = [
   '/manifest.json',
   '/icon-192.png',
@@ -33,10 +33,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.pathname === '/' || url.pathname.endsWith('.html') || url.pathname.startsWith('/assets/')) {
+  if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(() => {
         return caches.match('/') || new Response('Offline', { status: 503 });
+      })
+    );
+    return;
+  }
+
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(event.request) || new Response('Offline', { status: 503 });
       })
     );
     return;
