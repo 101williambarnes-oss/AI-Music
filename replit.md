@@ -4,6 +4,9 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-03-03: Individual track pages - each track has its own page at /track/:id; share links now point to track pages instead of creator profiles; GET /api/track/:id endpoint returns track + creator data
+- 2026-03-03: Service worker removed - SW now self-destructs and clears all caches; main.tsx unregisters all SWs on load; prevents stale cache issues permanently
+- 2026-03-03: Share dropdown improved - native share via Web Share API on mobile, bigger tap targets, tap-outside-to-close overlay, stopPropagation prevents modal from opening when clicking share/like/comment
 - 2026-03-03: Creator Dashboard - private stats page for each creator with plays/likes/followers, performance overview, track table with status badges, Top 25 countdown timer, and motivational messages; accessible via button on own profile
 - 2026-03-02: Rate limiting - bot/spam protection on signup (5/hr), signin (10/15min), upload (10/hr), plays (60/min), likes (30/min), comments (15/min), follows (30/min)
 - 2026-03-02: Service worker fix - HTML/JS/CSS bundles no longer cached by PWA; cache bumped to v3; prevents stale code issues on deploy
@@ -49,6 +52,7 @@ client/src/pages/sign-up.tsx      - Registration page
 client/src/pages/sign-in.tsx      - Login page
 client/src/pages/upload.tsx       - Track upload (auth required)
 client/src/pages/creator-profile.tsx - Individual creator profiles
+client/src/pages/track.tsx        - Individual track page (/track/:id) for sharing
 client/src/pages/downloads.tsx    - Downloads page with genre sections
 client/src/App.tsx                - Router setup
 client/src/lib/audioPlayer.tsx     - Shared audio player context for track playback
@@ -66,6 +70,7 @@ server/seed.ts                    - Seed data for initial content
 - POST /api/auth/signin - Login (email, password)
 - POST /api/auth/signout - Logout
 - GET /api/auth/me - Get current user
+- GET /api/track/:id - Get individual track with creator info (for track pages)
 - POST /api/tracks/upload - Upload track (auth required)
 - POST /api/tracks/:id/play - Increment play count for a track
 - GET /api/tracks/:category - Get tracks by category (trending, new, top25 - top25 is dynamic by likes)

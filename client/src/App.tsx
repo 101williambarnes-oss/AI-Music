@@ -15,6 +15,7 @@ import Upload from "@/pages/upload";
 import CreatorProfile from "@/pages/creator-profile";
 import CreatorDashboard from "@/pages/creator-dashboard";
 import Downloads from "@/pages/downloads";
+import TrackPage from "@/pages/track";
 import Mockup from "@/pages/mockup";
 import NotFound from "@/pages/not-found";
 import { AudioPlayerProvider } from "@/lib/audioPlayer";
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/sign-in" component={SignIn} />
       <Route path="/sign-up" component={SignUp} />
       <Route path="/upload" component={Upload} />
+      <Route path="/track/:id" component={TrackPage} />
       <Route path="/creator/:id/dashboard" component={CreatorDashboard} />
       <Route path="/creator/:id" component={CreatorProfile} />
       <Route path="/downloads" component={Downloads} />

@@ -317,9 +317,7 @@ export function TrackActions({ track, hideComments }: { track: Track; hideCommen
 }
 
 function ShareDropdown({ track, onClose, copied, setCopied }: { track: Track; onClose: () => void; copied: boolean; setCopied: (v: boolean) => void }) {
-  const shareUrl = track.creatorId
-    ? `${window.location.origin}/creator/${track.creatorId}`
-    : window.location.origin;
+  const shareUrl = `${window.location.origin}/track/${track.id}`;
   const shareText = `Check out "${track.title}" by ${track.artist} on Hit Wave Media!`;
 
   function copyLink() {

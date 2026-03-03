@@ -451,6 +451,22 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/track/:id", async (req, res) => {
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+      const track = await storage.getTrack(trackId);
+      if (!track) return res.status(404).json({ message: "Track not found" });
+      let creator = null;
+      if (track.creatorId) {
+        creator = await storage.getCreator(track.creatorId);
+      }
+      res.json({ track, creator });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch track" });
+    }
+  });
+
   app.get("/api/tracks", async (_req, res) => {
     try {
       const allTracks = await storage.getAllTracks();
