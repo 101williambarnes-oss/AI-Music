@@ -885,7 +885,8 @@ export async function registerRoutes(
       const conversionRate = totalPlays > 0 ? Math.round((totalLikes / totalPlays) * 100) : 0;
 
       const top25 = await storage.getTop25ByLikes();
-      const creatorInTop25 = top25.some(t => t.creatorId === creatorId);
+      const allTracks = await storage.getAllTracks();
+      const creatorInTop25 = allTracks.length >= 25 && top25.some(t => t.creatorId === creatorId);
       let likesAwayFromTop25 = 0;
       if (!creatorInTop25 && top25.length >= 25) {
         const last = top25[top25.length - 1];
