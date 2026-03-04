@@ -7,6 +7,8 @@ type TrackMeta = {
   coverUrl?: string | null;
 };
 
+type OnEndedCallback = (trackId: number) => void;
+
 type AudioPlayerState = {
   currentTrackId: number | null;
   isPlaying: boolean;
@@ -17,6 +19,7 @@ type AudioPlayerState = {
   seek: (time: number) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
+  setOnEnded: (cb: OnEndedCallback | null) => void;
 };
 
 const AudioPlayerContext = createContext<AudioPlayerState>({
@@ -29,6 +32,7 @@ const AudioPlayerContext = createContext<AudioPlayerState>({
   seek: () => {},
   getCurrentTime: () => 0,
   getDuration: () => 0,
+  setOnEnded: () => {},
 });
 
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
@@ -37,6 +41,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentTrackIdRef = useRef<number | null>(null);
   const countedPlaysRef = useRef<Set<number>>(new Set());
+  const onEndedRef = useRef<OnEndedCallback | null>(null);
+
+  const setOnEnded = useCallback((cb: OnEndedCallback | null) => {
+    onEndedRef.current = cb;
+  }, []);
 
   useEffect(() => {
     const audio = new Audio();
@@ -45,6 +54,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     audioRef.current = audio;
     audio.addEventListener("ended", () => {
       setIsPlaying(false);
+      const tid = currentTrackIdRef.current;
+      if (tid !== null && onEndedRef.current) {
+        onEndedRef.current(tid);
+      }
     });
     return () => {
       audio.pause();
@@ -147,7 +160,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   return (
-    <AudioPlayerContext.Provider value={{ currentTrackId, isPlaying, play, pause, stop, toggle, seek, getCurrentTime, getDuration }}>
+    <AudioPlayerContext.Provider value={{ currentTrackId, isPlaying, play, pause, stop, toggle, seek, getCurrentTime, getDuration, setOnEnded }}>
       {children}
     </AudioPlayerContext.Provider>
   );

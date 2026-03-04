@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Play, Pause, RotateCcw, RotateCw, Home } from "lucide-react";
+import { X, Play, Pause, RotateCcw, RotateCw, Home, Plus, Check } from "lucide-react";
 import { type Track } from "@shared/schema";
 import { useAudioPlayer } from "@/lib/audioPlayer";
+import { usePlaylist } from "@/lib/playlistContext";
 import { TrackActions } from "@/components/track-actions";
 
 function formatTime(seconds: number) {
@@ -24,6 +25,8 @@ export function VideoModal({
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const { currentTrackId, isPlaying, toggle, stop, seek, getCurrentTime, getDuration } = useAudioPlayer();
+  const { addTrack, removeTrack: removeFromPlaylist, isInPlaylist } = usePlaylist();
+  const inPlaylist = isInPlaylist(track.id);
   const isThisTrack = currentTrackId === track.id;
   const isCurrentlyPlaying = isThisTrack && isPlaying;
   const isVideoFile = !!track.fileUrl && /\.(mp4|webm|mov)$/i.test(track.fileUrl);
@@ -321,15 +324,44 @@ export function VideoModal({
               <div className="video-modal-title" data-testid={`text-modal-title-${track.id}`}>{track.title}</div>
               <div className="video-modal-artist" data-testid={`text-modal-artist-${track.id}`}>{track.artist}</div>
             </div>
-            {track.creatorId && (
-              <a
-                href={`/creator/${track.creatorId}`}
-                className="video-modal-library-btn"
-                data-testid={`link-full-library-${track.id}`}
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+              <button
+                onClick={() => {
+                  if (inPlaylist) {
+                    removeFromPlaylist(track.id);
+                  } else {
+                    addTrack(track);
+                  }
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  background: inPlaylist ? "rgba(255,79,216,.15)" : "rgba(255,79,216,.08)",
+                  border: inPlaylist ? "1px solid rgba(255,79,216,.4)" : "1px solid rgba(255,79,216,.2)",
+                  color: inPlaylist ? "#ff4fd8" : "rgba(255,79,216,.7)",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+                data-testid={`button-modal-playlist-${track.id}`}
               >
-                See Full Library
-              </a>
-            )}
+                {inPlaylist ? <Check size={14} /> : <Plus size={14} />}
+                {inPlaylist ? "In Playlist" : "Add to Playlist"}
+              </button>
+              {track.creatorId && (
+                <a
+                  href={`/creator/${track.creatorId}`}
+                  className="video-modal-library-btn"
+                  data-testid={`link-full-library-${track.id}`}
+                >
+                  See Full Library
+                </a>
+              )}
+            </div>
           </div>
 
           <div className="video-modal-bottom">

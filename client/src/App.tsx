@@ -17,8 +17,10 @@ import CreatorDashboard from "@/pages/creator-dashboard";
 import Downloads from "@/pages/downloads";
 import TrackPage from "@/pages/track";
 import Mockup from "@/pages/mockup";
+import Playlist from "@/pages/playlist";
 import NotFound from "@/pages/not-found";
 import { AudioPlayerProvider } from "@/lib/audioPlayer";
+import { PlaylistProvider } from "@/lib/playlistContext";
 
 function FloatingHomeButton() {
   const [location] = useLocation();
@@ -49,6 +51,7 @@ function Router() {
       <Route path="/track/:id" component={TrackPage} />
       <Route path="/creator/:id/dashboard" component={CreatorDashboard} />
       <Route path="/creator/:id" component={CreatorProfile} />
+      <Route path="/playlist" component={Playlist} />
       <Route path="/downloads" component={Downloads} />
       <Route path="/mockup" component={Mockup} />
       <Route component={NotFound} />
@@ -61,9 +64,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AudioPlayerProvider>
-          <Toaster />
-          <FloatingHomeButton />
-          <Router />
+          <PlaylistProvider>
+            <Toaster />
+            <FloatingHomeButton />
+            <Router />
+          </PlaylistProvider>
         </AudioPlayerProvider>
       </TooltipProvider>
     </QueryClientProvider>

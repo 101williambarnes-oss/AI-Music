@@ -1,12 +1,15 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { type Track } from "@shared/schema";
-import { Trash2, Download, Library, Share2 } from "lucide-react";
+import { Trash2, Download, Library, Share2, Plus, Check } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
 import { useQuery } from "@tanstack/react-query";
+import { usePlaylist } from "@/lib/playlistContext";
 
-export function TrackRow({ track, showRank, hideComments, onDelete, showDownload, hideLibrary }: { track: Track; showRank?: boolean; hideComments?: boolean; onDelete?: (trackId: number) => void; showDownload?: boolean; hideLibrary?: boolean }) {
+export function TrackRow({ track, showRank, hideComments, onDelete, showDownload, hideLibrary, hidePlaylistBtn }: { track: Track; showRank?: boolean; hideComments?: boolean; onDelete?: (trackId: number) => void; showDownload?: boolean; hideLibrary?: boolean; hidePlaylistBtn?: boolean }) {
+  const { addTrack, removeTrack: removeFromPlaylist, isInPlaylist } = usePlaylist();
+  const inPlaylist = isInPlaylist(track.id);
   const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
     queryKey: ["/api/creators", track.creatorId],
     enabled: !!track.creatorId,
@@ -177,6 +180,37 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
             )}
           </div>
         </div>
+        {!hidePlaylistBtn && (
+          <div style={{ display: "flex", alignItems: "center", padding: "0 2px", flexShrink: 0 }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (inPlaylist) {
+                  removeFromPlaylist(track.id);
+                } else {
+                  addTrack(track);
+                }
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                background: inPlaylist ? "rgba(255,79,216,.15)" : "rgba(255,79,216,.08)",
+                border: inPlaylist ? "1px solid rgba(255,79,216,.4)" : "1px solid rgba(255,79,216,.15)",
+                color: inPlaylist ? "#ff4fd8" : "rgba(255,79,216,.6)",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+              title={inPlaylist ? "Remove from playlist" : "Add to playlist"}
+              data-testid={`button-playlist-toggle-${track.id}`}
+            >
+              {inPlaylist ? <Check size={14} /> : <Plus size={14} />}
+            </button>
+          </div>
+        )}
         {showDownload && (
           <div style={{ display: "flex", flexDirection: "column", gap: 4, justifyContent: "center", padding: "0 6px", flexShrink: 0 }}>
             {track.fileUrl && (
