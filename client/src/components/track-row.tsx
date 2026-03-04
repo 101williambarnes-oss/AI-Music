@@ -214,8 +214,17 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
         {showDownload && (
           <div style={{ display: "flex", flexDirection: "column", gap: 4, justifyContent: "center", padding: "0 6px", flexShrink: 0 }}>
             {track.fileUrl && (
-              <a
-                href={`/api/tracks/${track.id}/download`}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const link = document.createElement("a");
+                  link.href = `/api/tracks/${track.id}/download`;
+                  link.download = track.title || "track";
+                  link.style.display = "none";
+                  document.body.appendChild(link);
+                  link.click();
+                  setTimeout(() => document.body.removeChild(link), 1000);
+                }}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -227,13 +236,12 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
                   border: "1px solid rgba(108,240,255,.2)",
                   color: "#6cf0ff",
                   cursor: "pointer",
-                  textDecoration: "none",
                 }}
                 title="Download"
                 data-testid={`button-download-track-${track.id}`}
               >
                 <Download size={16} />
-              </a>
+              </button>
             )}
             <button
               onClick={handleShareClick}
