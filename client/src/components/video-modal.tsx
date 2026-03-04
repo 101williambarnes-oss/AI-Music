@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Play, Pause, RotateCcw, RotateCw } from "lucide-react";
+import { X, Play, Pause, RotateCcw, RotateCw, Home } from "lucide-react";
 import { type Track } from "@shared/schema";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
@@ -139,9 +139,49 @@ export function VideoModal({
   return createPortal(
     <div className="video-modal-overlay" onClick={handleClose} data-testid="video-modal-overlay">
       <div className="video-modal" onClick={(e) => e.stopPropagation()} data-testid="video-modal">
-        <button className="video-modal-close" onClick={handleClose} data-testid="button-close-video">
-          <X style={{ width: 22, height: 22 }} />
-        </button>
+        <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 8, zIndex: 10 }}>
+          <a
+            href="/"
+            onClick={() => { stop(); }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: "rgba(7,10,20,.7)",
+              border: "1px solid rgba(108,240,255,.2)",
+              color: "#6cf0ff",
+              textDecoration: "none",
+              backdropFilter: "blur(8px)",
+            }}
+            title="Home"
+            data-testid="button-modal-home"
+          >
+            <Home style={{ width: 20, height: 20 }} />
+          </a>
+          <button
+            onClick={handleClose}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              background: "rgba(7,10,20,.7)",
+              border: "1px solid rgba(255,79,216,.2)",
+              color: "#ff4fd8",
+              cursor: "pointer",
+              backdropFilter: "blur(8px)",
+            }}
+            title="Close"
+            data-testid="button-close-video"
+          >
+            <X style={{ width: 22, height: 22 }} />
+          </button>
+        </div>
 
         <div className="video-modal-scroll" data-testid="video-modal-scroll">
           <div className="video-modal-player" data-testid="video-modal-player">
