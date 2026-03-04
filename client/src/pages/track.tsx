@@ -3,6 +3,7 @@ import { useParams } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
 import { TrackRow } from "@/components/track-row";
 import { Music } from "lucide-react";
+import { PageNav } from "@/components/page-nav";
 
 export default function TrackPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,7 +19,8 @@ export default function TrackPage() {
     return (
       <div className="hwm-app">
         <div className="bg-lines" />
-        <div className="wrap" style={{ paddingTop: 32, maxWidth: 900, margin: "0 auto" }}>
+        <div className="wrap" style={{ paddingTop: 16, maxWidth: 900, margin: "0 auto" }}>
+          <PageNav />
           <section className="panel" style={{ padding: "40px 24px", textAlign: "center" }}>
             <div style={{ opacity: 0.5, animation: "pulse 1.5s ease-in-out infinite" }} data-testid="track-loading">
               Loading track...
@@ -33,7 +35,8 @@ export default function TrackPage() {
     return (
       <div className="hwm-app">
         <div className="bg-lines" />
-        <div className="wrap" style={{ paddingTop: 32, maxWidth: 900, margin: "0 auto" }}>
+        <div className="wrap" style={{ paddingTop: 16, maxWidth: 900, margin: "0 auto" }}>
+          <PageNav />
           <section className="panel" style={{ padding: "40px 24px", textAlign: "center" }}>
             <Music style={{ width: 48, height: 48, color: "rgba(170,182,232,.3)", margin: "0 auto 16px" }} />
             <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#eaf0ff", marginBottom: 8 }} data-testid="track-not-found">
@@ -70,7 +73,8 @@ export default function TrackPage() {
   return (
     <div className="hwm-app">
       <div className="bg-lines" />
-      <div className="wrap" style={{ paddingTop: 32, maxWidth: 900, margin: "0 auto" }}>
+      <div className="wrap" style={{ paddingTop: 16, maxWidth: 900, margin: "0 auto" }}>
+        <PageNav />
         <section className="panel" style={{ padding: "20px 24px" }}>
           <div style={{ marginBottom: 16 }}>
             <h1 style={{ fontSize: "1.4rem", fontWeight: 800, color: "#eaf0ff", margin: 0 }} data-testid="text-track-page-title">

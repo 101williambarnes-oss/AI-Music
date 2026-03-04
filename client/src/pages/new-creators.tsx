@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Creator } from "@shared/schema";
 import { Search, X } from "lucide-react";
+import { PageNav } from "@/components/page-nav";
 
 export default function NewCreators() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,7 +18,8 @@ export default function NewCreators() {
   return (
     <div className="hwm-app">
       <div className="bg-lines" />
-      <div className="wrap" style={{ paddingTop: 32, maxWidth: 900, margin: "0 auto" }}>
+      <div className="wrap" style={{ paddingTop: 16, maxWidth: 900, margin: "0 auto" }}>
+        <PageNav />
         <section className="panel" style={{ padding: "20px 24px" }}>
           <div className="section-header" style={{ marginBottom: 16 }}>
             <h3 data-testid="panel-header-new-creators" style={{ fontSize: "1.3rem" }}>

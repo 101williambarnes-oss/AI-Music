@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Upload as UploadIcon } from "lucide-react";
+import { PageNav } from "@/components/page-nav";
 
 const ALLOWED_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".mp4", ".webm", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
 const ACCEPT = ALLOWED_EXTS.join(",");
@@ -167,7 +168,8 @@ export default function Upload() {
     return (
       <div className="hwm-app">
         <div className="bg-lines" />
-        <div className="wrap" style={{ paddingTop: 60, maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
+        <div className="wrap" style={{ paddingTop: 16, maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
+          <PageNav />
           <div style={{ color: "rgba(170,182,232,.6)", fontSize: 16 }}>Loading...</div>
         </div>
       </div>
@@ -178,7 +180,8 @@ export default function Upload() {
     return (
       <div className="hwm-app">
         <div className="bg-lines" />
-        <div className="wrap" style={{ paddingTop: 60, maxWidth: 420, margin: "0 auto" }}>
+        <div className="wrap" style={{ paddingTop: 16, maxWidth: 420, margin: "0 auto" }}>
+          <PageNav />
           <section className="panel" style={{ padding: 32, textAlign: "center" }}>
             <h2 style={{ color: "#6cf0ff", fontSize: 24, fontWeight: 700, marginBottom: 12 }} data-testid="text-upload-login-required">Sign In Required</h2>
             <p style={{ color: "rgba(170,182,232,.6)", fontSize: 14, marginBottom: 24 }}>You need to sign in to upload tracks.</p>
@@ -202,7 +205,8 @@ export default function Upload() {
   return (
     <div className="hwm-app">
       <div className="bg-lines" />
-      <div className="wrap" style={{ paddingTop: 60, maxWidth: 520, margin: "0 auto" }}>
+      <div className="wrap" style={{ paddingTop: 16, maxWidth: 520, margin: "0 auto" }}>
+        <PageNav />
         <section className="panel" style={{ padding: 32 }}>
           <h2 style={{ color: "#6cf0ff", fontSize: 24, fontWeight: 700, marginBottom: 8, textAlign: "center" }} data-testid="text-upload-title">Upload Track</h2>
           <p style={{ color: "rgba(170,182,232,.6)", fontSize: 14, textAlign: "center", marginBottom: 24 }} data-testid="text-upload-subtitle">Share your AI-generated music with the world</p>

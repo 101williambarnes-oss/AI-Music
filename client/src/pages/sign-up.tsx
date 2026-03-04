@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { PageNav } from "@/components/page-nav";
 
 export default function SignUp() {
   const [name, setName] = useState("");
@@ -75,7 +76,8 @@ export default function SignUp() {
   return (
     <div className="hwm-app">
       <div className="bg-lines" />
-      <div className="wrap" style={{ paddingTop: 30, maxWidth: 420, margin: "0 auto" }}>
+      <div className="wrap" style={{ paddingTop: 16, maxWidth: 420, margin: "0 auto" }}>
+        <PageNav />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <span></span>
           <a href="/sign-in" style={{ color: "#a06bff", textDecoration: "none", fontSize: 14, fontWeight: 600 }} data-testid="link-top-signin">Already a creator? Sign In &rarr;</a>

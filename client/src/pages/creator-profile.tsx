@@ -6,6 +6,7 @@ import { Upload, Camera, UserPlus, UserCheck, BarChart3 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { TrackRow } from "@/components/track-row";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
+import { PageNav } from "@/components/page-nav";
 
 function formatPlays(plays: number) {
   if (plays >= 1000) return `${(plays / 1000).toFixed(1)}K`;
@@ -165,19 +166,8 @@ export default function CreatorProfile() {
     <div className="hwm-app">
       <div className="bg-lines" />
 
-      <div style={{ textAlign: "center", paddingTop: 24, paddingBottom: 8 }}>
-        <a href="/" style={{ textDecoration: "none" }} data-testid="link-logo-home">
-          <img src={siteLogo} alt="Hit Wave Media" className="site-logo-banner" data-testid="img-logo" />
-          <div style={{ fontSize: "0.7rem", color: "rgba(170,182,232,.5)", letterSpacing: 2, marginTop: 2 }}>
-            AI-Only Music Platform
-          </div>
-          <div style={{ fontSize: "0.65rem", color: "rgba(108,240,255,.5)", letterSpacing: 3, marginTop: 2, fontWeight: 600 }}>
-            Log in. Download. Share.
-          </div>
-        </a>
-      </div>
-
       <div className="wrap" style={{ paddingTop: 16, maxWidth: 700, margin: "0 auto" }}>
+        <PageNav />
         {isLoading ? (
           <section className="panel" style={{ padding: 40, textAlign: "center" }}>
             <div style={{ color: "rgba(170,182,232,.6)", fontSize: 16 }} data-testid="text-loading">Loading creator profile...</div>
