@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Headphones, Heart, Users, Flame, Trophy, TrendingUp, Clock } from "lucide-react";
+import { PageNav } from "@/components/page-nav";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -57,6 +58,38 @@ export default function CreatorDashboard() {
       </div>
     );
   }
+
+  const [liveTimer, setLiveTimer] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+
+  useEffect(() => {
+    function getNextSundayMidnight() {
+      const now = new Date();
+      const next = new Date(now);
+      next.setDate(next.getDate() + (7 - next.getDay()));
+      next.setHours(0, 0, 0, 0);
+      return next;
+    }
+
+    function updateTimer() {
+      const now = new Date();
+      const target = getNextSundayMidnight();
+      const ms = target.getTime() - now.getTime();
+      if (ms <= 0) {
+        setLiveTimer({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+      setLiveTimer({
+        days: Math.floor(ms / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((ms % (1000 * 60)) / 1000),
+      });
+    }
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (!data) return null;
 
@@ -116,7 +149,8 @@ export default function CreatorDashboard() {
   return (
     <div className="hwm-app">
       <div className="bg-lines" />
-      <div className="wrap" style={{ paddingTop: 40, paddingBottom: 60, maxWidth: 600, margin: "0 auto" }}>
+      <PageNav />
+      <div className="wrap" style={{ paddingTop: 24, paddingBottom: 60, maxWidth: 600, margin: "0 auto" }}>
         <h1 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: "#eaf0ff", marginBottom: 8 }} data-testid="text-dashboard-title">Creator Dashboard</h1>
         <p style={{ textAlign: "center", fontSize: 13, color: "rgba(170,182,232,.5)", marginBottom: 28 }}>{user?.name}</p>
 
@@ -198,21 +232,28 @@ export default function CreatorDashboard() {
         </div>
 
         <div style={{ marginTop: 24, textAlign: "center", background: "rgba(255,255,255,.04)", border: "1px solid rgba(108,240,255,.12)", borderRadius: 8, padding: "18px 20px" }} data-testid="section-reset-timer">
-          <div style={{ fontSize: 14, fontWeight: 700, color: "rgba(170,182,232,.7)", marginBottom: 10, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "rgba(170,182,232,.7)", marginBottom: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
             <Clock size={15} /> Next Top 25 Reset:
+          </div>
+          <div style={{ fontSize: 11, color: "rgba(170,182,232,.4)", marginBottom: 12 }}>
+            Midnight Sunday Night
           </div>
           <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
             <div>
-              <span style={{ fontSize: 28, fontWeight: 800, color: "#6cf0ff" }}>{data.nextReset.days}</span>
+              <span style={{ fontSize: 28, fontWeight: 800, color: "#6cf0ff" }} data-testid="text-timer-days">{liveTimer?.days ?? data.nextReset.days}</span>
               <span style={{ fontSize: 12, color: "rgba(170,182,232,.5)", marginLeft: 4 }}>Days</span>
             </div>
             <div>
-              <span style={{ fontSize: 28, fontWeight: 800, color: "#6cf0ff" }}>{data.nextReset.hours}</span>
-              <span style={{ fontSize: 12, color: "rgba(170,182,232,.5)", marginLeft: 4 }}>Hours</span>
+              <span style={{ fontSize: 28, fontWeight: 800, color: "#6cf0ff" }} data-testid="text-timer-hours">{liveTimer?.hours ?? data.nextReset.hours}</span>
+              <span style={{ fontSize: 12, color: "rgba(170,182,232,.5)", marginLeft: 4 }}>Hrs</span>
             </div>
             <div>
-              <span style={{ fontSize: 28, fontWeight: 800, color: "#6cf0ff" }}>{data.nextReset.minutes}</span>
-              <span style={{ fontSize: 12, color: "rgba(170,182,232,.5)", marginLeft: 4 }}>Minutes</span>
+              <span style={{ fontSize: 28, fontWeight: 800, color: "#6cf0ff" }} data-testid="text-timer-minutes">{liveTimer?.minutes ?? data.nextReset.minutes}</span>
+              <span style={{ fontSize: 12, color: "rgba(170,182,232,.5)", marginLeft: 4 }}>Min</span>
+            </div>
+            <div>
+              <span style={{ fontSize: 28, fontWeight: 800, color: "#ff4fd8" }} data-testid="text-timer-seconds">{liveTimer?.seconds ?? 0}</span>
+              <span style={{ fontSize: 12, color: "rgba(170,182,232,.5)", marginLeft: 4 }}>Sec</span>
             </div>
           </div>
         </div>
