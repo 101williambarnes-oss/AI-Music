@@ -33,32 +33,6 @@ export default function CreatorDashboard() {
     enabled: !!creatorId,
   });
 
-  if (!isOwner) {
-    return (
-      <div className="hwm-app">
-        <div className="bg-lines" />
-        <div className="wrap" style={{ paddingTop: 60, maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
-          <section className="panel" style={{ padding: 32 }}>
-            <h2 style={{ color: "#ff4fd8", fontSize: 20, fontWeight: 700 }} data-testid="text-dashboard-denied">Access Denied</h2>
-            <p style={{ color: "rgba(170,182,232,.6)", fontSize: 14, marginTop: 12 }}>You can only view your own dashboard.</p>
-            <a href="/" style={{ display: "inline-block", marginTop: 20, padding: "10px 24px", background: "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)", borderRadius: 6, color: "#050615", fontWeight: 700, fontSize: 14, textDecoration: "none" }} data-testid="link-go-home">Go Home</a>
-          </section>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="hwm-app">
-        <div className="bg-lines" />
-        <div className="wrap" style={{ paddingTop: 60, maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ color: "rgba(170,182,232,.6)", fontSize: 16 }}>Loading dashboard...</div>
-        </div>
-      </div>
-    );
-  }
-
   const [liveTimer, setLiveTimer] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
 
   useEffect(() => {
@@ -90,6 +64,32 @@ export default function CreatorDashboard() {
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  if (!isOwner) {
+    return (
+      <div className="hwm-app">
+        <div className="bg-lines" />
+        <div className="wrap" style={{ paddingTop: 60, maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
+          <section className="panel" style={{ padding: 32 }}>
+            <h2 style={{ color: "#ff4fd8", fontSize: 20, fontWeight: 700 }} data-testid="text-dashboard-denied">Access Denied</h2>
+            <p style={{ color: "rgba(170,182,232,.6)", fontSize: 14, marginTop: 12 }}>You can only view your own dashboard.</p>
+            <a href="/" style={{ display: "inline-block", marginTop: 20, padding: "10px 24px", background: "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)", borderRadius: 6, color: "#050615", fontWeight: 700, fontSize: 14, textDecoration: "none" }} data-testid="link-go-home">Go Home</a>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="hwm-app">
+        <div className="bg-lines" />
+        <div className="wrap" style={{ paddingTop: 60, maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
+          <div style={{ color: "rgba(170,182,232,.6)", fontSize: 16 }}>Loading dashboard...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!data) return null;
 
