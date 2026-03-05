@@ -18,6 +18,7 @@ import Downloads from "@/pages/downloads";
 import TrackPage from "@/pages/track";
 import Mockup from "@/pages/mockup";
 import Playlist from "@/pages/playlist";
+import Terms from "@/pages/terms";
 import NotFound from "@/pages/not-found";
 import { AudioPlayerProvider } from "@/lib/audioPlayer";
 import { PlaylistProvider } from "@/lib/playlistContext";
@@ -52,6 +53,7 @@ function Router() {
       <Route path="/creator/:id/dashboard" component={CreatorDashboard} />
       <Route path="/creator/:id" component={CreatorProfile} />
       <Route path="/playlist" component={Playlist} />
+      <Route path="/terms" component={Terms} />
       <Route path="/downloads" component={Downloads} />
       <Route path="/mockup" component={Mockup} />
       <Route component={NotFound} />

@@ -4,6 +4,10 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-03-05: Terms of Service - full TOS page at /terms; sign-up form requires checking TOS checkbox with updated terms content; "(View Terms)" link opens modal with full terms
+- 2026-03-05: Track page sharing fix - storage.getCreator renamed to storage.getCreatorById in /api/track/:id endpoint; Facebook/social crawler handler added for /track/:id with OG meta tags
+- 2026-03-05: Dashboard error handling - shows "Failed to load dashboard" with Retry button instead of black screen when data fails to load
+- 2026-03-05: Dashboard hooks fix - moved useState/useEffect for live timer before early returns to fix React hooks violation crash
 - 2026-03-04: Page navigation header - every sub-page (Top 25, Trending, New Songs, Creator Profile, Track, Sign In, Sign Up, Upload, New Creators) now has a nav bar with Home button + logo at the top; no more getting stuck on a page with no way back
 - 2026-03-04: Share button moved to track row - share button (purple icon) now sits next to download button, completely outside the clickable play area; tapping share no longer triggers song playback; uses Web Share API on mobile, clipboard copy on desktop
 - 2026-03-03: Individual track pages - each track has its own page at /track/:id; share links now point to track pages instead of creator profiles; GET /api/track/:id endpoint returns track + creator data

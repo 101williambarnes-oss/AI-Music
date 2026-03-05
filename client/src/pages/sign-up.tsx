@@ -149,9 +149,8 @@ export default function SignUp() {
               <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", color: "#aab6e8", fontSize: 13, lineHeight: 1.5 }} data-testid="label-agree-tos">
                 <input type="checkbox" checked={agreeTOS} onChange={(e) => setAgreeTOS(e.target.checked)} style={{ marginTop: 3, accentColor: "#6cf0ff", flexShrink: 0 }} data-testid="checkbox-agree-tos" />
                 <span>
-                  I agree to Hit Wave Media's Terms of Service and Content Rules.
-                  {" "}
-                  <button type="button" onClick={() => setShowTerms(true)} style={{ background: "none", border: "none", color: "#6cf0ff", fontSize: 13, cursor: "pointer", padding: 0, textDecoration: "underline" }} data-testid="button-view-terms">(View Terms)</button>
+                  I agree to Hit Wave Media's{" "}
+                  <button type="button" onClick={() => setShowTerms(true)} style={{ background: "none", border: "none", color: "#6cf0ff", fontSize: 13, cursor: "pointer", padding: 0, textDecoration: "underline" }} data-testid="button-view-terms">Terms of Service</button>.
                 </span>
               </label>
             </div>
@@ -184,25 +183,46 @@ export default function SignUp() {
       {showTerms && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setShowTerms(false)} data-testid="modal-terms">
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#0d1229", border: "1px solid rgba(108,240,255,.2)", borderRadius: 12, maxWidth: 560, width: "100%", maxHeight: "80vh", overflow: "auto", padding: 32 }}>
-            <h2 style={{ color: "#6cf0ff", fontSize: 22, fontWeight: 700, marginBottom: 20 }}>Terms of Service &amp; Content Rules</h2>
+            <h2 style={{ color: "#6cf0ff", fontSize: 22, fontWeight: 700, marginBottom: 20 }}>Terms of Service – Hit Wave Media</h2>
             <div style={{ color: "#aab6e8", fontSize: 14, lineHeight: 1.8 }}>
-              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>1. Content Ownership</h3>
-              <p style={{ marginBottom: 16 }}>You retain ownership of all content you upload. By uploading, you grant Hit Wave Media a non-exclusive license to display, stream, and distribute your content on the platform.</p>
+              <p style={{ marginBottom: 16 }}>Welcome to Hit Wave Media. By accessing or using the Hit Wave Media website and platform, you agree to comply with and be bound by the following Terms of Service. If you do not agree with these terms, you should not use the platform.</p>
 
-              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>2. AI-Generated Content</h3>
-              <p style={{ marginBottom: 16 }}>All AI-generated music must be created using tools you have lawful access to. You are responsible for ensuring your AI-generated content does not infringe on existing copyrights or intellectual property.</p>
+              <p style={{ marginBottom: 16 }}>Hit Wave Media is an online platform designed for the discovery, sharing, and promotion of AI-generated music. The platform allows creators to upload music and listeners to discover new creators, trending tracks, and chart rankings.</p>
 
-              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>3. Prohibited Content</h3>
-              <p style={{ marginBottom: 16 }}>The following content is strictly prohibited: content that infringes copyrights or trademarks, content promoting hate or violence, explicit or illegal material, spam or misleading content, and malware or harmful files.</p>
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>User Content</h3>
+              <p style={{ marginBottom: 16 }}>Users are responsible for the content they upload to the platform. By uploading music or other content to Hit Wave Media, you represent and warrant that you own the rights to the content or have the legal permission to share and distribute it. Users may not upload content that infringes on the copyright, trademark, or intellectual property rights of others.</p>
 
-              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>4. Account Responsibility</h3>
-              <p style={{ marginBottom: 16 }}>You are responsible for all activity under your account. Keep your credentials secure. Hit Wave Media reserves the right to remove content or suspend accounts that violate these terms.</p>
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>AI-Generated Content</h3>
+              <p style={{ marginBottom: 16 }}>Hit Wave Media focuses on music created with artificial intelligence tools. Creators are responsible for ensuring their content complies with applicable laws and any licensing requirements associated with the tools or materials used to create their music.</p>
 
-              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>5. Content Removal</h3>
-              <p style={{ marginBottom: 16 }}>Hit Wave Media reserves the right to remove any content that violates these terms without prior notice. Repeat violations may result in permanent account suspension.</p>
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>License to Content</h3>
+              <p style={{ marginBottom: 16 }}>By uploading content to Hit Wave Media, you grant the platform a non-exclusive, worldwide, royalty-free license to host, stream, display, promote, and distribute the content within the platform. This license allows Hit Wave Media to operate the service and showcase creator content to listeners.</p>
 
-              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>6. Privacy</h3>
-              <p style={{ marginBottom: 16 }}>Your email and account information are kept private. We do not sell or share your personal data with third parties.</p>
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Content Removal</h3>
+              <p style={{ marginBottom: 16 }}>Hit Wave Media reserves the right to remove or disable access to any content that violates these terms, infringes on intellectual property rights, or is considered harmful, illegal, abusive, or misleading. Accounts that repeatedly violate these rules may be suspended or permanently removed from the platform.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Prohibited Activities</h3>
+              <p style={{ marginBottom: 16 }}>Users agree not to misuse the platform or attempt to disrupt the service. Activities such as hacking, attempting unauthorized access, manipulating play counts or rankings, uploading malicious software, or interfering with the operation of the website are strictly prohibited.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Third-Party Links</h3>
+              <p style={{ marginBottom: 16 }}>The platform may contain links to external websites or services that are not controlled by Hit Wave Media. Hit Wave Media is not responsible for the content, policies, or practices of third-party websites.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Disclaimer</h3>
+              <p style={{ marginBottom: 16 }}>Hit Wave Media provides the platform on an "as is" and "as available" basis. While we strive to maintain reliable service, we do not guarantee uninterrupted availability or error-free operation of the platform.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Limitation of Liability</h3>
+              <p style={{ marginBottom: 16 }}>To the fullest extent permitted by law, Hit Wave Media shall not be liable for any damages resulting from the use of or inability to use the platform, including but not limited to loss of data, loss of revenue, or other indirect or consequential damages.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Changes to Terms</h3>
+              <p style={{ marginBottom: 16 }}>Hit Wave Media may update or modify these Terms of Service at any time. Continued use of the platform after changes are posted constitutes acceptance of the updated terms.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Copyright Concerns</h3>
+              <p style={{ marginBottom: 16 }}>If you believe that content on Hit Wave Media violates your copyright or intellectual property rights, you may contact us to request removal of the material.</p>
+
+              <h3 style={{ color: "#a06bff", fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Contact</h3>
+              <p style={{ marginBottom: 16 }}>For questions regarding these Terms of Service or the platform, please contact Hit Wave Media through the contact information provided on the website.</p>
+
+              <p style={{ marginBottom: 0, fontWeight: 600 }}>By using Hit Wave Media, you acknowledge that you have read, understood, and agreed to these Terms of Service.</p>
             </div>
             <button onClick={() => setShowTerms(false)} style={{ width: "100%", padding: "12px 0", background: "linear-gradient(135deg, #6cf0ff 0%, #a06bff 100%)", border: "none", borderRadius: 6, color: "#050615", fontWeight: 700, fontSize: 15, cursor: "pointer", marginTop: 12 }} data-testid="button-close-terms">Close</button>
           </div>
