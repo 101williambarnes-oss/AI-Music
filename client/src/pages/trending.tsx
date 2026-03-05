@@ -17,7 +17,7 @@ export default function Trending() {
   const genres = ALL_GENRES;
 
   const filtered = tracks.filter((t) => {
-    const matchesGenre = genreFilter === "all" || t.genre === genreFilter;
+    const matchesGenre = genreFilter === "all" || t.genre.toLowerCase() === genreFilter.toLowerCase();
     if (!searchQuery) return matchesGenre;
     const q = searchQuery.toLowerCase();
     return (
