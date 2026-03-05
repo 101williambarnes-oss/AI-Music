@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Headphones, Heart, Users, Flame, Trophy, TrendingUp, Clock } from "lucide-react";
-import { PageNav } from "@/components/page-nav";
+
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -95,7 +95,6 @@ export default function CreatorDashboard() {
     return (
       <div className="hwm-app">
         <div className="bg-lines" />
-        <PageNav />
         <div className="wrap" style={{ paddingTop: 60, maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
           <section className="panel" style={{ padding: 32 }}>
             <h2 style={{ color: "#ff4fd8", fontSize: 20, fontWeight: 700 }} data-testid="text-dashboard-error">Failed to load dashboard</h2>
@@ -163,7 +162,6 @@ export default function CreatorDashboard() {
   return (
     <div className="hwm-app">
       <div className="bg-lines" />
-      <PageNav />
       <div className="wrap" style={{ paddingTop: 24, paddingBottom: 60, maxWidth: 600, margin: "0 auto" }}>
         <h1 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: "#eaf0ff", marginBottom: 8 }} data-testid="text-dashboard-title">Creator Dashboard</h1>
         <p style={{ textAlign: "center", fontSize: 13, color: "rgba(170,182,232,.5)", marginBottom: 28 }}>{user?.name}</p>
