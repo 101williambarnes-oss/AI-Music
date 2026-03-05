@@ -1,7 +1,9 @@
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { signupSchema, signinSchema } from "@shared/schema";
+import { db } from "./db";
+import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays } from "@shared/schema";
+import { sql, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import multer from "multer";
 import path from "path";
@@ -987,6 +989,82 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Dashboard error:", error);
       res.status(500).json({ message: "Failed to load dashboard" });
+    }
+  });
+
+  app.get("/api/admin/stats", async (req, res) => {
+    const sessionUserId = req.session.userId;
+    const headerUserId = parseInt(req.headers["x-user-id"] as string);
+    const userId = sessionUserId || headerUserId;
+    const ADMIN_USER_IDS = [2];
+    if (!userId || !ADMIN_USER_IDS.includes(userId)) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+    if (!sessionUserId && headerUserId) {
+      const adminUser = await db.select().from(users).where(sql`${users.id} = ${userId}`).limit(1);
+      if (!adminUser.length) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+    }
+
+    try {
+      const allTracks = await storage.getAllTracks();
+      const allCreators = await storage.getCreators();
+      const [userCount] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
+      const [totalPlaysResult] = await db.select({ total: sql<number>`COALESCE(sum(plays), 0)::int` }).from(tracks);
+      const [totalLikesResult] = await db.select({ count: sql<number>`count(*)::int` }).from(likes);
+      const [totalVisitorLikesResult] = await db.select({ count: sql<number>`count(*)::int` }).from(visitorLikes);
+      const [totalCommentsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(comments);
+      const [totalFollowsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(follows);
+      const [totalVisitorFollowsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(visitorFollows);
+      const uniqueVisitorsRows = await db.execute(sql`SELECT COUNT(DISTINCT vid)::int as count FROM (SELECT visitor_id as vid FROM visitor_likes UNION SELECT visitor_id as vid FROM visitor_follows) combined`);
+      const [totalPlayEventsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(trackPlays);
+
+      const topTracksByPlays = [...allTracks].sort((a, b) => b.plays - a.plays).slice(0, 10);
+      const trackLikeCounts: { id: number; title: string; artist: string; likes: number; plays: number }[] = [];
+      for (const t of allTracks) {
+        const lc = await storage.getLikeCount(t.id);
+        trackLikeCounts.push({ id: t.id, title: t.title, artist: t.artist, likes: lc, plays: t.plays });
+      }
+      const topTracksByLikes = [...trackLikeCounts].sort((a, b) => b.likes - a.likes).slice(0, 10);
+
+      const creatorStats: { id: number; name: string; trackCount: number; totalPlays: number; totalLikes: number; followers: number }[] = [];
+      for (const c of allCreators) {
+        const cTracks = allTracks.filter(t => t.creatorId === c.id);
+        const cPlays = cTracks.reduce((sum, t) => sum + t.plays, 0);
+        let cLikes = 0;
+        for (const t of cTracks) {
+          cLikes += await storage.getLikeCount(t.id);
+        }
+        const cFollowers = await storage.getFollowerCount(c.id);
+        creatorStats.push({ id: c.id, name: c.name, trackCount: c.trackCount, totalPlays: cPlays, totalLikes: cLikes, followers: cFollowers });
+      }
+      creatorStats.sort((a, b) => b.totalPlays - a.totalPlays);
+
+      const recentUsers = await db.select().from(users).orderBy(desc(users.id)).limit(10);
+
+      const uniqueVisitors = (uniqueVisitorsRows as any)?.rows?.[0]?.count ?? (uniqueVisitorsRows as any)?.[0]?.count ?? 0;
+
+      res.json({
+        overview: {
+          totalUsers: userCount?.count ?? 0,
+          totalCreators: allCreators.length,
+          totalTracks: allTracks.length,
+          totalPlays: totalPlaysResult?.total ?? 0,
+          totalPlayEvents: totalPlayEventsResult?.count ?? 0,
+          totalLikes: (totalLikesResult?.count ?? 0) + (totalVisitorLikesResult?.count ?? 0),
+          totalComments: totalCommentsResult?.count ?? 0,
+          totalFollows: (totalFollowsResult?.count ?? 0) + (totalVisitorFollowsResult?.count ?? 0),
+          uniqueVisitors,
+        },
+        topTracksByPlays,
+        topTracksByLikes,
+        creatorStats,
+        recentUsers: recentUsers.map(u => ({ id: u.id, name: u.name, email: u.email, creatorId: u.creatorId })),
+      });
+    } catch (error) {
+      console.error("Admin stats error:", error);
+      res.status(500).json({ message: "Failed to load admin stats" });
     }
   });
 

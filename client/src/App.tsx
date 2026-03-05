@@ -19,13 +19,14 @@ import TrackPage from "@/pages/track";
 import Mockup from "@/pages/mockup";
 import Playlist from "@/pages/playlist";
 import Terms from "@/pages/terms";
+import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import { AudioPlayerProvider } from "@/lib/audioPlayer";
 import { PlaylistProvider } from "@/lib/playlistContext";
 
 function FloatingHomeButton() {
   const [location] = useLocation();
-  if (location === "/" || location.endsWith("/dashboard")) return null;
+  if (location === "/" || location.endsWith("/dashboard") || location === "/admin") return null;
   return (
     <a
       href="/"
@@ -54,6 +55,7 @@ function Router() {
       <Route path="/creator/:id" component={CreatorProfile} />
       <Route path="/playlist" component={Playlist} />
       <Route path="/terms" component={Terms} />
+      <Route path="/admin" component={Admin} />
       <Route path="/downloads" component={Downloads} />
       <Route path="/mockup" component={Mockup} />
       <Route component={NotFound} />
