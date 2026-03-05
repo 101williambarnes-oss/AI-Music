@@ -5,6 +5,7 @@ import { createServer } from "http";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import createMemoryStore from "memorystore";
+import { storage } from "./storage";
 
 const app = express();
 const httpServer = createServer(app);
@@ -127,6 +128,45 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
+  app.get("/sitemap.xml", async (_req, res) => {
+    try {
+      const baseUrl = "https://ai-music-1.onrender.com";
+      const allTracks = await storage.getAllTracks();
+      const allCreators = await storage.getCreators();
+      const today = new Date().toISOString().split("T")[0];
+      const staticPages = [
+        { url: "/", priority: "1.0", changefreq: "daily" },
+        { url: "/trending", priority: "0.8", changefreq: "daily" },
+        { url: "/new-songs", priority: "0.8", changefreq: "daily" },
+        { url: "/top-25", priority: "0.8", changefreq: "daily" },
+        { url: "/new-creators", priority: "0.7", changefreq: "weekly" },
+        { url: "/downloads", priority: "0.6", changefreq: "weekly" },
+        { url: "/terms", priority: "0.2", changefreq: "monthly" },
+      ];
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+      for (const page of staticPages) {
+        xml += `  <url><loc>${baseUrl}${page.url}</loc><lastmod>${today}</lastmod><changefreq>${page.changefreq}</changefreq><priority>${page.priority}</priority></url>\n`;
+      }
+      for (const track of allTracks) {
+        const lm = track.createdAt ? new Date(track.createdAt).toISOString().split("T")[0] : today;
+        xml += `  <url><loc>${baseUrl}/track/${track.id}</loc><lastmod>${lm}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>\n`;
+      }
+      for (const creator of allCreators) {
+        xml += `  <url><loc>${baseUrl}/creator/${creator.id}</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>\n`;
+      }
+      xml += `</urlset>`;
+      res.header("Content-Type", "application/xml");
+      res.send(xml);
+    } catch (error) {
+      res.status(500).send("Failed to generate sitemap");
+    }
+  });
+
+  app.get("/robots.txt", (_req, res) => {
+    res.header("Content-Type", "text/plain");
+    res.send(`User-agent: *\nAllow: /\nSitemap: https://ai-music-1.onrender.com/sitemap.xml\n`);
+  });
+
   if (process.env.NODE_ENV === "production") {
     serveStatic(app);
   } else {
