@@ -325,6 +325,14 @@ export default function Home() {
           )}
         </section>
       </div>
+
+      <footer style={{ textAlign: "center", padding: "32px 16px 24px", borderTop: "1px solid rgba(108,240,255,.06)" }}>
+        <div style={{ fontSize: 12, color: "rgba(170,182,232,.35)" }}>
+          <a href="/terms" style={{ color: "rgba(170,182,232,.5)", textDecoration: "none" }} data-testid="link-footer-terms">Terms of Service</a>
+          <span style={{ margin: "0 10px" }}>·</span>
+          <span>&copy; {new Date().getFullYear()} Hit Wave Media</span>
+        </div>
+      </footer>
     </div>
   );
 }
