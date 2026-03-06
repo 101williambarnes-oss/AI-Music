@@ -4,6 +4,7 @@ import { type Track, type Creator } from "@shared/schema";
 import { Search, Music, User, X, Library, ListMusic } from "lucide-react";
 import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_1771460797070.png";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
+import pageBg from "@assets/image_1772784148185.png";
 import { TrackRow } from "@/components/track-row";
 import { useLocation } from "wouter";
 import { ALL_GENRES } from "@/lib/genres";
@@ -110,8 +111,8 @@ export default function Home() {
   }
 
   return (
-    <div className="hwm-app">
-      <div className="bg-lines" />
+    <div className="hwm-app" style={{ backgroundImage: `url(${pageBg})`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
+      <div className="bg-lines" style={{ background: "rgba(7,10,20,.75)" }} />
 
       <header className="site-topbar" data-testid="header-main">
         <div className="topbar-left" style={{ display: "flex" }}>
