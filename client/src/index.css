@@ -1413,6 +1413,11 @@
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .quick-nav::-webkit-scrollbar {
+    display: none;
   }
   .quick-nav-tab {
     padding: 8px 14px;
