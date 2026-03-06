@@ -887,7 +887,8 @@
 
 .section-header {
   padding: 12px 14px 10px;
-  border-bottom: 1px solid rgba(108,240,255,.10);
+  border-bottom: 1px solid rgba(60,140,255,.25);
+  background: rgba(30,100,220,.45);
   display: flex;
   align-items: baseline;
   gap: 6px;
@@ -896,8 +897,15 @@
   margin: 0;
   font-size: 15px;
   font-weight: 800;
-  color: #6cf0ff;
+  color: #ffffff;
   letter-spacing: .5px;
+}
+.genre-sidebar > .section-header {
+  background: rgba(108,240,255,.06);
+  border-bottom: 1px solid rgba(108,240,255,.10);
+}
+.genre-sidebar > .section-header h3 {
+  color: #6cf0ff;
 }
 
 .creators-grid {
