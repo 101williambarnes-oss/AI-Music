@@ -130,7 +130,7 @@ app.use((req, res, next) => {
   // doesn't interfere with the other routes
   app.get("/sitemap.xml", async (_req, res) => {
     try {
-      const baseUrl = "https://ai-music-1.onrender.com";
+      const baseUrl = "https://hitwavemedia.com";
       const allTracks = await storage.getAllTracks();
       const allCreators = await storage.getCreators();
       const today = new Date().toISOString().split("T")[0];
@@ -164,7 +164,7 @@ app.use((req, res, next) => {
 
   app.get("/robots.txt", (_req, res) => {
     res.header("Content-Type", "text/plain");
-    res.send(`User-agent: *\nAllow: /\nSitemap: https://ai-music-1.onrender.com/sitemap.xml\n`);
+    res.send(`User-agent: *\nAllow: /\nSitemap: https://hitwavemedia.com/sitemap.xml\n`);
   });
 
   if (process.env.NODE_ENV === "production") {
