@@ -240,7 +240,7 @@ export default function Home() {
 
       <section className="hero" data-testid="section-hero">
         <img src={siteLogo} alt="Hit Wave Media" className="hero-logo" data-testid="img-hero-logo" />
-        <div style={{ position: "relative", zIndex: 3, color: "#6cf0ff", fontSize: 16, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", marginTop: -10, textAlign: "center", textShadow: "0 0 12px rgba(108,240,255,.5)" }} data-testid="text-tagline">AI-Only Music Platform</div>
+        <div style={{ position: "relative", zIndex: 3, color: "#ffffff", fontSize: 18, fontWeight: 800, letterSpacing: 4, textTransform: "uppercase", marginTop: -10, textAlign: "center", textShadow: "0 0 10px rgba(255,255,255,.6), 0 0 30px rgba(108,240,255,.5), 0 0 60px rgba(160,107,255,.3)" }} data-testid="text-tagline">AI-Only Music Platform</div>
       </section>
 
       <nav className="quick-nav" data-testid="nav-quick-links">
