@@ -163,8 +163,11 @@ export default function CreatorDashboard() {
     <div className="hwm-app">
       <div className="bg-lines" />
       <div className="wrap" style={{ paddingTop: 24, paddingBottom: 60, maxWidth: 600, margin: "0 auto" }}>
-        <h1 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: "#eaf0ff", marginBottom: 8 }} data-testid="text-dashboard-title">Creator Dashboard</h1>
-        <p style={{ textAlign: "center", fontSize: 13, color: "rgba(170,182,232,.5)", marginBottom: 28 }}>{user?.name}</p>
+        <h1 style={{ textAlign: "center", fontSize: 28, fontWeight: 800, color: "#eaf0ff", marginBottom: 4 }} data-testid="text-dashboard-title">Creator Dashboard</h1>
+        <p style={{ textAlign: "center", fontSize: 13, color: "rgba(170,182,232,.5)", marginBottom: 8 }}>{user?.name}</p>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <a href={`/creator/${creatorId}`} style={{ display: "inline-block", padding: "8px 20px", background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.2)", borderRadius: 6, color: "#6cf0ff", fontWeight: 600, fontSize: 13, textDecoration: "none" }} data-testid="link-back-to-profile">Back to Profile</a>
+        </div>
 
         <div style={sectionTitleStyle}>This Week:</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -270,9 +273,6 @@ export default function CreatorDashboard() {
           </div>
         </div>
 
-        <div style={{ marginTop: 24, textAlign: "center" }}>
-          <a href={`/creator/${creatorId}`} style={{ display: "inline-block", padding: "10px 28px", background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.2)", borderRadius: 6, color: "#6cf0ff", fontWeight: 700, fontSize: 14, textDecoration: "none" }} data-testid="link-back-profile">Back to Profile</a>
-        </div>
       </div>
     </div>
   );
