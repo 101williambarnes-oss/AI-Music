@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Upload as UploadIcon } from "lucide-react";
 import { PageNav } from "@/components/page-nav";
+import { ALL_GENRES } from "@/lib/genres";
 
 const ALLOWED_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".mp4", ".webm", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
 const ACCEPT = ALLOWED_EXTS.join(",");
@@ -225,7 +226,12 @@ export default function Upload() {
 
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Genre *</label>
-              <input type="text" value={genre} onChange={(e) => setGenre(e.target.value)} placeholder="e.g. Electronic, Hip-Hop, Rock" style={inputStyle} required data-testid="input-track-genre" />
+              <select value={genre} onChange={(e) => setGenre(e.target.value)} style={inputStyle} required data-testid="input-track-genre">
+                <option value="">Select a genre</option>
+                {ALL_GENRES.map((g) => (
+                  <option key={g} value={g.toLowerCase()}>{g}</option>
+                ))}
+              </select>
             </div>
 
             <div style={{ marginBottom: 16 }}>
