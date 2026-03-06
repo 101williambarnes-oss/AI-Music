@@ -6,6 +6,7 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import createMemoryStore from "memorystore";
 import { storage } from "./storage";
+import pg from "pg";
 
 const app = express();
 const httpServer = createServer(app);
@@ -104,6 +105,28 @@ app.use((req, res, next) => {
       }),
     );
     console.log("Session store ready");
+
+    const ensurePool = new pg.Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+    });
+    await ensurePool.query(`
+      CREATE TABLE IF NOT EXISTS weekly_winners (
+        id SERIAL PRIMARY KEY,
+        track_id INTEGER NOT NULL,
+        track_title TEXT NOT NULL,
+        artist TEXT NOT NULL,
+        creator_id INTEGER,
+        week_start TIMESTAMP NOT NULL,
+        week_end TIMESTAMP NOT NULL,
+        like_count INTEGER NOT NULL DEFAULT 0,
+        play_count INTEGER NOT NULL DEFAULT 0,
+        cover_url TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+    await ensurePool.end();
+    console.log("weekly_winners table ensured");
 
     await registerRoutes(httpServer, app);
     console.log("Routes registered");
