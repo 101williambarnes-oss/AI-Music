@@ -231,9 +231,9 @@ export default function Home() {
             </>
           ) : (
             <>
-              <span style={{ padding: "6px 10px", borderRadius: 16, border: "1px solid rgba(108,240,255,.3)", fontSize: 11, color: "#6cf0ff", fontWeight: 600, whiteSpace: "nowrap" }} data-testid="text-no-signup">Listen instantly. No signup required.</span>
+              <span className="topbar-listen-msg" style={{ padding: "6px 10px", borderRadius: 16, border: "1px solid rgba(108,240,255,.3)", fontSize: 11, color: "#6cf0ff", fontWeight: 600, whiteSpace: "nowrap" }} data-testid="text-no-signup">Listen instantly. No signup required.</span>
               <a href="/sign-in" className="topbar-login" data-testid="link-creators-login">Creators Login</a>
-              <a href="/sign-up" className="topbar-signup" data-testid="button-sign-up">Sign Up</a>
+              <a href="/sign-up" className="topbar-signup" data-testid="button-sign-up">Creator Sign Up</a>
             </>
           )}
         </div>
