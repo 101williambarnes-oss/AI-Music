@@ -11,4 +11,5 @@ export const ALL_GENRES = [
   "Electronic",
   "Christian Pop", "Christian Rock",
   "Easy Listening Rock", "Love Songs",
+  "Other",
 ];
