@@ -231,6 +231,7 @@ export default function Home() {
             </>
           ) : (
             <>
+              <span style={{ fontSize: 11, color: "rgba(108,240,255,.7)", fontWeight: 600, letterSpacing: 0.3 }} data-testid="text-no-signup">Listen instantly. No signup required.</span>
               <a href="/sign-in" className="topbar-login" data-testid="link-creators-login">Creators Login</a>
               <a href="/sign-up" className="topbar-signup" data-testid="button-sign-up">Sign Up</a>
             </>
