@@ -4,6 +4,7 @@ import { type Track, type Creator } from "@shared/schema";
 import { Search, Music, User, X, Library, ListMusic } from "lucide-react";
 import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_1771460797070.png";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
+import pageBg from "@assets/image_1772784148185.png";
 import { TrackRow } from "@/components/track-row";
 import { useLocation } from "wouter";
 import { ALL_GENRES } from "@/lib/genres";
@@ -110,8 +111,8 @@ export default function Home() {
   }
 
   return (
-    <div className="hwm-app">
-      <div className="bg-lines" />
+    <div className="hwm-app" style={{ backgroundImage: `url(${pageBg})`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
+      <div className="bg-lines" style={{ background: "rgba(7,10,20,.45)" }} />
 
       <header className="site-topbar" data-testid="header-main">
         <div className="topbar-left" style={{ display: "flex" }}>
@@ -239,7 +240,7 @@ export default function Home() {
 
       <section className="hero" data-testid="section-hero">
         <img src={siteLogo} alt="Hit Wave Media" className="hero-logo" data-testid="img-hero-logo" />
-        <div style={{ position: "relative", zIndex: 3, color: "#6cf0ff", fontSize: 16, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", marginTop: -10, textAlign: "center", textShadow: "0 0 12px rgba(108,240,255,.5)" }} data-testid="text-tagline">AI-Only Music Platform</div>
+        <div style={{ position: "relative", zIndex: 3, color: "#ffffff", fontSize: 18, fontWeight: 800, letterSpacing: 4, textTransform: "uppercase", marginTop: -10, textAlign: "center", textShadow: "0 0 10px rgba(255,255,255,.6), 0 0 30px rgba(108,240,255,.5), 0 0 60px rgba(160,107,255,.3)" }} data-testid="text-tagline">AI-Only Music Platform</div>
       </section>
 
       <nav className="quick-nav" data-testid="nav-quick-links">
