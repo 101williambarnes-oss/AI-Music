@@ -125,8 +125,9 @@ app.use((req, res, next) => {
         created_at TIMESTAMP NOT NULL DEFAULT NOW()
       )
     `);
+    await ensurePool.query(`ALTER TABLE tracks ADD COLUMN IF NOT EXISTS explicit BOOLEAN NOT NULL DEFAULT false`);
     await ensurePool.end();
-    console.log("weekly_winners table ensured");
+    console.log("weekly_winners table and explicit column ensured");
 
     await registerRoutes(httpServer, app);
     console.log("Routes registered");
