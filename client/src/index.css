@@ -305,7 +305,9 @@
   justify-content: space-between;
   gap: 10px;
   padding: 10px 14px;
-  background: #050615;
+  background: rgba(5,6,21,.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(108,240,255,.12);
 }
 .topbar-left {
@@ -504,7 +506,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #050615;
+  background: transparent;
   margin-top: -8px;
   padding: 0 0 0;
 }
@@ -731,7 +733,7 @@
 .explore-sounds {
   width: 100%;
   padding: 14px 10px;
-  background: linear-gradient(180deg, #070a1f, #050615);
+  background: transparent;
   border-right: none;
   border-bottom: 1px solid rgba(108,240,255,.15);
   color: #eaf0ff;

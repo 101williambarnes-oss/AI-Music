@@ -112,7 +112,7 @@ export default function Home() {
 
   return (
     <div className="hwm-app" style={{ backgroundImage: `url(${pageBg})`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
-      <div className="bg-lines" style={{ background: "rgba(7,10,20,.55)" }} />
+      <div className="bg-lines" style={{ background: "rgba(7,10,20,.45)" }} />
 
       <header className="site-topbar" data-testid="header-main">
         <div className="topbar-left" style={{ display: "flex" }}>
