@@ -289,7 +289,7 @@ export async function registerRoutes(
       return res.status(401).json({ message: "You must be signed in to upload" });
     }
     try {
-      const { title, genre, aiTools } = req.body;
+      const { title, genre, aiTools, explicit: explicitFlag } = req.body;
       if (!title || !genre) {
         return res.status(400).json({ message: "Title and genre are required" });
       }
@@ -354,6 +354,7 @@ export async function registerRoutes(
         fileUrl,
         coverUrl,
         aiTool: aiToolStr,
+        explicit: explicitFlag === "true" || explicitFlag === true,
       });
 
       await storage.incrementCreatorTrackCount(creator.id);

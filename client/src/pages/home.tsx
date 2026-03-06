@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
-import { Search, Music, User, X, Library, ListMusic } from "lucide-react";
+import { Search, Music, User, X, Library, ListMusic, ShieldCheck } from "lucide-react";
 import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_1771460797070.png";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import pageBg from "@assets/image_1772784148185.png";
@@ -18,6 +18,9 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [cleanMode, setCleanMode] = useState(() => {
+    try { return localStorage.getItem("hwm_clean_mode") === "true"; } catch { return false; }
+  });
   const [, navigate] = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -49,10 +52,16 @@ export default function Home() {
     ? allTracks.filter((t) => t.genre.toLowerCase() === activeGenre.toLowerCase())
     : [];
 
+  function cleanFilter(tracks: Track[]) {
+    if (!cleanMode) return tracks;
+    return tracks.filter((t) => !t.explicit);
+  }
+
   function searchFilter(tracks: Track[]) {
-    if (!searchQuery) return tracks;
+    const filtered = cleanFilter(tracks);
+    if (!searchQuery) return filtered;
     const q = searchQuery.toLowerCase();
-    return tracks.filter(
+    return filtered.filter(
       (t) =>
         t.title.toLowerCase().includes(q) ||
         t.artist.toLowerCase().includes(q) ||
@@ -206,6 +215,33 @@ export default function Home() {
             <div className="search-tagline" data-testid="text-tagline">Search and listen. No account required.</div>
           </div>
         </div>
+        <button
+          onClick={() => {
+            const next = !cleanMode;
+            setCleanMode(next);
+            localStorage.setItem("hwm_clean_mode", String(next));
+          }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "5px 10px",
+            borderRadius: 16,
+            border: cleanMode ? "1px solid rgba(108,240,255,.5)" : "1px solid rgba(255,255,255,.2)",
+            background: cleanMode ? "rgba(108,240,255,.12)" : "transparent",
+            color: cleanMode ? "#6cf0ff" : "rgba(255,255,255,.5)",
+            fontSize: 11,
+            fontWeight: 600,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            transition: "all .2s",
+          }}
+          title={cleanMode ? "Clean Mode is ON — explicit songs hidden" : "Turn on Clean Mode to hide explicit songs"}
+          data-testid="button-clean-mode"
+        >
+          <ShieldCheck size={13} />
+          Clean
+        </button>
         <div className="topbar-actions">
           {user ? (
             <>

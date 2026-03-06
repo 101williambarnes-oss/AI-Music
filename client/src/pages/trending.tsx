@@ -9,6 +9,7 @@ import { PageNav } from "@/components/page-nav";
 export default function Trending() {
   const [searchQuery, setSearchQuery] = useState("");
   const [genreFilter, setGenreFilter] = useState<string>("all");
+  const cleanMode = (() => { try { return localStorage.getItem("hwm_clean_mode") === "true"; } catch { return false; } })();
 
   const { data: tracks = [], isLoading } = useQuery<Track[]>({
     queryKey: ["/api/tracks", "trending"],
@@ -17,6 +18,7 @@ export default function Trending() {
   const genres = ALL_GENRES;
 
   const filtered = tracks.filter((t) => {
+    if (cleanMode && t.explicit) return false;
     const matchesGenre = genreFilter === "all" || t.genre.toLowerCase() === genreFilter.toLowerCase();
     if (!searchQuery) return matchesGenre;
     const q = searchQuery.toLowerCase();

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, serial, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -29,6 +29,7 @@ export const tracks = pgTable("tracks", {
   fileUrl: text("file_url"),
   coverUrl: text("cover_url"),
   aiTool: text("ai_tool"),
+  explicit: boolean("explicit").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
