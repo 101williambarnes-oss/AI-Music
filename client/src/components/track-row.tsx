@@ -145,7 +145,12 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
             ) : null}
           </div>
           <div className="meta" style={{ minWidth: 0, overflow: "hidden" }}>
-            <div className="title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} data-testid={`text-track-title-${track.id}`}>{track.title}</div>
+            <div className="title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }} data-testid={`text-track-title-${track.id}`}>
+              {track.title}
+              {track.explicit && (
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, borderRadius: 3, background: "rgba(255,79,216,.15)", border: "1px solid rgba(255,79,216,.3)", color: "#ff4fd8", fontSize: 9, fontWeight: 800, flexShrink: 0, lineHeight: 1 }} data-testid={`badge-explicit-${track.id}`}>E</span>
+              )}
+            </div>
             <div className="by" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }} data-testid={`text-track-artist-${track.id}`}>
               {track.artist}
               {track.creatorId && !hideLibrary && (
