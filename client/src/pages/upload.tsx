@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Upload as UploadIcon } from "lucide-react";
 import { PageNav } from "@/components/page-nav";
+import { ALL_GENRES } from "@/lib/genres";
 
 const ALLOWED_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".mp4", ".webm", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
 const ACCEPT = ALLOWED_EXTS.join(",");
@@ -10,6 +11,7 @@ export default function Upload() {
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
   const [aiTools, setAiTools] = useState<string[]>([]);
+  const [isExplicit, setIsExplicit] = useState(false);
   const [ownsRights, setOwnsRights] = useState(false);
   const [agreesTerms, setAgreesTerms] = useState(false);
   const [error, setError] = useState("");
@@ -131,6 +133,7 @@ export default function Upload() {
       formData.append("genre", genre);
       formData.append("aiTools", JSON.stringify(aiTools));
       formData.append("file", file);
+      formData.append("explicit", String(isExplicit));
       if (coverFile) formData.append("cover", coverFile);
       if (userData?.id) formData.append("userId", String(userData.id));
 
@@ -225,7 +228,12 @@ export default function Upload() {
 
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Genre *</label>
-              <input type="text" value={genre} onChange={(e) => setGenre(e.target.value)} placeholder="e.g. Electronic, Hip-Hop, Rock" style={inputStyle} required data-testid="input-track-genre" />
+              <select value={genre} onChange={(e) => setGenre(e.target.value)} style={inputStyle} required data-testid="input-track-genre">
+                <option value="">Select a genre</option>
+                {ALL_GENRES.map((g) => (
+                  <option key={g} value={g.toLowerCase()}>{g}</option>
+                ))}
+              </select>
             </div>
 
             <div style={{ marginBottom: 16 }}>
@@ -303,6 +311,13 @@ export default function Upload() {
             </div>
 
             <div style={{ marginBottom: 12, borderTop: "1px solid rgba(108,240,255,.1)", paddingTop: 16 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, color: "#ff4fd8", fontSize: 14, cursor: "pointer" }} data-testid="checkbox-explicit">
+                <input type="checkbox" checked={isExplicit} onChange={(e) => setIsExplicit(e.target.checked)} style={{ accentColor: "#ff4fd8" }} />
+                This song contains explicit language
+              </label>
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 8, color: "#dfefff", fontSize: 14, cursor: "pointer" }} data-testid="checkbox-owns-rights">
                 <input type="checkbox" checked={ownsRights} onChange={(e) => setOwnsRights(e.target.checked)} style={{ accentColor: "#6cf0ff" }} />
                 I own all rights to this song
