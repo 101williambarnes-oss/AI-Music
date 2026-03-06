@@ -613,15 +613,15 @@
   color: #ffffff;
   text-decoration: none;
   border-radius: 24px;
-  background: rgba(30,100,220,.55);
-  border: 1px solid rgba(60,140,255,.45);
+  background: rgba(15,55,150,.8);
+  border: 1px solid rgba(40,100,220,.6);
   transition: background .2s, color .2s, border-color .2s;
   white-space: nowrap;
 }
 .quick-nav-tab:hover {
-  background: rgba(30,100,220,.75);
+  background: rgba(15,55,150,.95);
   color: #ffffff;
-  border-color: rgba(60,140,255,.65);
+  border-color: rgba(40,100,220,.8);
 }
 
 .topbar-library {
