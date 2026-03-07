@@ -128,7 +128,7 @@ export async function registerRoutes(
 
       const existing = await storage.getUserByEmail(email);
       if (existing) {
-        return res.status(400).json({ message: "An account with this email already exists" });
+        return res.status(400).json({ message: "An account with this email already exists. Try signing in instead." });
       }
 
       const passwordHash = await bcrypt.hash(password, 10);
@@ -191,12 +191,12 @@ export async function registerRoutes(
 
       const user = await storage.getUserByEmail(email);
       if (!user) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "No account found with that email. Please sign up first." });
       }
 
       const valid = await bcrypt.compare(password, user.passwordHash);
       if (!valid) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res.status(401).json({ message: "Incorrect password. Try again or use Forgot Password to reset it." });
       }
 
       const creator = await storage.getCreatorByUserId(user.id);
