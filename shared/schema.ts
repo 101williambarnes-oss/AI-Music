@@ -99,6 +99,15 @@ export const weeklyWinners = pgTable("weekly_winners", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  token: text("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertWeeklyWinnerSchema = createInsertSchema(weeklyWinners).omit({ id: true, createdAt: true });
 export const insertGenreSchema = createInsertSchema(genres).omit({ id: true });
 export const insertTrackSchema = createInsertSchema(tracks).omit({ id: true, createdAt: true });
