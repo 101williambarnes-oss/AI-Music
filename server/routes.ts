@@ -11,7 +11,8 @@ import fs from "fs";
 import crypto from "crypto";
 import { v2 as cloudinary } from "cloudinary";
 import * as mm from "music-metadata";
-import { Resend } from "resend";
+let Resend: any;
+try { Resend = require("resend").Resend; } catch { Resend = null; }
 
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
