@@ -147,7 +147,7 @@ export async function registerRoutes(
 
       try {
         const resend = new Resend(process.env.RESEND_API_KEY);
-        await resend.emails.send({
+        const welcomeResult = await resend.emails.send({
           from: "Hit Wave Media <onboarding@resend.dev>",
           to: email,
           subject: "Welcome to Hit Wave Media",
@@ -162,6 +162,7 @@ export async function registerRoutes(
             </div>
           `,
         });
+        console.log("Welcome email result:", JSON.stringify(welcomeResult));
       } catch (emailErr) {
         console.error("Welcome email failed:", emailErr);
       }
@@ -261,7 +262,7 @@ export async function registerRoutes(
       const resetUrl = `https://hitwavemedia.com/reset-password?token=${token}`;
 
       const resend = new Resend(process.env.RESEND_API_KEY);
-      await resend.emails.send({
+      const emailResult = await resend.emails.send({
         from: "Hit Wave Media <onboarding@resend.dev>",
         to: email,
         subject: "Reset Your Password - Hit Wave Media",
@@ -275,11 +276,17 @@ export async function registerRoutes(
           </div>
         `,
       });
+      console.log("Password reset email result:", JSON.stringify(emailResult));
 
-      res.json({ message: "If an account with that email exists, a reset link has been sent." });
+      if (emailResult.error) {
+        console.error("Password reset email error:", emailResult.error);
+        return res.status(500).json({ message: "Failed to send reset email. Please try again later." });
+      }
+
+      res.json({ message: "A reset link has been sent to your email. Check your inbox (and spam folder)." });
     } catch (error) {
       console.error("Forgot password error:", error);
-      res.status(500).json({ message: "Failed to process request" });
+      res.status(500).json({ message: "Failed to send reset email. Please try again later." });
     }
   });
 
