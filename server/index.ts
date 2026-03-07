@@ -126,8 +126,18 @@ app.use((req, res, next) => {
       )
     `);
     await ensurePool.query(`ALTER TABLE tracks ADD COLUMN IF NOT EXISTS explicit BOOLEAN NOT NULL DEFAULT false`);
+    await ensurePool.query(`
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        token TEXT NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        used BOOLEAN NOT NULL DEFAULT false,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
     await ensurePool.end();
-    console.log("weekly_winners table and explicit column ensured");
+    console.log("weekly_winners table, explicit column, and password_reset_tokens ensured");
 
     await registerRoutes(httpServer, app);
     console.log("Routes registered");

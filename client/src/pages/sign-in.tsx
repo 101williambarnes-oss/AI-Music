@@ -105,6 +105,9 @@ export default function SignIn() {
                 </button>
               </div>
             </div>
+            <div style={{ textAlign: "right", marginBottom: 16 }}>
+              <a href="/forgot-password" style={{ color: "#a06bff", fontSize: 13, textDecoration: "none" }} data-testid="link-forgot-password">Forgot Password?</a>
+            </div>
             <button
               type="submit"
               disabled={loading}

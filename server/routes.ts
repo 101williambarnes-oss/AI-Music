@@ -2,14 +2,16 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays } from "@shared/schema";
-import { sql, desc } from "drizzle-orm";
+import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays, passwordResetTokens } from "@shared/schema";
+import { sql, desc, eq, and, gt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import { v2 as cloudinary } from "cloudinary";
 import * as mm from "music-metadata";
+import { Resend } from "resend";
 
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
@@ -213,6 +215,82 @@ export async function registerRoutes(
       res.json({ user: { id: user.id, name: user.name, email: user.email, creatorId: creator?.id || null } });
     } catch (error) {
       res.status(500).json({ message: "Failed to get user" });
+    }
+  });
+
+  app.post("/api/auth/forgot-password", rateLimit("forgot-password", 5, 3600000), async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ message: "Email is required" });
+
+      const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      if (user.length === 0) {
+        return res.json({ message: "If an account with that email exists, a reset link has been sent." });
+      }
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+      await db.insert(passwordResetTokens).values({
+        userId: user[0].id,
+        token,
+        expiresAt,
+      });
+
+      const resetUrl = `https://hitwavemedia.com/reset-password?token=${token}`;
+
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from: "Hit Wave Media <onboarding@resend.dev>",
+        to: email,
+        subject: "Reset Your Password - Hit Wave Media",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; background: #070a14; color: #eaf0ff; padding: 32px; border-radius: 12px;">
+            <h2 style="color: #6cf0ff; margin-bottom: 16px;">Password Reset</h2>
+            <p>You requested a password reset for your Hit Wave Media account.</p>
+            <p>Click the button below to create a new password:</p>
+            <a href="${resetUrl}" style="display: inline-block; margin: 20px 0; padding: 12px 28px; background: linear-gradient(90deg, #2b7cff, #38e0ff); color: #fff; font-weight: 700; text-decoration: none; border-radius: 8px;">Reset Password</a>
+            <p style="font-size: 13px; color: rgba(170,182,232,.6);">This link expires in 30 minutes. If you didn't request this, you can ignore this email.</p>
+          </div>
+        `,
+      });
+
+      res.json({ message: "If an account with that email exists, a reset link has been sent." });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Failed to process request" });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password) return res.status(400).json({ message: "Token and password are required" });
+      if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
+
+      const now = new Date();
+      const result = await db.select().from(passwordResetTokens)
+        .where(and(
+          eq(passwordResetTokens.token, token),
+          eq(passwordResetTokens.used, false),
+          gt(passwordResetTokens.expiresAt, now)
+        ))
+        .limit(1);
+
+      if (result.length === 0) {
+        return res.status(400).json({ message: "Invalid or expired reset link. Please request a new one." });
+      }
+
+      const resetToken = result[0];
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      await db.update(users).set({ passwordHash }).where(eq(users.id, resetToken.userId));
+      await db.update(passwordResetTokens).set({ used: true }).where(eq(passwordResetTokens.id, resetToken.id));
+
+      res.json({ message: "Password reset successfully. You can now sign in with your new password." });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
     }
   });
 

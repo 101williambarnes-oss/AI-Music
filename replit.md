@@ -4,6 +4,10 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-03-07: Password reset - forgot password flow with Resend email API; generates secure token, sends reset link email, 30-minute expiry; pages at /forgot-password and /reset-password; "Forgot Password?" link on sign-in page
+- 2026-03-07: Clean Mode - toggle in topbar hides explicit tracks; "E" badge on explicit songs; explicit checkbox on upload form; filters apply on home, trending, top-25, new-songs pages; saved in localStorage
+- 2026-03-07: Genre dropdown - upload form now uses dropdown from ALL_GENRES list instead of free text; "Other" genre added for uncategorized songs
+- 2026-03-07: UI improvements - "Listen instantly. No signup required." pill in topbar; "Sign Up" renamed to "Creator Sign Up"; Home button moved to top-left in video modal; mobile tabs scrollable with hidden scrollbar; Back to Profile at top of creator dashboard
 - 2026-03-05: Sitemap & robots.txt - dynamic `/sitemap.xml` lists all static pages, track pages, and creator profiles; `/robots.txt` points Google to the sitemap
 - 2026-03-05: Admin Dashboard - `/admin` page with platform stats (users, creators, tracks, plays, likes, comments, follows, unique visitors); top tracks by plays and likes; creator leaderboard; recent sign-ups; locked to admin userId 2 only
 - 2026-03-05: Terms of Service - full TOS page at /terms; sign-up form requires checking TOS checkbox with updated terms content; "(View Terms)" link opens modal with full terms

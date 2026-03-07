@@ -20,6 +20,8 @@ import Mockup from "@/pages/mockup";
 import Playlist from "@/pages/playlist";
 import Terms from "@/pages/terms";
 import Admin from "@/pages/admin";
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
 import NotFound from "@/pages/not-found";
 import { AudioPlayerProvider } from "@/lib/audioPlayer";
 import { PlaylistProvider } from "@/lib/playlistContext";
@@ -55,6 +57,8 @@ function Router() {
       <Route path="/creator/:id" component={CreatorProfile} />
       <Route path="/playlist" component={Playlist} />
       <Route path="/terms" component={Terms} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/admin" component={Admin} />
       <Route path="/downloads" component={Downloads} />
       <Route path="/mockup" component={Mockup} />
