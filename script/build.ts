@@ -45,6 +45,7 @@ async function buildAll() {
       "@replit/vite-plugin-runtime-error-modal",
       "@replit/vite-plugin-cartographer",
       "@replit/vite-plugin-dev-banner",
+      "resend",
     ],
     logLevel: "info",
   });
