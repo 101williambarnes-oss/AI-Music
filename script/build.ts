@@ -45,8 +45,8 @@ async function buildAll() {
       "@replit/vite-plugin-runtime-error-modal",
       "@replit/vite-plugin-cartographer",
       "@replit/vite-plugin-dev-banner",
+      "resend",
     ],
-    nodePaths: [path.resolve("node_modules")],
     logLevel: "info",
   });
 
