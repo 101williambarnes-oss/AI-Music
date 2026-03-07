@@ -38,9 +38,9 @@ export default function SignUp() {
 
     if (!name.trim()) return setError("Creator name is required.");
     if (!email.trim()) return setError("Email is required.");
-    if (email !== verifyEmail) return setError("Emails do not match.");
+    if (email.trim().toLowerCase() !== verifyEmail.trim().toLowerCase()) return setError("Emails do not match.");
     if (password.length < 6) return setError("Password must be at least 6 characters.");
-    if (password !== confirmPassword) return setError("Passwords do not match.");
+    if (password !== confirmPassword) return setError("Passwords do not match. Make sure both password fields are exactly the same.");
     if (!agreeRights || !agreeAI || !agreeTOS) return setError("You must agree to all terms before creating an account.");
 
     setLoading(true);
@@ -136,6 +136,11 @@ export default function SignUp() {
                   {showConfirmPassword ? "HIDE" : "SHOW"}
                 </button>
               </div>
+              {confirmPassword.length > 0 && (
+                <p style={{ fontSize: 12, marginTop: 6, color: password === confirmPassword ? "#4ade80" : "#ff4fd8" }} data-testid="text-password-match">
+                  {password === confirmPassword ? "Passwords match" : "Passwords do not match"}
+                </p>
+              )}
             </div>
             <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 14 }}>
               <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", color: "#aab6e8", fontSize: 13, lineHeight: 1.5 }} data-testid="label-agree-rights">
