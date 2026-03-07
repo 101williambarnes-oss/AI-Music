@@ -251,6 +251,9 @@ export default function Home() {
                   My Library
                 </a>
               )}
+              {user.id === 2 && (
+                <a href="/admin" className="topbar-login" style={{ borderColor: "rgba(255,215,0,.4)", color: "#ffd700" }} data-testid="link-admin">Admin</a>
+              )}
               <a href={user.creatorId ? `/creator/${user.creatorId}` : "/"} className="topbar-login" data-testid="link-creators-login">Creators Login</a>
               <button
                 className="topbar-login"
