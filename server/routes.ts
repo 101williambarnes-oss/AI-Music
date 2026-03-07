@@ -322,6 +322,24 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/admin/reset-user-password", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userId !== 2) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      const { email, newPassword } = req.body;
+      if (!email || !newPassword) return res.status(400).json({ message: "Email and newPassword are required" });
+      const user = await storage.getUserByEmail(email);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      const hash = await bcrypt.hash(newPassword, 10);
+      await db.update(users).set({ passwordHash: hash }).where(eq(users.id, user.id));
+      res.json({ message: `Password reset for ${user.name} (${email})` });
+    } catch (error) {
+      console.error("Admin reset error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
+    }
+  });
+
   app.use("/uploads", (_req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Content-Security-Policy", "default-src 'none'");
