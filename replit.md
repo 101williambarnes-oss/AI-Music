@@ -4,6 +4,9 @@
 Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
 
 ## Recent Changes
+- 2026-03-07: Build fix - resend package loaded via dynamic require to fix Render esbuild bundling; build.ts marks resend as external
+- 2026-03-07: Admin features - admin password reset endpoint (/api/admin/reset-user-password); gold "Admin" link in topbar visible only to userId 2; welcome email on signup
+- 2026-03-07: Better auth errors - sign-in shows "No account found" vs "Incorrect password"; sign-up shows "account already exists, try signing in"; real-time password match indicator on sign-up form
 - 2026-03-07: Password reset - forgot password flow with Resend email API; generates secure token, sends reset link email, 30-minute expiry; pages at /forgot-password and /reset-password; "Forgot Password?" link on sign-in page
 - 2026-03-07: Clean Mode - toggle in topbar hides explicit tracks; "E" badge on explicit songs; explicit checkbox on upload form; filters apply on home, trending, top-25, new-songs pages; saved in localStorage
 - 2026-03-07: Genre dropdown - upload form now uses dropdown from ALL_GENRES list instead of free text; "Other" genre added for uncategorized songs
