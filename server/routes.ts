@@ -324,10 +324,10 @@ export async function registerRoutes(
 
   app.post("/api/admin/reset-user-password", async (req, res) => {
     try {
-      if (!req.session.userId || req.session.userId !== 2) {
+      const { email, newPassword, adminKey } = req.body;
+      if (adminKey !== process.env.SESSION_SECRET) {
         return res.status(403).json({ message: "Access denied" });
       }
-      const { email, newPassword } = req.body;
       if (!email || !newPassword) return res.status(400).json({ message: "Email and newPassword are required" });
       const user = await storage.getUserByEmail(email);
       if (!user) return res.status(404).json({ message: "User not found" });
