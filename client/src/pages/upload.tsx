@@ -228,10 +228,10 @@ export default function Upload() {
 
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Genre *</label>
-              <select value={genre} onChange={(e) => setGenre(e.target.value)} style={inputStyle} required data-testid="input-track-genre">
-                <option value="">Select a genre</option>
+              <select value={genre} onChange={(e) => setGenre(e.target.value)} style={{ ...inputStyle, appearance: "auto" as any }} required data-testid="input-track-genre">
+                <option value="" style={{ background: "#0d1229", color: "#aab6e8" }}>Select a genre</option>
                 {ALL_GENRES.map((g) => (
-                  <option key={g} value={g.toLowerCase()}>{g}</option>
+                  <option key={g} value={g.toLowerCase()} style={{ background: "#0d1229", color: "#eaf0ff", padding: "8px" }}>{g}</option>
                 ))}
               </select>
             </div>
