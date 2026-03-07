@@ -145,6 +145,27 @@ export async function registerRoutes(
 
       await storage.updateUserCreatorId(user.id, creator.id);
 
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resend.emails.send({
+          from: "Hit Wave Media <onboarding@resend.dev>",
+          to: email,
+          subject: "Welcome to Hit Wave Media",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; background: #070a14; color: #eaf0ff; padding: 32px; border-radius: 12px;">
+              <h2 style="color: #6cf0ff; margin-bottom: 16px;">Welcome to Hit Wave Media</h2>
+              <p>Hey ${name},</p>
+              <p>You're now part of the AI music creator platform.</p>
+              <p>Upload your best tracks and start climbing the weekly Top 25.</p>
+              <a href="https://hitwavemedia.com/upload" style="display: inline-block; margin: 20px 0; padding: 12px 28px; background: linear-gradient(90deg, #2b7cff, #38e0ff); color: #fff; font-weight: 700; text-decoration: none; border-radius: 8px;">Upload Your First Track</a>
+              <p style="font-size: 13px; color: rgba(170,182,232,.6); margin-top: 20px;">&mdash; Hit Wave Media</p>
+            </div>
+          `,
+        });
+      } catch (emailErr) {
+        console.error("Welcome email failed:", emailErr);
+      }
+
       req.session.userId = user.id;
       req.session.save((err) => {
         if (err) {
