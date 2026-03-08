@@ -278,9 +278,41 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="hero" data-testid="section-hero">
+      <section className="hero hero-modern" data-testid="section-hero">
+        <div className="hero-glow-orb hero-orb-1" />
+        <div className="hero-glow-orb hero-orb-2" />
+        <div className="hero-glow-orb hero-orb-3" />
         <img src={siteLogo} alt="Hit Wave Media" className="hero-logo" data-testid="img-hero-logo" />
-        <div style={{ position: "relative", zIndex: 3, color: "#ffffff", fontSize: 18, fontWeight: 800, letterSpacing: 4, textTransform: "uppercase", marginTop: -10, textAlign: "center", textShadow: "0 0 10px rgba(255,255,255,.6), 0 0 30px rgba(108,240,255,.5), 0 0 60px rgba(160,107,255,.3)" }} data-testid="text-tagline">AI-Only Music Platform</div>
+        <h1 className="hero-headline" data-testid="text-headline">
+          Discover the Future of <span className="hero-gradient-text">AI-Generated Music</span>
+        </h1>
+        <p className="hero-subtitle-text" data-testid="text-tagline">
+          Stream, discover, and share music created entirely by artificial intelligence. The world's first AI-only music platform.
+        </p>
+        <div className="hero-cta-row">
+          <a href="/trending" className="hero-cta-btn" data-testid="button-listen-now">
+            Listen Now
+          </a>
+          <a href="/sign-up" className="hero-cta-btn hero-cta-secondary" data-testid="button-hero-signup">
+            Start Creating
+          </a>
+        </div>
+        <div className="hero-stats-row" data-testid="section-hero-stats">
+          <div className="hero-stat-item">
+            <span className="hero-stat-num">{allTracks.length}</span>
+            <span className="hero-stat-label">Tracks</span>
+          </div>
+          <div className="hero-stat-divider" />
+          <div className="hero-stat-item">
+            <span className="hero-stat-num">{creators.length}</span>
+            <span className="hero-stat-label">Creators</span>
+          </div>
+          <div className="hero-stat-divider" />
+          <div className="hero-stat-item">
+            <span className="hero-stat-num">100%</span>
+            <span className="hero-stat-label">AI-Made</span>
+          </div>
+        </div>
       </section>
 
       <nav className="quick-nav" data-testid="nav-quick-links">
