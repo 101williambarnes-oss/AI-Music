@@ -15,6 +15,8 @@ type AdminStats = {
     totalComments: number;
     totalFollows: number;
     uniqueVisitors: number;
+    visitorsToday: number;
+    totalVisits: number;
   };
   topTracksByPlays: { id: number; title: string; artist: string; plays: number }[];
   topTracksByLikes: { id: number; title: string; artist: string; likes: number; plays: number }[];
@@ -175,8 +177,16 @@ export default function Admin() {
             <div style={valueStyle}>{overview.totalTracks}</div>
           </div>
           <div style={statBoxStyle} data-testid="stat-unique-visitors">
-            <div style={labelStyle}><Eye size={13} /> Visitors</div>
+            <div style={labelStyle}><Eye size={13} /> Unique Visitors</div>
             <div style={valueStyle}>{overview.uniqueVisitors}</div>
+          </div>
+          <div style={statBoxStyle} data-testid="stat-visitors-today">
+            <div style={labelStyle}><Eye size={13} /> Visitors Today</div>
+            <div style={valueStyle}>{overview.visitorsToday}</div>
+          </div>
+          <div style={statBoxStyle} data-testid="stat-total-visits">
+            <div style={labelStyle}><Eye size={13} /> Total Visits</div>
+            <div style={valueStyle}>{overview.totalVisits}</div>
           </div>
         </div>
 

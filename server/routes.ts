@@ -2,7 +2,7 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays, passwordResetTokens } from "@shared/schema";
+import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays, passwordResetTokens, siteVisits } from "@shared/schema";
 import { sql, desc, eq, and, gt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import multer from "multer";
@@ -1118,6 +1118,27 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/visit", async (_req, res) => {
+    try {
+      const visitorId = _req.headers["x-visitor-id"] as string;
+      if (!visitorId || visitorId.length > 64) {
+        return res.status(400).json({ ok: false });
+      }
+      const now = new Date();
+      const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+      const recent = await db.select({ id: siteVisits.id })
+        .from(siteVisits)
+        .where(and(eq(siteVisits.visitorId, visitorId), gt(siteVisits.visitedAt, hourAgo)))
+        .limit(1);
+      if (recent.length === 0) {
+        await db.insert(siteVisits).values({ visitorId });
+      }
+      res.json({ ok: true });
+    } catch {
+      res.json({ ok: true });
+    }
+  });
+
   app.get("/api/admin/stats", async (req, res) => {
     const sessionUserId = req.session.userId;
     const headerUserId = parseInt(req.headers["x-user-id"] as string);
@@ -1143,7 +1164,10 @@ export async function registerRoutes(
       const [totalCommentsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(comments);
       const [totalFollowsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(follows);
       const [totalVisitorFollowsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(visitorFollows);
-      const uniqueVisitorsRows = await db.execute(sql`SELECT COUNT(DISTINCT vid)::int as count FROM (SELECT visitor_id as vid FROM visitor_likes UNION SELECT visitor_id as vid FROM visitor_follows) combined`);
+      const uniqueVisitorsRows = await db.execute(sql`SELECT COUNT(DISTINCT visitor_id)::int as count FROM site_visits`);
+      const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+      const visitsTodayRows = await db.execute(sql`SELECT COUNT(DISTINCT visitor_id)::int as count FROM site_visits WHERE visited_at >= ${todayStart}`);
+      const totalVisitsRows = await db.execute(sql`SELECT COUNT(*)::int as count FROM site_visits`);
       const [totalPlayEventsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(trackPlays);
 
       const topTracksByPlays = [...allTracks].sort((a, b) => b.plays - a.plays).slice(0, 10);
@@ -1170,6 +1194,8 @@ export async function registerRoutes(
       const recentUsers = await db.select().from(users).orderBy(desc(users.id)).limit(10);
 
       const uniqueVisitors = (uniqueVisitorsRows as any)?.rows?.[0]?.count ?? (uniqueVisitorsRows as any)?.[0]?.count ?? 0;
+      const visitorsToday = (visitsTodayRows as any)?.rows?.[0]?.count ?? (visitsTodayRows as any)?.[0]?.count ?? 0;
+      const totalVisits = (totalVisitsRows as any)?.rows?.[0]?.count ?? (totalVisitsRows as any)?.[0]?.count ?? 0;
 
       res.json({
         overview: {
@@ -1182,6 +1208,8 @@ export async function registerRoutes(
           totalComments: totalCommentsResult?.count ?? 0,
           totalFollows: (totalFollowsResult?.count ?? 0) + (totalVisitorFollowsResult?.count ?? 0),
           uniqueVisitors,
+          visitorsToday,
+          totalVisits,
         },
         topTracksByPlays,
         topTracksByLikes,

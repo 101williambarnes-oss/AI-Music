@@ -108,6 +108,12 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const siteVisits = pgTable("site_visits", {
+  id: serial("id").primaryKey(),
+  visitorId: text("visitor_id").notNull(),
+  visitedAt: timestamp("visited_at").notNull().defaultNow(),
+});
+
 export const insertWeeklyWinnerSchema = createInsertSchema(weeklyWinners).omit({ id: true, createdAt: true });
 export const insertGenreSchema = createInsertSchema(genres).omit({ id: true });
 export const insertTrackSchema = createInsertSchema(tracks).omit({ id: true, createdAt: true });
