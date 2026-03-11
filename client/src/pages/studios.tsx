@@ -21,14 +21,34 @@ export default function Studios() {
         <header style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          padding: "16px 20px",
+          justifyContent: "space-between",
+          padding: "12px 20px",
           borderBottom: "1px solid rgba(108,240,255,.12)",
           background: "rgba(5,6,21,.7)",
           backdropFilter: "blur(12px)",
         }}>
           <a href="/" style={{ textDecoration: "none" }} data-testid="link-studios-logo">
             <img src={siteLogo} alt="Hit Wave Media" style={{ height: 60, width: "auto", objectFit: "contain" }} />
+          </a>
+          <a
+            href="/"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "10px 22px",
+              borderRadius: 999,
+              background: "rgba(108,240,255,.12)",
+              border: "1px solid rgba(108,240,255,.35)",
+              color: "#6cf0ff",
+              fontSize: 14,
+              fontWeight: 700,
+              textDecoration: "none",
+              transition: "background .2s, border-color .2s",
+            }}
+            data-testid="button-studios-home"
+          >
+            Home
           </a>
         </header>
 
@@ -106,17 +126,6 @@ export default function Studios() {
                 data-testid="button-start-blueprint"
               >
                 Start Your Song Blueprint
-              </a>
-              <a
-                href="/"
-                style={{
-                  fontSize: 13,
-                  color: "rgba(170,182,232,.6)",
-                  textDecoration: "none",
-                }}
-                data-testid="link-back-home"
-              >
-                Back to Hit Wave Media
               </a>
             </div>
           </div>
