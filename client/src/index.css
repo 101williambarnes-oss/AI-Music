@@ -1643,6 +1643,8 @@
   }
 
   .studios-page {
+    background-image: none !important;
+    background: linear-gradient(180deg, #070a14, #0a0e22 40%, #0d1030 70%, #070a14) !important;
     background-attachment: scroll !important;
   }
   .studios-header {
