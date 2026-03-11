@@ -5,11 +5,7 @@ export default function Studios() {
   return (
     <div className="studios-page" style={{
       minHeight: "100vh",
-      backgroundImage: `url(${studioBg})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundAttachment: "fixed",
-      backgroundRepeat: "no-repeat",
+      background: "linear-gradient(180deg, #070a14 0%, #0a0e22 25%, #0d1030 50%, #110a2a 75%, #070a14 100%)",
       color: "#eaf0ff",
       fontFamily: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
     }}>
