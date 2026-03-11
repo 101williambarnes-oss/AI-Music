@@ -1648,17 +1648,18 @@
     background-attachment: scroll !important;
   }
   .studios-header {
-    padding: 8px 12px !important;
+    padding: 10px 16px !important;
   }
   .studios-logo {
-    height: 36px !important;
+    height: 44px !important;
   }
   .studios-home-btn {
-    padding: 8px 16px !important;
-    font-size: 12px !important;
+    padding: 9px 20px !important;
+    font-size: 13px !important;
   }
   .studios-main {
-    padding: 28px 16px 40px !important;
+    padding: 36px 20px 48px !important;
+    max-width: 680px !important;
   }
   .studios-title {
     margin-bottom: 24px !important;
@@ -1687,6 +1688,28 @@
 }
 
 @media (max-width: 480px) {
+  .studios-header {
+    padding: 8px 10px !important;
+  }
+  .studios-logo {
+    height: 32px !important;
+  }
+  .studios-home-btn {
+    padding: 7px 14px !important;
+    font-size: 12px !important;
+  }
+  .studios-main {
+    padding: 24px 14px 36px !important;
+  }
+  .studios-cta-btn {
+    padding: 11px 24px !important;
+    font-size: 13px !important;
+  }
+  .studios-btn {
+    padding: 9px 16px !important;
+    font-size: 12px !important;
+  }
+
   .site-topbar {
     padding: 8px 8px 10px;
     gap: 6px;
