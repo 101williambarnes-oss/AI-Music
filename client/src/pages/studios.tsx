@@ -1,7 +1,30 @@
+import { useState } from "react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import studioBg from "@assets/image_1773218123758.png";
 
+const SONG_BUILDER_TEXT = `HitWave Media Studios Build Your Song Before The Music You are acting as a songwriting assistant. Your job is to guide me step-by-step through building a complete song before the music is generated. IMPORTANT RULES 1. Ask ONE question at a time. 2. Wait for my answer before continuing. 3. After I answer, say "Saved." and move to the next question. 4. Remember every answer I give. 5. Do NOT write the song until I type: FINISHED 6. If something I say seems unclear, briefly help refine it before moving forward. 7. When FINISHED is typed, assemble everything into a complete song and a separate music style section. START WITH QUESTION 1. ------------------------------------- QUESTION 1 Song Title What is the title of the song? ------------------------------------- QUESTION 2 Main Idea What is the main idea of the song? ------------------------------------- QUESTION 3 Song Story Describe the story behind the song. ------------------------------------- QUESTION 4 Characters Who is involved in the story? ------------------------------------- QUESTION 5 Key Moment What moment or event defines the song? ------------------------------------- QUESTION 6 Setting Where does the story take place? ------------------------------------- QUESTION 7 Emotion What emotions should the song express? ------------------------------------- QUESTION 8 Message What message should the song leave the listener with? ------------------------------------- QUESTION 9 Perspective Who is telling the story? Example: male singer female singer duet ------------------------------------- QUESTION 10 Music Genre Choose the style of music. Examples: Pop Rock Soft Rock Indie Rock Country Folk Blues Jazz R&B Soul Rap Hip Hop EDM Electronic Alternative Americana Gospel Singer-Songwriter Acoustic Other ------------------------------------- QUESTION 11 Song Mood What mood should the music feel like? Examples: emotional uplifting dramatic hopeful dark romantic reflective melancholic ------------------------------------- QUESTION 12 Instruments What instruments should be featured? Examples: acoustic guitar electric guitar piano synth drums bass violin cello horns strings banjo mandolin organ ------------------------------------- QUESTION 13 Tempo How fast or slow should the song feel? Examples: slow medium uptempo fast ballad ------------------------------------- QUESTION 14 Vocal Style Describe the vocal delivery. Examples: smooth powerful raspy soft soulful airy belted whispered spoken word ------------------------------------- QUESTION 15 Song Structure Define the layout of the song. Example: Verse Chorus Verse Chorus Bridge Chorus ------------------------------------- QUESTION 16 Chorus Hook What is the main lyric or phrase for the chorus? ------------------------------------- QUESTION 17 Opening Line How should the song begin? ------------------------------------- QUESTION 18 Closing Line How should the song end? ------------------------------------- QUESTION 19 Additional Details Any other details to include in the song? ------------------------------------- QUESTION 20 Final Review Review the answers and confirm everything is correct. Type FINISHED when ready. ------------------------------------- When FINISHED is typed: Assemble the full song lyrics based on the answers. Then write a separate MUSIC STYLE section that includes: Genre Mood Instruments Tempo Vocal Style Song Structure`;
+
 export default function Studios() {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(SONG_BUILDER_TEXT).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    }).catch(() => {
+      const ta = document.createElement("textarea");
+      ta.value = SONG_BUILDER_TEXT;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    });
+  }
+
   return (
     <div className="studios-page" style={{
       minHeight: "100vh",
@@ -180,8 +203,8 @@ export default function Studios() {
               </div>
 
               <div style={{ marginTop: 32, display: "flex", justifyContent: "center" }}>
-                <a
-                  href="/studios/form"
+                <button
+                  onClick={handleCopy}
                   className="studios-cta-btn"
                   style={{
                     display: "inline-flex",
@@ -191,18 +214,22 @@ export default function Studios() {
                     fontSize: 16,
                     fontWeight: 800,
                     color: "#fff",
-                    textDecoration: "none",
                     borderRadius: 999,
-                    background: "linear-gradient(135deg, rgba(160,107,255,.85), rgba(255,79,216,.7))",
-                    border: "1px solid rgba(255,79,216,.5)",
+                    background: copied
+                      ? "linear-gradient(135deg, rgba(108,240,255,.85), rgba(80,200,120,.7))"
+                      : "linear-gradient(135deg, rgba(160,107,255,.85), rgba(255,79,216,.7))",
+                    border: copied
+                      ? "1px solid rgba(108,240,255,.5)"
+                      : "1px solid rgba(255,79,216,.5)",
                     letterSpacing: ".5px",
-                    transition: "transform .2s, box-shadow .2s",
+                    cursor: "pointer",
+                    transition: "transform .2s, box-shadow .2s, background .3s",
                     boxShadow: "0 0 20px rgba(160,107,255,.25), 0 0 40px rgba(255,79,216,.12)",
                   }}
                   data-testid="button-song-builder"
                 >
-                  Song Builder
-                </a>
+                  {copied ? "Copied!" : "Song Builder"}
+                </button>
               </div>
 
               <div style={{ marginTop: 36, textAlign: "center" }}>
