@@ -179,6 +179,32 @@ export default function Studios() {
                 </p>
               </div>
 
+              <div style={{ marginTop: 32, display: "flex", justifyContent: "center" }}>
+                <a
+                  href="/studios/form"
+                  className="studios-cta-btn"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "14px 36px",
+                    fontSize: 16,
+                    fontWeight: 800,
+                    color: "#fff",
+                    textDecoration: "none",
+                    borderRadius: 999,
+                    background: "linear-gradient(135deg, rgba(160,107,255,.85), rgba(255,79,216,.7))",
+                    border: "1px solid rgba(255,79,216,.5)",
+                    letterSpacing: ".5px",
+                    transition: "transform .2s, box-shadow .2s",
+                    boxShadow: "0 0 20px rgba(160,107,255,.25), 0 0 40px rgba(255,79,216,.12)",
+                  }}
+                  data-testid="button-song-builder"
+                >
+                  Song Builder
+                </a>
+              </div>
+
               <div style={{ marginTop: 36, textAlign: "center" }}>
                 <p style={{
                   fontSize: "clamp(18px, 2.5vw, 24px)",
