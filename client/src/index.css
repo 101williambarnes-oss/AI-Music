@@ -1641,6 +1641,47 @@
     height: 44px;
     z-index: 20;
   }
+
+  .studios-page {
+    background-attachment: scroll !important;
+  }
+  .studios-header {
+    padding: 8px 12px !important;
+  }
+  .studios-logo {
+    height: 36px !important;
+  }
+  .studios-home-btn {
+    padding: 8px 16px !important;
+    font-size: 12px !important;
+  }
+  .studios-main {
+    padding: 28px 16px 40px !important;
+  }
+  .studios-title {
+    margin-bottom: 24px !important;
+  }
+  .studios-content {
+    font-size: 14px !important;
+    line-height: 1.7 !important;
+  }
+  .studios-content p {
+    margin-bottom: 18px !important;
+  }
+  .studios-highlight {
+    font-size: 17px !important;
+  }
+  .studios-highlight-purple {
+    font-size: 15px !important;
+  }
+  .studios-cta-btn {
+    padding: 12px 28px !important;
+    font-size: 14px !important;
+  }
+  .studios-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 480px) {
