@@ -597,6 +597,29 @@
   opacity: .6;
 }
 
+.studios-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 32px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(160,107,255,.85), rgba(255,79,216,.7));
+  border: 1px solid rgba(255,79,216,.5);
+  letter-spacing: .5px;
+  white-space: nowrap;
+  transition: transform .2s, box-shadow .2s, filter .2s;
+  box-shadow: 0 0 16px rgba(160,107,255,.2), 0 0 30px rgba(255,79,216,.1);
+}
+.studios-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 24px rgba(160,107,255,.35), 0 0 40px rgba(255,79,216,.2);
+  filter: brightness(1.1);
+}
+
 .quick-nav {
   display: flex;
   justify-content: center;

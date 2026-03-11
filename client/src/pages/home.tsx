@@ -283,6 +283,12 @@ export default function Home() {
         <div style={{ position: "relative", zIndex: 3, color: "#ffffff", fontSize: 18, fontWeight: 800, letterSpacing: 4, textTransform: "uppercase", marginTop: -10, textAlign: "center", textShadow: "0 0 10px rgba(255,255,255,.6), 0 0 30px rgba(108,240,255,.5), 0 0 60px rgba(160,107,255,.3)" }} data-testid="text-tagline">AI-Only Music Platform</div>
       </section>
 
+      <div style={{ display: "flex", justifyContent: "center", padding: "10px 22px 0" }}>
+        <a href="/studios" className="studios-btn" data-testid="link-studios">
+          Hitwave Studios for Music Creators
+        </a>
+      </div>
+
       <nav className="quick-nav" data-testid="nav-quick-links">
         <a href="/top-25" className="quick-nav-tab" data-testid="link-quick-top25">
           Top 25
