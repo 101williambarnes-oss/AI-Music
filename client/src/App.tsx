@@ -22,6 +22,7 @@ import Terms from "@/pages/terms";
 import Admin from "@/pages/admin";
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
+import Studios from "@/pages/studios";
 import NotFound from "@/pages/not-found";
 import { AudioPlayerProvider } from "@/lib/audioPlayer";
 import { PlaylistProvider } from "@/lib/playlistContext";
@@ -60,6 +61,7 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/admin" component={Admin} />
+      <Route path="/studios" component={Studios} />
       <Route path="/downloads" component={Downloads} />
       <Route path="/mockup" component={Mockup} />
       <Route component={NotFound} />
