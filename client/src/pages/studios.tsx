@@ -110,10 +110,10 @@ export default function Studios() {
                     color: "#6cf0ff",
                     marginBottom: 6,
                   }}>
-                    Step 1 — Copy the Song Builder
+                    Step 1 — Copy the Song Builder & Paste Into AI
                   </p>
                   <p style={{ color: "rgba(234,240,255,.75)" }}>
-                    Click the Copy Song Builder button. This copies the HitWave Studio songwriting system to your clipboard.
+                    Click the Song Builder button to copy the HitWave Studio songwriting system to your clipboard. Then open your preferred AI assistant and paste it into the chat. The AI will immediately begin guiding you through the songwriting process step by step.
                   </p>
                 </div>
 
@@ -124,21 +124,7 @@ export default function Studios() {
                     color: "#6cf0ff",
                     marginBottom: 6,
                   }}>
-                    Step 2 — Paste Into AI
-                  </p>
-                  <p style={{ color: "rgba(234,240,255,.75)" }}>
-                    Open your preferred AI assistant and paste the system into the chat. The AI will immediately begin guiding you through the songwriting process step by step.
-                  </p>
-                </div>
-
-                <div style={{ marginBottom: 24 }}>
-                  <p style={{
-                    fontSize: "clamp(15px, 2vw, 18px)",
-                    fontWeight: 800,
-                    color: "#6cf0ff",
-                    marginBottom: 6,
-                  }}>
-                    Step 3 — Build the Song Foundation
+                    Step 2 — Build the Song Foundation
                   </p>
                   <p style={{ color: "rgba(234,240,255,.75)" }}>
                     The AI will ask structured questions that help define the key elements of your song, including the story, characters, emotional tone, chorus message, musical style, instruments, tempo, and vocal direction.
@@ -152,7 +138,7 @@ export default function Studios() {
                     color: "#6cf0ff",
                     marginBottom: 6,
                   }}>
-                    Step 4 — Generate Your Song Blueprint
+                    Step 3 — Generate Your Song Blueprint
                   </p>
                   <p style={{ color: "rgba(234,240,255,.75)" }}>
                     Once all questions are complete, the AI assembles your answers into a complete song blueprint — including lyrics and detailed music style instructions.
@@ -166,7 +152,7 @@ export default function Studios() {
                     color: "#6cf0ff",
                     marginBottom: 6,
                   }}>
-                    Step 5 — Bring the Music to Life
+                    Step 4 — Bring the Music to Life
                   </p>
                   <p style={{ color: "rgba(234,240,255,.75)" }}>
                     Copy the finished lyrics and style instructions and paste them into your AI music generator to create the final song.
