@@ -2,7 +2,7 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays, passwordResetTokens, siteVisits } from "@shared/schema";
+import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays, passwordResetTokens, siteVisits, studioClicks } from "@shared/schema";
 import { sql, desc, eq, and, gt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import multer from "multer";
@@ -1139,6 +1139,19 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/studio-click", async (_req, res) => {
+    try {
+      const visitorId = _req.headers["x-visitor-id"] as string;
+      if (!visitorId || visitorId.length > 64) {
+        return res.status(400).json({ ok: false });
+      }
+      await db.insert(studioClicks).values({ visitorId });
+      res.json({ ok: true });
+    } catch {
+      res.json({ ok: true });
+    }
+  });
+
   app.get("/api/admin/stats", async (req, res) => {
     const sessionUserId = req.session.userId;
     const headerUserId = parseInt(req.headers["x-user-id"] as string);
@@ -1168,6 +1181,7 @@ export async function registerRoutes(
       const todayStart = new Date(); todayStart.setHours(0,0,0,0);
       const visitsTodayRows = await db.execute(sql`SELECT COUNT(DISTINCT visitor_id)::int as count FROM site_visits WHERE visited_at >= ${todayStart}`);
       const totalVisitsRows = await db.execute(sql`SELECT COUNT(*)::int as count FROM site_visits`);
+      const studioClicksRows = await db.execute(sql`SELECT COUNT(*)::int as count FROM studio_clicks`);
       const [totalPlayEventsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(trackPlays);
 
       const topTracksByPlays = [...allTracks].sort((a, b) => b.plays - a.plays).slice(0, 10);
@@ -1196,6 +1210,7 @@ export async function registerRoutes(
       const uniqueVisitors = (uniqueVisitorsRows as any)?.rows?.[0]?.count ?? (uniqueVisitorsRows as any)?.[0]?.count ?? 0;
       const visitorsToday = (visitsTodayRows as any)?.rows?.[0]?.count ?? (visitsTodayRows as any)?.[0]?.count ?? 0;
       const totalVisits = (totalVisitsRows as any)?.rows?.[0]?.count ?? (totalVisitsRows as any)?.[0]?.count ?? 0;
+      const totalStudioClicks = (studioClicksRows as any)?.rows?.[0]?.count ?? (studioClicksRows as any)?.[0]?.count ?? 0;
 
       res.json({
         overview: {
@@ -1210,6 +1225,7 @@ export async function registerRoutes(
           uniqueVisitors,
           visitorsToday,
           totalVisits,
+          studioClicks: totalStudioClicks,
         },
         topTracksByPlays,
         topTracksByLikes,

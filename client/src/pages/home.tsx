@@ -284,7 +284,12 @@ export default function Home() {
       </section>
 
       <div style={{ display: "flex", justifyContent: "center", padding: "10px 22px 0" }}>
-        <a href="/studios" className="studios-btn" data-testid="link-studios">
+        <a href="/studios" className="studios-btn" data-testid="link-studios" onClick={() => {
+          try {
+            const vid = localStorage.getItem("hwm_vid") || "anon";
+            fetch("/api/studio-click", { method: "POST", headers: { "x-visitor-id": vid } }).catch(() => {});
+          } catch {}
+        }}>
           Hitwave Studios for Music Creators
         </a>
       </div>

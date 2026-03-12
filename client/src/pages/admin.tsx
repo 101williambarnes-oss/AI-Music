@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Users, Music, Headphones, Heart, MessageCircle, UserPlus, Eye, BarChart3, Crown, TrendingUp } from "lucide-react";
+import { Users, Music, Headphones, Heart, MessageCircle, UserPlus, Eye, BarChart3, Crown, TrendingUp, MousePointerClick } from "lucide-react";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -187,6 +187,10 @@ export default function Admin() {
           <div style={statBoxStyle} data-testid="stat-total-visits">
             <div style={labelStyle}><Eye size={13} /> Total Visits</div>
             <div style={valueStyle}>{overview.totalVisits}</div>
+          </div>
+          <div style={statBoxStyle} data-testid="stat-studio-clicks">
+            <div style={labelStyle}><MousePointerClick size={13} /> Studio Clicks</div>
+            <div style={valueStyle}>{overview.studioClicks ?? 0}</div>
           </div>
         </div>
 

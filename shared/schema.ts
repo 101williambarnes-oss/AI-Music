@@ -114,6 +114,12 @@ export const siteVisits = pgTable("site_visits", {
   visitedAt: timestamp("visited_at").notNull().defaultNow(),
 });
 
+export const studioClicks = pgTable("studio_clicks", {
+  id: serial("id").primaryKey(),
+  visitorId: text("visitor_id").notNull(),
+  clickedAt: timestamp("clicked_at").notNull().defaultNow(),
+});
+
 export const insertWeeklyWinnerSchema = createInsertSchema(weeklyWinners).omit({ id: true, createdAt: true });
 export const insertGenreSchema = createInsertSchema(genres).omit({ id: true });
 export const insertTrackSchema = createInsertSchema(tracks).omit({ id: true, createdAt: true });

@@ -143,8 +143,15 @@ app.use((req, res, next) => {
         visited_at TIMESTAMP NOT NULL DEFAULT NOW()
       )
     `);
+    await ensurePool.query(`
+      CREATE TABLE IF NOT EXISTS studio_clicks (
+        id SERIAL PRIMARY KEY,
+        visitor_id TEXT NOT NULL,
+        clicked_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
     await ensurePool.end();
-    console.log("weekly_winners table, explicit column, password_reset_tokens, and site_visits ensured");
+    console.log("weekly_winners table, explicit column, password_reset_tokens, site_visits, and studio_clicks ensured");
 
     await registerRoutes(httpServer, app);
     console.log("Routes registered");
