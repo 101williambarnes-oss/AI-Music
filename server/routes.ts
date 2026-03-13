@@ -1141,7 +1141,7 @@ export async function registerRoutes(
 
   app.post("/api/studio-click", async (_req, res) => {
     try {
-      const visitorId = _req.headers["x-visitor-id"] as string;
+      const visitorId = (_req.body?.visitorId as string) || (_req.headers["x-visitor-id"] as string);
       if (!visitorId || visitorId.length > 64) {
         return res.status(400).json({ ok: false });
       }

@@ -287,7 +287,12 @@ export default function Home() {
         <a href="/studios" className="studios-btn" data-testid="link-studios" onClick={() => {
           try {
             const vid = localStorage.getItem("hwm_vid") || "anon";
-            fetch("/api/studio-click", { method: "POST", headers: { "x-visitor-id": vid } }).catch(() => {});
+            const data = JSON.stringify({ visitorId: vid });
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon("/api/studio-click", new Blob([data], { type: "application/json" }));
+            } else {
+              fetch("/api/studio-click", { method: "POST", headers: { "x-visitor-id": vid }, keepalive: true }).catch(() => {});
+            }
           } catch {}
         }}>
           Hitwave Studios for Music Creators

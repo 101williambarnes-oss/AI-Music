@@ -320,6 +320,15 @@ export default function CreatorProfile() {
                   </a>
                   <a
                     href={`/studios?from=creator&id=${creatorId}`}
+                    onClick={() => {
+                      try {
+                        const vid = localStorage.getItem("hwm_vid") || "anon";
+                        const data = JSON.stringify({ visitorId: vid });
+                        if (navigator.sendBeacon) {
+                          navigator.sendBeacon("/api/studio-click", new Blob([data], { type: "application/json" }));
+                        }
+                      } catch {}
+                    }}
                     style={{
                       display: "flex",
                       alignItems: "center",
