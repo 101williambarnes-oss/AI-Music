@@ -500,7 +500,7 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="hero" data-testid="section-hero">
+      <section className="hero" style={{ marginTop: 10, paddingTop: 18, paddingBottom: 10 }} data-testid="section-hero">
         <div style={{ position: "relative", zIndex: 3, color: "#ffffff", fontSize: 18, fontWeight: 800, letterSpacing: 4, textTransform: "uppercase", textAlign: "center", textShadow: "0 0 10px rgba(255,255,255,.6), 0 0 30px rgba(108,240,255,.5), 0 0 60px rgba(160,107,255,.3)" }} data-testid="text-tagline">AI-Only Music Platform</div>
       </section>
 
