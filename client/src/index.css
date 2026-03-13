@@ -1525,11 +1525,11 @@
 
 @media (max-width: 768px) {
   .quick-nav {
-    padding: 10px 14px 0;
+    padding: 4px 14px 0;
     gap: 6px;
-    justify-content: flex-start;
-    overflow-x: auto;
-    flex-wrap: nowrap;
+    justify-content: center;
+    overflow-x: visible;
+    flex-wrap: wrap;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -1537,17 +1537,16 @@
   .quick-nav::-webkit-scrollbar {
     display: none;
   }
+  .quick-nav-row1 {
+    padding-bottom: 0;
+  }
+  .quick-nav-row2 {
+    padding-top: 2px;
+  }
   .quick-nav-tab {
     padding: 8px 14px;
     font-size: 12px;
     min-height: 36px;
-  }
-  .quick-nav-mobile-library {
-    display: inline-flex !important;
-    gap: 6px;
-    background: rgba(160,107,255,.12);
-    border-color: rgba(160,107,255,.25);
-    color: #c9a0ff;
   }
   .quick-nav-desktop-only {
     display: none;

@@ -520,7 +520,7 @@ export default function Home() {
         </a>
       </div>
 
-      <nav className="quick-nav" data-testid="nav-quick-links">
+      <nav className="quick-nav quick-nav-row1" data-testid="nav-quick-links">
         <a href="/top-25" className="quick-nav-tab" data-testid="link-quick-top25">
           Top 25
         </a>
@@ -533,12 +533,14 @@ export default function Home() {
         <a href="/new-creators" className="quick-nav-tab" data-testid="link-quick-new-creators">
           New Creators
         </a>
+      </nav>
+      <nav className="quick-nav quick-nav-row2" data-testid="nav-quick-links-2">
         <a href="/playlist" className="quick-nav-tab" data-testid="link-quick-playlist">
           <ListMusic style={{ width: 14, height: 14 }} />
           My Playlist
         </a>
         {user && user.creatorId && (
-          <a href={`/creator/${user.creatorId}`} className="quick-nav-tab quick-nav-mobile-library" data-testid="link-mobile-my-library">
+          <a href={`/creator/${user.creatorId}`} className="quick-nav-tab" data-testid="link-mobile-my-library">
             <Library style={{ width: 14, height: 14 }} />
             My Library
           </a>
