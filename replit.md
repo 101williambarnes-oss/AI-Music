@@ -1,9 +1,11 @@
 # Hit Wave Media - The Home of AI Music
 
 ## Overview
-Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a 3-column layout with genre browsing, trending tracks, top charts, and creator profiles.
+Hit Wave Media is an AI music discovery platform with a cyberpunk/neon dark theme. It features a visual landing page with Top 25 Trending Songs, New Songs cards, New Creators, and Trending sections — all playable directly from the home page.
 
 ## Recent Changes
+- 2026-03-13: Home page redesign - removed genre sidebar from landing page; added visual sections: Top 25 Trending Songs (2-col grid with rank/cover/plays/likes), New Songs (cover art cards with play overlay), New Creators (avatar list), Trending Songs; all tracks playable from home page; section headers link to full pages; /api/home-data endpoint aggregates all home data; user-provided background image; mobile responsive (stacks to 1-col); Upload CTA section at bottom
+- 2026-03-13: Studio click tracking fix - switched from fetch to navigator.sendBeacon for reliable click counting during page navigation; backend accepts visitorId from JSON body
 - 2026-03-08: Real visitor tracking - site_visits table logs unique visitors via localStorage-based visitor ID; POST /api/visit endpoint (dedupes within 1hr); admin dashboard now shows Unique Visitors, Visitors Today, and Total Visits; silent fire-and-forget tracking on every page load
 - 2026-03-07: Build fix - resend package loaded via dynamic require to fix Render esbuild bundling; build.ts marks resend as external
 - 2026-03-07: Admin features - admin password reset endpoint (/api/admin/reset-user-password); gold "Admin" link in topbar visible only to userId 2; welcome email on signup

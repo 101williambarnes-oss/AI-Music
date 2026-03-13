@@ -630,6 +630,31 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/home-data", async (_req, res) => {
+    try {
+      const [top25, trendingTracks, newTracks, allCreators] = await Promise.all([
+        storage.getTop25ByLikes(),
+        storage.getTrendingTracks(),
+        storage.getNewTracks(),
+        storage.getCreators(),
+      ]);
+      const trackIds = [...new Set([...top25, ...trendingTracks, ...newTracks].map(t => t.id))];
+      const likeCounts: Record<number, number> = {};
+      await Promise.all(trackIds.map(async (id) => {
+        likeCounts[id] = await storage.getLikeCount(id);
+      }));
+      res.json({
+        top25: top25.slice(0, 8).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 })),
+        trending: trendingTracks.slice(0, 8).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 })),
+        newSongs: newTracks.slice(0, 6).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 })),
+        newCreators: [...allCreators].sort((a, b) => b.id - a.id).slice(0, 6),
+      });
+    } catch (error) {
+      console.error("Failed to fetch home data:", error);
+      res.status(500).json({ message: "Failed to fetch home data" });
+    }
+  });
+
   app.get("/api/tracks/:category", async (req, res) => {
     try {
       const { category } = req.params;

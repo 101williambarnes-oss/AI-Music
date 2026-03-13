@@ -673,6 +673,90 @@
   display: none !important;
 }
 
+.home-sections {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 6px 16px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.home-panel {
+  background: rgba(15,20,40,.65);
+  border: 1px solid rgba(160,107,255,.15);
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+
+.home-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 10px;
+}
+
+.home-section-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color .2s;
+}
+.home-section-title:hover {
+  color: #6cf0ff;
+}
+
+.home-see-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(170,182,232,.5);
+  text-decoration: none;
+  transition: color .2s;
+}
+.home-see-all:hover {
+  color: #6cf0ff;
+}
+
+.home-top25-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0 6px 10px;
+}
+
+.home-track-row:hover {
+  background: rgba(160,107,255,.08) !important;
+}
+
+.home-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.home-new-songs-scroll {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 10px 14px;
+}
+
+.new-song-card:hover {
+  transform: scale(1.02);
+  border-color: rgba(160,107,255,.35) !important;
+}
+
+.upload-cta-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 30px rgba(255,79,216,.4);
+}
+
 .five-columns {
   display: grid;
   grid-template-columns: 1fr;
@@ -1457,6 +1541,25 @@
   }
   .quick-nav-desktop-only {
     display: none;
+  }
+  .home-sections {
+    padding: 6px 10px 30px;
+    gap: 16px;
+  }
+  .home-top25-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-two-col {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .home-section-title {
+    font-size: 16px;
+  }
+  .home-new-songs-scroll {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 8px 12px;
   }
   .site-topbar {
     flex-wrap: wrap;

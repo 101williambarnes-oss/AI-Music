@@ -1,20 +1,252 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
-import { Search, Music, User, X, Library, ListMusic, ShieldCheck } from "lucide-react";
-import heroBg from "@assets/ChatGPT_Image_Feb_18,_2026,_05_26_22_PM_1771460797070.png";
+import { Search, Music, User, X, Library, ListMusic, ShieldCheck, Heart, Play, ChevronRight } from "lucide-react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
-import pageBg from "@assets/image_1772784148185.png";
-import { TrackRow } from "@/components/track-row";
+import landingBg from "@assets/ChatGPT_Image_Mar_12,_2026,_08_51_51_PM_1773371441054.png";
 import { useLocation } from "wouter";
-import { ALL_GENRES } from "@/lib/genres";
+import { useAudioPlayer } from "@/lib/audioPlayer";
+import { VideoModal } from "@/components/video-modal";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
+type TrackWithLikes = Track & { likeCount?: number };
 
+type HomeData = {
+  top25: TrackWithLikes[];
+  trending: TrackWithLikes[];
+  newSongs: TrackWithLikes[];
+  newCreators: Creator[];
+};
+
+function MiniTrackCard({ track, index }: { track: TrackWithLikes; index?: number }) {
+  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
+  const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
+  const hasAudio = !!track.fileUrl;
+  const isMedia = !!track.fileUrl;
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const wantModalRef = useRef(false);
+  const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
+    queryKey: ["/api/creators", track.creatorId],
+    enabled: !!track.creatorId,
+  });
+
+  useEffect(() => {
+    if (wantModalRef.current && isPlaying && currentTrackId === track.id) {
+      wantModalRef.current = false;
+      setShowVideoModal(true);
+    }
+  }, [isPlaying, currentTrackId, track.id]);
+
+  const handleClick = useCallback(() => {
+    if (!hasAudio) return;
+    if (isMedia) {
+      wantModalRef.current = true;
+      if (currentTrackId !== track.id || !isPlaying) {
+        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+      }
+      setShowVideoModal(true);
+    } else {
+      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+    }
+  }, [hasAudio, isMedia, track, play, toggle, currentTrackId, isPlaying]);
+
+  const thumbSrc = track.coverUrl || creatorData?.creator?.avatarUrl || null;
+
+  return (
+    <>
+      <div
+        onClick={handleClick}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "8px 10px",
+          borderRadius: 10,
+          cursor: hasAudio ? "pointer" : "default",
+          background: isCurrentlyPlaying ? "rgba(160,107,255,.12)" : "transparent",
+          transition: "background .2s",
+        }}
+        className="home-track-row"
+        data-testid={`home-track-${track.id}`}
+      >
+        {index !== undefined && (
+          <span style={{
+            fontSize: 18, fontWeight: 800, color: index < 3 ? "#ff4fd8" : "rgba(255,255,255,.5)",
+            width: 24, textAlign: "center", flexShrink: 0,
+          }} data-testid={`text-rank-${index + 1}`}>
+            {index + 1}
+          </span>
+        )}
+        <div style={{
+          width: 48, height: 48, borderRadius: 8, overflow: "hidden", flexShrink: 0,
+          background: "rgba(160,107,255,.15)", position: "relative",
+        }}>
+          {thumbSrc ? (
+            <img src={thumbSrc} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Music size={20} style={{ color: "rgba(160,107,255,.5)" }} />
+            </div>
+          )}
+          {isCurrentlyPlaying && (
+            <div style={{
+              position: "absolute", inset: 0, background: "rgba(0,0,0,.4)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <span style={{ color: "#ff4fd8", fontSize: 14 }}>{"\u275A\u275A"}</span>
+            </div>
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden",
+            textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }} data-testid={`text-title-${track.id}`}>
+            {track.title}
+            {track.explicit && (
+              <span style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: 14, height: 14, borderRadius: 3, background: "rgba(255,79,216,.15)",
+                border: "1px solid rgba(255,79,216,.3)", color: "#ff4fd8", fontSize: 8,
+                fontWeight: 800, marginLeft: 5, verticalAlign: "middle",
+              }}>E</span>
+            )}
+          </div>
+          <div style={{
+            fontSize: 11, color: "rgba(170,182,232,.6)", overflow: "hidden",
+            textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
+            {track.artist}
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.7)" }}>
+            {(track.plays || 0).toLocaleString()}
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#ff4fd8" }}>
+            <Heart size={10} fill="#ff4fd8" />
+            {(track.likeCount || 0).toLocaleString()}
+          </span>
+        </div>
+      </div>
+      {showVideoModal && isMedia && (
+        <VideoModal track={track} onClose={() => { wantModalRef.current = false; setShowVideoModal(false); }} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
+      )}
+    </>
+  );
+}
+
+function NewSongCard({ track }: { track: TrackWithLikes }) {
+  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
+  const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
+  const hasAudio = !!track.fileUrl;
+  const isMedia = !!track.fileUrl;
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const wantModalRef = useRef(false);
+  const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
+    queryKey: ["/api/creators", track.creatorId],
+    enabled: !!track.creatorId,
+  });
+
+  useEffect(() => {
+    if (wantModalRef.current && isPlaying && currentTrackId === track.id) {
+      wantModalRef.current = false;
+      setShowVideoModal(true);
+    }
+  }, [isPlaying, currentTrackId, track.id]);
+
+  const handleClick = useCallback(() => {
+    if (!hasAudio) return;
+    if (isMedia) {
+      wantModalRef.current = true;
+      if (currentTrackId !== track.id || !isPlaying) {
+        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+      }
+      setShowVideoModal(true);
+    } else {
+      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+    }
+  }, [hasAudio, isMedia, track, play, toggle, currentTrackId, isPlaying]);
+
+  const thumbSrc = track.coverUrl || creatorData?.creator?.avatarUrl || null;
+
+  return (
+    <>
+      <div
+        onClick={handleClick}
+        style={{
+          cursor: hasAudio ? "pointer" : "default",
+          borderRadius: 14,
+          overflow: "hidden",
+          background: "rgba(15,20,40,.7)",
+          border: "1px solid rgba(160,107,255,.15)",
+          transition: "transform .2s, border-color .2s",
+          minWidth: 150,
+          flex: "0 0 auto",
+        }}
+        className="new-song-card"
+        data-testid={`new-song-card-${track.id}`}
+      >
+        <div style={{
+          width: "100%", aspectRatio: "1", position: "relative", overflow: "hidden",
+          background: "linear-gradient(135deg, rgba(160,107,255,.2), rgba(255,79,216,.1))",
+        }}>
+          {thumbSrc ? (
+            <img src={thumbSrc} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Music size={40} style={{ color: "rgba(160,107,255,.4)" }} />
+            </div>
+          )}
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 50%)",
+          }} />
+          <div style={{
+            position: "absolute", bottom: 8, left: 8, right: 8,
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: isCurrentlyPlaying ? "rgba(255,79,216,.9)" : "rgba(160,107,255,.9)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 2px 10px rgba(0,0,0,.4)",
+            }}>
+              {isCurrentlyPlaying ? (
+                <span style={{ color: "#fff", fontSize: 12 }}>{"\u275A\u275A"}</span>
+              ) : (
+                <Play size={16} fill="#fff" color="#fff" style={{ marginLeft: 2 }} />
+              )}
+            </div>
+            <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#ff4fd8", fontWeight: 700 }}>
+              <Heart size={10} fill="#ff4fd8" /> {(track.likeCount || 0).toLocaleString()}
+            </span>
+          </div>
+        </div>
+        <div style={{ padding: "10px 10px 12px" }}>
+          <div style={{
+            fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden",
+            textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
+            {track.title}
+          </div>
+          <div style={{ fontSize: 11, color: "rgba(170,182,232,.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {track.artist}
+          </div>
+          <div style={{ fontSize: 11, color: "rgba(170,182,232,.4)", marginTop: 2 }}>
+            {(track.plays || 0).toLocaleString()} plays
+          </div>
+        </div>
+      </div>
+      {showVideoModal && isMedia && (
+        <VideoModal track={track} onClose={() => { wantModalRef.current = false; setShowVideoModal(false); }} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
+      )}
+    </>
+  );
+}
 
 export default function Home() {
-  const [activeGenre, setActiveGenre] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -40,7 +272,11 @@ export default function Home() {
     }
   }, []);
 
-  const { data: allTracks = [], isLoading: tracksLoading } = useQuery<Track[]>({
+  const { data: homeData, isLoading } = useQuery<HomeData>({
+    queryKey: ["/api/home-data"],
+  });
+
+  const { data: allTracks = [] } = useQuery<Track[]>({
     queryKey: ["/api/tracks", "all"],
   });
 
@@ -48,28 +284,10 @@ export default function Home() {
     queryKey: ["/api/creators"],
   });
 
-  const genreTracks = activeGenre
-    ? allTracks.filter((t) => t.genre.toLowerCase() === activeGenre.toLowerCase())
-    : [];
-
-  function cleanFilter(tracks: Track[]) {
+  function cleanFilter(tracks: TrackWithLikes[]) {
     if (!cleanMode) return tracks;
     return tracks.filter((t) => !t.explicit);
   }
-
-  function searchFilter(tracks: Track[]) {
-    const filtered = cleanFilter(tracks);
-    if (!searchQuery) return filtered;
-    const q = searchQuery.toLowerCase();
-    return filtered.filter(
-      (t) =>
-        t.title.toLowerCase().includes(q) ||
-        t.artist.toLowerCase().includes(q) ||
-        t.genre.toLowerCase().includes(q)
-    );
-  }
-
-  const filteredGenre = searchFilter(genreTracks);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -119,9 +337,14 @@ export default function Home() {
     setShowDropdown(false);
   }
 
+  const top25 = cleanFilter(homeData?.top25 || []);
+  const trending = cleanFilter(homeData?.trending || []);
+  const newSongs = cleanFilter(homeData?.newSongs || []);
+  const newCreators = homeData?.newCreators || [];
+
   return (
-    <div className="hwm-app" style={{ backgroundImage: `url(${pageBg})`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
-      <div className="bg-lines" style={{ background: "rgba(7,10,20,.45)" }} />
+    <div className="hwm-app" style={{ backgroundImage: `url(${landingBg})`, backgroundSize: "cover", backgroundPosition: "top center", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
+      <div className="bg-lines" style={{ background: "rgba(7,10,20,.55)" }} />
 
       <header className="site-topbar" data-testid="header-main">
         <div className="topbar-left" style={{ display: "flex" }}>
@@ -324,63 +547,152 @@ export default function Home() {
         )}
       </nav>
 
-      <div className="five-columns" data-testid="section-content">
-        <section className="panel column-panel genre-sidebar" data-testid="section-genres">
-          <div className="section-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <h3 data-testid="panel-header-genres">{activeGenre ? activeGenre : "Genres"}</h3>
-            {activeGenre && (
-              <button
-                onClick={() => setActiveGenre(null)}
-                className="genre-close-btn"
-                title="Back to Genres"
-                data-testid="button-close-genre"
-              >
-                &#10005;
-              </button>
-            )}
+      <div className="home-sections" data-testid="section-content">
+        <section className="home-panel" data-testid="section-top25">
+          <div className="home-section-header">
+            <a href="/top-25" className="home-section-title" data-testid="link-top25-header">
+              Top 25 Trending Songs
+            </a>
+            <a href="/top-25" className="home-see-all" data-testid="link-top25-see-all">
+              See All <ChevronRight size={14} />
+            </a>
           </div>
-          {activeGenre ? (
-            <div className="list column-list" data-testid="list-genre-results">
-              {tracksLoading ? (
-                [1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="row"
-                    style={{ height: 74, opacity: 0.3, animation: "pulse 1.5s ease-in-out infinite" }}
-                  />
-                ))
-              ) : filteredGenre.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 0", color: "rgba(170,182,232,.6)" }} data-testid="empty-genre-results">
-                  No tracks found in {activeGenre}
-                </div>
-              ) : (
-                filteredGenre.map((track) => (
-                  <TrackRow key={track.id} track={track} hideComments showDownload />
-                ))
-              )}
-            </div>
+          {isLoading ? (
+            <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
           ) : (
-            <div className="genre-list column-list" data-testid="list-genres">
-              <button
-                className={`genre-item${activeGenre === null ? " active" : ""}`}
-                onClick={() => setActiveGenre(null)}
-                data-testid="button-genre-all"
-              >
-                All Genres
-              </button>
-              {ALL_GENRES.map((genre) => (
-                <button
-                  key={genre}
-                  className={`genre-item${activeGenre === genre ? " active" : ""}`}
-                  onClick={() => setActiveGenre(activeGenre === genre ? null : genre)}
-                  data-testid={`button-genre-${genre.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}
-                >
-                  {genre}
-                </button>
+            <div className="home-top25-grid">
+              {top25.map((track, i) => (
+                <MiniTrackCard key={track.id} track={track} index={i} />
               ))}
             </div>
           )}
         </section>
+
+        <div className="home-two-col">
+          <section className="home-panel" data-testid="section-new-songs">
+            <div className="home-section-header">
+              <a href="/new-songs" className="home-section-title" data-testid="link-new-songs-header">
+                New Songs
+              </a>
+              <a href="/new-songs" className="home-see-all" data-testid="link-new-songs-see-all">
+                See All <ChevronRight size={14} />
+              </a>
+            </div>
+            {isLoading ? (
+              <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
+            ) : (
+              <div className="home-new-songs-scroll">
+                {newSongs.map((track) => (
+                  <NewSongCard key={track.id} track={track} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="home-panel" data-testid="section-new-creators">
+            <div className="home-section-header">
+              <a href="/new-creators" className="home-section-title" data-testid="link-new-creators-header">
+                New Creators
+              </a>
+              <a href="/new-creators" className="home-see-all" data-testid="link-new-creators-see-all">
+                See All <ChevronRight size={14} />
+              </a>
+            </div>
+            {isLoading ? (
+              <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "4px 6px 10px" }}>
+                {newCreators.map((creator) => (
+                  <a
+                    key={creator.id}
+                    href={`/creator/${creator.id}`}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 12, padding: "10px 10px",
+                      borderRadius: 10, textDecoration: "none", transition: "background .2s",
+                    }}
+                    className="home-track-row"
+                    data-testid={`home-creator-${creator.id}`}
+                  >
+                    <div style={{
+                      width: 44, height: 44, borderRadius: "50%", overflow: "hidden",
+                      background: `linear-gradient(135deg, rgba(160,107,255,.3), rgba(255,79,216,.2))`,
+                      flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      {creator.avatarUrl ? (
+                        <img src={creator.avatarUrl} alt={creator.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <User size={20} style={{ color: "rgba(160,107,255,.6)" }} />
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: 14, fontWeight: 700, color: "#fff",
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      }}>
+                        {creator.name}
+                      </div>
+                      <div style={{ fontSize: 11, color: "rgba(170,182,232,.5)" }}>
+                        {creator.trackCount} track{creator.trackCount !== 1 ? "s" : ""}
+                      </div>
+                    </div>
+                    <ChevronRight size={16} style={{ color: "rgba(170,182,232,.3)", flexShrink: 0 }} />
+                  </a>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        <section className="home-panel" data-testid="section-trending">
+          <div className="home-section-header">
+            <a href="/trending" className="home-section-title" data-testid="link-trending-header">
+              Trending Songs
+            </a>
+            <a href="/trending" className="home-see-all" data-testid="link-trending-see-all">
+              See All <ChevronRight size={14} />
+            </a>
+          </div>
+          {isLoading ? (
+            <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
+          ) : (
+            <div className="home-top25-grid">
+              {trending.map((track, i) => (
+                <MiniTrackCard key={track.id} track={track} index={i} />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <div style={{
+          textAlign: "center", padding: "40px 20px",
+          background: "rgba(15,20,40,.5)", borderRadius: 20,
+          border: "1px solid rgba(160,107,255,.12)",
+        }}>
+          <h2 style={{
+            fontSize: 26, fontWeight: 800, color: "#fff", marginBottom: 8,
+            textShadow: "0 0 20px rgba(160,107,255,.3)",
+          }}>
+            Upload Your AI Music
+          </h2>
+          <p style={{ fontSize: 14, color: "rgba(170,182,232,.6)", marginBottom: 20 }}>
+            Share your AI-generated tracks and grow your audience.
+          </p>
+          <a
+            href={user ? "/upload" : "/sign-up"}
+            style={{
+              display: "inline-flex", alignItems: "center", padding: "14px 40px",
+              fontSize: 16, fontWeight: 800, color: "#fff", textDecoration: "none",
+              borderRadius: 999,
+              background: "linear-gradient(135deg, #ff4fd8, #a06bff)",
+              boxShadow: "0 4px 20px rgba(255,79,216,.3)",
+              transition: "transform .2s, box-shadow .2s",
+            }}
+            className="upload-cta-btn"
+            data-testid="link-upload-cta"
+          >
+            Upload Now
+          </a>
+        </div>
       </div>
 
       <footer style={{ textAlign: "center", padding: "32px 16px 24px", borderTop: "1px solid rgba(108,240,255,.06)" }}>
