@@ -661,36 +661,6 @@ export default function Home() {
           )}
         </section>
 
-        <div style={{
-          textAlign: "center", padding: "40px 20px",
-          background: "rgba(15,20,40,.5)", borderRadius: 20,
-          border: "1px solid rgba(160,107,255,.12)",
-        }}>
-          <h2 style={{
-            fontSize: 26, fontWeight: 800, color: "#fff", marginBottom: 8,
-            textShadow: "0 0 20px rgba(160,107,255,.3)",
-          }}>
-            Upload Your AI Music
-          </h2>
-          <p style={{ fontSize: 14, color: "rgba(170,182,232,.6)", marginBottom: 20 }}>
-            Share your AI-generated tracks and grow your audience.
-          </p>
-          <a
-            href={user ? "/upload" : "/sign-up"}
-            style={{
-              display: "inline-flex", alignItems: "center", padding: "14px 40px",
-              fontSize: 16, fontWeight: 800, color: "#fff", textDecoration: "none",
-              borderRadius: 999,
-              background: "linear-gradient(135deg, #ff4fd8, #a06bff)",
-              boxShadow: "0 4px 20px rgba(255,79,216,.3)",
-              transition: "transform .2s, box-shadow .2s",
-            }}
-            className="upload-cta-btn"
-            data-testid="link-upload-cta"
-          >
-            Upload Now
-          </a>
-        </div>
       </div>
 
       <footer style={{ textAlign: "center", padding: "32px 16px 24px", borderTop: "1px solid rgba(108,240,255,.06)" }}>
