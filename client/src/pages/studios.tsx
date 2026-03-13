@@ -5,6 +5,9 @@ const SONG_BUILDER_TEXT = `HitWave Media Studios Build Your Song Before The Musi
 
 export default function Studios() {
   const [copied, setCopied] = useState(false);
+  const params = new URLSearchParams(window.location.search);
+  const fromCreator = params.get("from") === "creator";
+  const creatorId = params.get("id");
 
   function handleCopy() {
     navigator.clipboard.writeText(SONG_BUILDER_TEXT).then(() => {
@@ -48,27 +51,52 @@ export default function Studios() {
           <a href="/" style={{ textDecoration: "none" }} data-testid="link-studios-logo">
             <img src={siteLogo} alt="Hit Wave Media" className="studios-logo" style={{ height: 60, width: "auto", objectFit: "contain" }} />
           </a>
-          <a
-            href="/"
-            className="studios-home-btn"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "10px 22px",
-              borderRadius: 999,
-              background: "rgba(108,240,255,.12)",
-              border: "1px solid rgba(108,240,255,.35)",
-              color: "#6cf0ff",
-              fontSize: 14,
-              fontWeight: 700,
-              textDecoration: "none",
-              transition: "background .2s, border-color .2s",
-            }}
-            data-testid="button-studios-home"
-          >
-            Home
-          </a>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {fromCreator && creatorId && (
+              <a
+                href={`/creator/${creatorId}`}
+                className="studios-home-btn"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "10px 22px",
+                  borderRadius: 999,
+                  background: "linear-gradient(135deg, rgba(160,107,255,.15), rgba(255,79,216,.1))",
+                  border: "1px solid rgba(255,79,216,.35)",
+                  color: "#ff4fd8",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  transition: "background .2s, border-color .2s",
+                }}
+                data-testid="button-back-to-library"
+              >
+                Back to Library
+              </a>
+            )}
+            <a
+              href="/"
+              className="studios-home-btn"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "10px 22px",
+                borderRadius: 999,
+                background: "rgba(108,240,255,.12)",
+                border: "1px solid rgba(108,240,255,.35)",
+                color: "#6cf0ff",
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: "none",
+                transition: "background .2s, border-color .2s",
+              }}
+              data-testid="button-studios-home"
+            >
+              Home
+            </a>
+          </div>
         </header>
 
         <main className="studios-main" style={{ maxWidth: 820, margin: "0 auto", padding: "48px 24px 60px", textAlign: "center" }}>

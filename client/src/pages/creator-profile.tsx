@@ -318,6 +318,28 @@ export default function CreatorProfile() {
                     <BarChart3 style={{ width: 18, height: 18 }} />
                     Creator Dashboard
                   </a>
+                  <a
+                    href={`/studios?from=creator&id=${creatorId}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 10,
+                      width: "100%",
+                      padding: "12px 0",
+                      background: "linear-gradient(135deg, rgba(160,107,255,.15), rgba(255,79,216,.1))",
+                      border: "1px solid rgba(255,79,216,.3)",
+                      borderRadius: 8,
+                      color: "#ff4fd8",
+                      fontSize: 15,
+                      fontWeight: 700,
+                      textDecoration: "none",
+                      letterSpacing: 0.5,
+                    }}
+                    data-testid="button-creator-studios"
+                  >
+                    Hitwave Studios for Music Creators
+                  </a>
                 </div>
               )}
 
