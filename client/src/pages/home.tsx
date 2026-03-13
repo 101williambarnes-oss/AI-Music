@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
 import { Search, Music, User, X, Library, ListMusic, ShieldCheck, Heart, Play, ChevronRight } from "lucide-react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
-import landingBg from "@assets/ChatGPT_Image_Mar_12,_2026,_08_51_51_PM_1773371441054.png";
 import { useLocation } from "wouter";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { VideoModal } from "@/components/video-modal";
@@ -343,8 +342,8 @@ export default function Home() {
   const newCreators = homeData?.newCreators || [];
 
   return (
-    <div className="hwm-app" style={{ backgroundImage: `url(${landingBg})`, backgroundSize: "cover", backgroundPosition: "top center", backgroundAttachment: "fixed", backgroundRepeat: "no-repeat" }}>
-      <div className="bg-lines" style={{ background: "rgba(7,10,20,.55)" }} />
+    <div className="hwm-app landing-bg">
+      <div className="bg-lines" />
 
       <header className="site-topbar" data-testid="header-main">
         <div className="topbar-left" style={{ display: "flex" }}>
