@@ -189,6 +189,7 @@ app.use((req, res, next) => {
         { url: "/top-25", priority: "0.8", changefreq: "daily" },
         { url: "/new-creators", priority: "0.7", changefreq: "weekly" },
         { url: "/downloads", priority: "0.6", changefreq: "weekly" },
+        { url: "/about", priority: "0.7", changefreq: "monthly" },
         { url: "/terms", priority: "0.2", changefreq: "monthly" },
       ];
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
