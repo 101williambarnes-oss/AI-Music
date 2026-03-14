@@ -296,6 +296,59 @@
   mix-blend-mode: screen;
 }
 
+.soundwave-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 260px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.15;
+  overflow: hidden;
+}
+.soundwave-bg svg {
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+}
+.soundwave-bg .wave {
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+.soundwave-bg .wave-1 {
+  stroke: #6cf0ff;
+  animation: waveSlide1 8s ease-in-out infinite;
+}
+.soundwave-bg .wave-2 {
+  stroke: #a06bff;
+  animation: waveSlide2 10s ease-in-out infinite;
+}
+.soundwave-bg .wave-3 {
+  stroke: #ff4fd8;
+  animation: waveSlide3 12s ease-in-out infinite;
+}
+@keyframes waveSlide1 {
+  0%, 100% { transform: translateX(0) scaleY(1); }
+  25% { transform: translateX(3%) scaleY(1.15); }
+  50% { transform: translateX(5%) scaleY(0.85); }
+  75% { transform: translateX(2%) scaleY(1.1); }
+}
+@keyframes waveSlide2 {
+  0%, 100% { transform: translateX(0) scaleY(1); }
+  25% { transform: translateX(-2%) scaleY(0.9); }
+  50% { transform: translateX(-4%) scaleY(1.2); }
+  75% { transform: translateX(-1%) scaleY(0.95); }
+}
+@keyframes waveSlide3 {
+  0%, 100% { transform: translateX(0) scaleY(1); }
+  33% { transform: translateX(4%) scaleY(1.1); }
+  66% { transform: translateX(-3%) scaleY(0.9); }
+}
+
 .site-topbar {
   position: sticky;
   top: 0;

@@ -345,6 +345,14 @@ export default function Home() {
     <div className="hwm-app landing-bg">
       <div className="bg-lines" />
 
+      <div className="soundwave-bg" aria-hidden="true">
+        <svg viewBox="0 0 1440 200" preserveAspectRatio="none">
+          <path className="wave wave-1" d="M0,100 C120,60 240,140 360,100 C480,60 600,140 720,100 C840,60 960,140 1080,100 C1200,60 1320,140 1440,100" />
+          <path className="wave wave-2" d="M0,100 C120,140 240,60 360,100 C480,140 600,60 720,100 C840,140 960,60 1080,100 C1200,140 1320,60 1440,100" />
+          <path className="wave wave-3" d="M0,100 C160,50 320,150 480,100 C640,50 800,150 960,100 C1120,50 1280,150 1440,100" />
+        </svg>
+      </div>
+
       <header className="site-topbar" data-testid="header-main">
         <div className="topbar-left" style={{ display: "flex" }}>
           <a href="/" data-testid="link-logo" style={{ textDecoration: "none" }}>
