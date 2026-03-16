@@ -354,6 +354,58 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/admin/send-welcome-emails", async (req, res) => {
+    try {
+      const { adminKey } = req.body;
+      if (adminKey !== process.env.SESSION_SECRET) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      await resendReady;
+      if (!ResendClient) {
+        return res.status(500).json({ message: "Email service not available" });
+      }
+
+      const allUsers = await db.select().from(users);
+      const resend = new ResendClient(process.env.RESEND_API_KEY);
+      const results: { email: string; status: string }[] = [];
+
+      for (const user of allUsers) {
+        try {
+          const emailResult = await resend.emails.send({
+            from: "Hit Wave Media <onboarding@resend.dev>",
+            to: user.email,
+            subject: "Welcome to Hit Wave Media",
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; background: #070a14; color: #eaf0ff; padding: 32px; border-radius: 12px;">
+                <h2 style="color: #6cf0ff; margin-bottom: 16px;">Welcome to Hit Wave Media</h2>
+                <p>Hey ${user.name},</p>
+                <p>Thank you for joining Hit Wave Media — the home of AI music.</p>
+                <p>You're now part of a growing community of AI music creators. Upload your best tracks, climb the weekly Top 25, and connect with other creators.</p>
+                <a href="https://hitwavemedia.com/upload" style="display: inline-block; margin: 20px 0; padding: 12px 28px; background: linear-gradient(90deg, #2b7cff, #38e0ff); color: #fff; font-weight: 700; text-decoration: none; border-radius: 8px;">Upload Your First Track</a>
+                <p style="font-size: 13px; color: rgba(170,182,232,.6); margin-top: 20px;">&mdash; Hit Wave Media</p>
+              </div>
+            `,
+          });
+
+          if (emailResult.error) {
+            results.push({ email: user.email, status: `failed: ${emailResult.error.message}` });
+          } else {
+            results.push({ email: user.email, status: "sent" });
+          }
+        } catch (emailErr: any) {
+          results.push({ email: user.email, status: `error: ${emailErr.message}` });
+        }
+      }
+
+      console.log("Welcome email batch results:", JSON.stringify(results));
+      res.json({ message: `Sent welcome emails to ${results.filter(r => r.status === "sent").length}/${allUsers.length} users`, results });
+    } catch (error) {
+      console.error("Admin welcome email error:", error);
+      res.status(500).json({ message: "Failed to send welcome emails" });
+    }
+  });
+
   app.use("/uploads", (_req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Content-Security-Policy", "default-src 'none'");
