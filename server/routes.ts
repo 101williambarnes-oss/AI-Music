@@ -158,7 +158,7 @@ export async function registerRoutes(
         if (!ResendClient) throw new Error("Resend not available");
         const resend = new ResendClient(process.env.RESEND_API_KEY);
         const welcomeResult = await resend.emails.send({
-          from: "Hit Wave Media <onboarding@resend.dev>",
+          from: "Hit Wave Media <noreply@hitwavemedia.com>",
           to: email,
           subject: "Welcome to Hit Wave Media",
           html: `
@@ -277,7 +277,7 @@ export async function registerRoutes(
       }
       const resend = new ResendClient(process.env.RESEND_API_KEY);
       const emailResult = await resend.emails.send({
-        from: "Hit Wave Media <onboarding@resend.dev>",
+        from: "Hit Wave Media <noreply@hitwavemedia.com>",
         to: email,
         subject: "Reset Your Password - Hit Wave Media",
         html: `
@@ -373,7 +373,7 @@ export async function registerRoutes(
       for (const user of allUsers) {
         try {
           const emailResult = await resend.emails.send({
-            from: "Hit Wave Media <onboarding@resend.dev>",
+            from: "Hit Wave Media <noreply@hitwavemedia.com>",
             to: user.email,
             subject: "Welcome to Hit Wave Media",
             html: `
