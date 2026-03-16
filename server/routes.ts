@@ -11,8 +11,15 @@ import fs from "fs";
 import crypto from "crypto";
 import { v2 as cloudinary } from "cloudinary";
 import * as mm from "music-metadata";
-let Resend: any;
-try { Resend = require("resend").Resend; } catch { Resend = null; }
+let ResendClient: any = null;
+let resendReady = (async () => {
+  try {
+    const mod = await import("resend");
+    ResendClient = mod.Resend;
+  } catch (e) {
+    console.error("Resend module load failed:", e);
+  }
+})();
 
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
@@ -147,7 +154,9 @@ export async function registerRoutes(
       await storage.updateUserCreatorId(user.id, creator.id);
 
       try {
-        const resend = new Resend(process.env.RESEND_API_KEY);
+        await resendReady;
+        if (!ResendClient) throw new Error("Resend not available");
+        const resend = new ResendClient(process.env.RESEND_API_KEY);
         const welcomeResult = await resend.emails.send({
           from: "Hit Wave Media <onboarding@resend.dev>",
           to: email,
@@ -262,7 +271,11 @@ export async function registerRoutes(
 
       const resetUrl = `https://hitwavemedia.com/reset-password?token=${token}`;
 
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resendReady;
+      if (!ResendClient) {
+        return res.status(500).json({ message: "Email service is not available. Please try again later." });
+      }
+      const resend = new ResendClient(process.env.RESEND_API_KEY);
       const emailResult = await resend.emails.send({
         from: "Hit Wave Media <onboarding@resend.dev>",
         to: email,
