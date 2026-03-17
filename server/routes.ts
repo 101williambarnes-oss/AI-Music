@@ -13,8 +13,13 @@ import { v2 as cloudinary } from "cloudinary";
 import * as mm from "music-metadata";
 let ResendClient: any = null;
 try {
-  const resendPkg = "resend";
-  ResendClient = require(resendPkg).Resend;
+  if (typeof require !== "undefined") {
+    const resendPkg = "resend";
+    ResendClient = require(resendPkg).Resend;
+  } else {
+    const resendMod = await import("resend");
+    ResendClient = resendMod.Resend;
+  }
   console.log("Resend loaded successfully");
 } catch (e: any) {
   console.error("Resend module load failed:", e?.message || e);
