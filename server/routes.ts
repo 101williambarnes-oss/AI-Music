@@ -424,23 +424,13 @@ export async function registerRoutes(
         return res.status(404).json({ message: "Track not found or has no file" });
       }
 
+      if (track.fileUrl.includes("cloudinary")) {
+        const dlUrl = track.fileUrl.replace("/upload/", "/upload/fl_attachment/");
+        return res.redirect(dlUrl);
+      }
+
       if (track.fileUrl.startsWith("http")) {
-        const ext = path.extname(new URL(track.fileUrl).pathname) || ".mp3";
-        const safeName = track.title.replace(/[^a-zA-Z0-9_\- ]/g, "").trim() || "track";
-        const https = await import("https");
-        const http = await import("http");
-        const fetcher = track.fileUrl.startsWith("https") ? https : http;
-        res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(safeName)}${ext}"`);
-        res.setHeader("Content-Type", "application/octet-stream");
-        fetcher.get(track.fileUrl, (proxyRes: any) => {
-          if (proxyRes.headers["content-length"]) {
-            res.setHeader("Content-Length", proxyRes.headers["content-length"]);
-          }
-          proxyRes.pipe(res);
-        }).on("error", () => {
-          if (!res.headersSent) res.status(500).json({ message: "Download failed" });
-        });
-        return;
+        return res.redirect(track.fileUrl);
       }
 
       const filePath = path.join(process.cwd(), track.fileUrl.replace(/^\//, ""));
