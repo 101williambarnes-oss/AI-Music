@@ -222,13 +222,23 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  const link = document.createElement("a");
-                  link.href = `/api/tracks/${track.id}/download`;
-                  link.download = track.title || "track";
-                  link.style.display = "none";
-                  document.body.appendChild(link);
-                  link.click();
-                  setTimeout(() => document.body.removeChild(link), 1000);
+                  if (track.fileUrl && track.fileUrl.startsWith("http")) {
+                    const url = new URL(track.fileUrl);
+                    if (url.hostname.includes("cloudinary")) {
+                      const dlUrl = track.fileUrl.replace("/upload/", "/upload/fl_attachment/");
+                      window.open(dlUrl, "_blank");
+                    } else {
+                      window.open(track.fileUrl, "_blank");
+                    }
+                  } else {
+                    const link = document.createElement("a");
+                    link.href = `/api/tracks/${track.id}/download`;
+                    link.download = track.title || "track";
+                    link.style.display = "none";
+                    document.body.appendChild(link);
+                    link.click();
+                    setTimeout(() => document.body.removeChild(link), 1000);
+                  }
                 }}
                 style={{
                   display: "flex",
