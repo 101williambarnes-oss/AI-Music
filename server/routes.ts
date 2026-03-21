@@ -12,18 +12,20 @@ import crypto from "crypto";
 import { v2 as cloudinary } from "cloudinary";
 import * as mm from "music-metadata";
 let ResendClient: any = null;
-try {
-  if (typeof require !== "undefined") {
+function loadResend() {
+  try {
     const resendPkg = "resend";
-    ResendClient = require(resendPkg).Resend;
-  } else {
-    const resendMod = await import("resend");
-    ResendClient = resendMod.Resend;
+    if (typeof require !== "undefined") {
+      ResendClient = require(resendPkg).Resend;
+    } else {
+      import(resendPkg).then((mod) => { ResendClient = mod.Resend; }).catch(() => {});
+    }
+    if (ResendClient) console.log("Resend loaded successfully");
+  } catch (e: any) {
+    console.error("Resend module load failed:", e?.message || e);
   }
-  console.log("Resend loaded successfully");
-} catch (e: any) {
-  console.error("Resend module load failed:", e?.message || e);
 }
+loadResend();
 
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
