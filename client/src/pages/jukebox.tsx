@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { Play, Pause } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 
 type Track = {
@@ -36,7 +36,7 @@ function JukeboxTile({ track, isActive, isThisPlaying, onToggle }: {
         border: isActive
           ? "2px solid rgba(160,107,255,.5)"
           : "1px solid rgba(108,240,255,.08)",
-        borderRadius: 12,
+        borderRadius: 10,
         padding: 0,
         cursor: "pointer",
         textAlign: "center",
@@ -88,9 +88,7 @@ function JukeboxTile({ track, isActive, isThisPlaying, onToggle }: {
             inset: 0,
             background: isThisPlaying
               ? "rgba(0,0,0,.35)"
-              : showOverlay
-                ? "rgba(0,0,0,.25)"
-                : "rgba(0,0,0,0)",
+              : showOverlay ? "rgba(0,0,0,.25)" : "rgba(0,0,0,0)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -174,18 +172,17 @@ export default function Jukebox() {
   });
 
   const tracks = rawTracks ?? null;
-
   const { currentTrackId, isPlaying, toggle } = useAudioPlayer();
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(180deg, #02050e 0%, #070c1e 40%, #050a18 100%)",
+        background: "radial-gradient(ellipse at 50% 0%, #0c1228 0%, #040812 50%, #020408 100%)",
         display: "flex",
         justifyContent: "center",
         alignItems: "flex-start",
-        padding: "20px 10px",
+        padding: "16px 8px",
         fontFamily: "Inter, system-ui, -apple-system, sans-serif",
       }}
       data-testid="page-jukebox"
@@ -193,162 +190,217 @@ export default function Jukebox() {
       <div
         style={{
           width: "100%",
-          maxWidth: 700,
-          minHeight: "calc(100vh - 40px)",
+          maxWidth: 740,
           position: "relative",
-          display: "flex",
-          flexDirection: "column",
         }}
       >
         <div
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: 8,
-            height: "100%",
-            background: "linear-gradient(180deg, #ff4fd8, #a06bff, #6cf0ff, #a06bff, #ff4fd8, #6cf0ff, #a06bff, #ff4fd8)",
-            borderRadius: "20px 0 0 20px",
-            boxShadow: "0 0 15px rgba(255,79,216,.5), 0 0 30px rgba(160,107,255,.3), 0 0 60px rgba(108,240,255,.15)",
-            zIndex: 5,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            width: 8,
-            height: "100%",
-            background: "linear-gradient(180deg, #6cf0ff, #a06bff, #ff4fd8, #a06bff, #6cf0ff, #ff4fd8, #a06bff, #6cf0ff)",
-            borderRadius: "0 20px 20px 0",
-            boxShadow: "0 0 15px rgba(108,240,255,.5), 0 0 30px rgba(160,107,255,.3), 0 0 60px rgba(255,79,216,.15)",
-            zIndex: 5,
-          }}
-        />
-
-        <div
-          style={{
-            background: "linear-gradient(180deg, rgba(12,16,38,.95), rgba(8,12,30,.98))",
-            border: "2px solid rgba(108,240,255,.15)",
-            borderRadius: 20,
-            marginLeft: 8,
-            marginRight: 8,
-            display: "flex",
-            flexDirection: "column",
-            minHeight: "calc(100vh - 40px)",
+            position: "relative",
+            background: "linear-gradient(180deg, #1a1e3a 0%, #12152a 10%, #0c0f20 50%, #080b18 90%, #0a0d1e 100%)",
+            borderRadius: "32px 32px 24px 24px",
+            border: "3px solid transparent",
+            borderImage: "linear-gradient(180deg, rgba(108,240,255,.3), rgba(160,107,255,.2), rgba(255,79,216,.2), rgba(160,107,255,.15)) 1",
             overflow: "hidden",
-            boxShadow: "inset 0 0 60px rgba(108,240,255,.03), 0 0 40px rgba(0,0,0,.6)",
+            boxShadow: "0 0 60px rgba(108,240,255,.08), 0 0 120px rgba(160,107,255,.05), 0 4px 40px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.05)",
           }}
         >
           <div
             style={{
-              background: "linear-gradient(180deg, rgba(15,20,50,.9), rgba(10,14,35,.95))",
-              borderBottom: "1px solid rgba(108,240,255,.12)",
-              padding: "24px 20px 18px",
-              textAlign: "center",
-              position: "sticky",
+              position: "absolute",
               top: 0,
-              zIndex: 10,
-              backdropFilter: "blur(10px)",
+              left: 0,
+              width: 12,
+              height: "100%",
+              background: "linear-gradient(180deg, #ff4fd8, #a06bff, #6cf0ff, #ff4fd8, #a06bff, #6cf0ff, #ff4fd8, #a06bff, #6cf0ff)",
+              boxShadow: "4px 0 25px rgba(255,79,216,.3), 4px 0 50px rgba(160,107,255,.15), 4px 0 80px rgba(108,240,255,.1)",
+              zIndex: 5,
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: 12,
+              height: "100%",
+              background: "linear-gradient(180deg, #6cf0ff, #a06bff, #ff4fd8, #6cf0ff, #a06bff, #ff4fd8, #6cf0ff, #a06bff, #ff4fd8)",
+              boxShadow: "-4px 0 25px rgba(108,240,255,.3), -4px 0 50px rgba(160,107,255,.15), -4px 0 80px rgba(255,79,216,.1)",
+              zIndex: 5,
+            }}
+          />
+
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 12,
+              right: 12,
+              height: 4,
+              background: "linear-gradient(90deg, #ff4fd8, #a06bff, #6cf0ff, #a06bff, #ff4fd8)",
+              boxShadow: "0 2px 20px rgba(160,107,255,.4)",
+              zIndex: 5,
+            }}
+          />
+
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 12,
+              right: 12,
+              height: 4,
+              background: "linear-gradient(90deg, #6cf0ff, #a06bff, #ff4fd8, #a06bff, #6cf0ff)",
+              boxShadow: "0 -2px 20px rgba(160,107,255,.4)",
+              zIndex: 5,
+            }}
+          />
+
+          <div
+            style={{
+              position: "relative",
+              zIndex: 2,
+              padding: "0 12px",
             }}
           >
-            <img
-              src={siteLogo}
-              alt="Hit Wave Media"
-              style={{ height: 36, width: "auto", margin: "0 auto 14px", display: "block", opacity: 0.9 }}
-            />
+            <div
+              style={{
+                textAlign: "center",
+                padding: "30px 20px 20px",
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: "80%",
+                  height: "100%",
+                  background: "radial-gradient(ellipse at 50% 0%, rgba(160,107,255,.08) 0%, transparent 70%)",
+                  pointerEvents: "none",
+                }}
+              />
+
+              <img
+                src={siteLogo}
+                alt="Hit Wave Media"
+                style={{
+                  height: 38,
+                  width: "auto",
+                  margin: "0 auto 16px",
+                  display: "block",
+                  filter: "drop-shadow(0 0 8px rgba(108,240,255,.3))",
+                }}
+              />
+
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "8px 40px",
+                  borderRadius: 30,
+                  border: "2px solid rgba(108,240,255,.3)",
+                  background: "linear-gradient(135deg, rgba(10,14,32,.9), rgba(15,20,45,.8))",
+                  boxShadow: "0 0 30px rgba(108,240,255,.1), 0 0 60px rgba(160,107,255,.05), inset 0 0 30px rgba(108,240,255,.04), inset 0 1px 0 rgba(255,255,255,.05)",
+                  position: "relative",
+                }}
+              >
+                <h1
+                  style={{
+                    fontSize: "clamp(22px, 4.5vw, 36px)",
+                    fontWeight: 900,
+                    letterSpacing: 5,
+                    textTransform: "uppercase",
+                    background: "linear-gradient(90deg, #ff4fd8, #c97aff, #6cf0ff)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    margin: 0,
+                    filter: "drop-shadow(0 0 10px rgba(160,107,255,.3))",
+                  }}
+                  data-testid="text-jukebox-title"
+                >
+                  Now Playing
+                </h1>
+              </div>
+            </div>
 
             <div
               style={{
-                display: "inline-block",
-                padding: "6px 32px",
-                borderRadius: 30,
-                border: "2px solid rgba(108,240,255,.25)",
-                background: "linear-gradient(135deg, rgba(108,240,255,.08), rgba(160,107,255,.06))",
-                boxShadow: "0 0 20px rgba(108,240,255,.1), inset 0 0 20px rgba(108,240,255,.03)",
+                margin: "0 6px",
+                borderRadius: 16,
+                border: "1px solid rgba(108,240,255,.1)",
+                background: "linear-gradient(180deg, rgba(6,10,24,.9), rgba(4,6,16,.95))",
+                boxShadow: "inset 0 2px 20px rgba(0,0,0,.5), inset 0 0 40px rgba(108,240,255,.02)",
+                padding: "14px",
+                minHeight: 300,
               }}
             >
-              <h1
-                style={{
-                  fontSize: "clamp(24px, 4.5vw, 38px)",
-                  fontWeight: 900,
-                  letterSpacing: 4,
-                  textTransform: "uppercase",
-                  background: "linear-gradient(90deg, #ff4fd8, #a06bff, #6cf0ff)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  margin: 0,
-                }}
-                data-testid="text-jukebox-title"
-              >
-                Now Playing
-              </h1>
+              {isLoading ? (
+                <div style={{ textAlign: "center", padding: 60, color: "rgba(170,182,232,.4)" }}>
+                  Loading tracks...
+                </div>
+              ) : !tracks || tracks.length === 0 ? (
+                <div style={{ textAlign: "center", padding: 60, color: "rgba(170,182,232,.4)" }}>
+                  No tracks available
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+                    gap: 12,
+                  }}
+                >
+                  {tracks.map((track) => {
+                    const isActive = currentTrackId === track.id;
+                    const isThisPlaying = isActive && isPlaying;
+
+                    return (
+                      <JukeboxTile
+                        key={track.id}
+                        track={track}
+                        isActive={isActive}
+                        isThisPlaying={isThisPlaying}
+                        onToggle={() => {
+                          if (track.fileUrl) {
+                            toggle(track.id, track.fileUrl, {
+                              title: track.title,
+                              artist: track.artist,
+                              coverUrl: track.coverUrl,
+                            });
+                          }
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div
+              style={{
+                textAlign: "center",
+                padding: "16px 10px 20px",
+                color: "rgba(170,182,232,.2)",
+                fontSize: 10,
+              }}
+            >
+              &copy; {new Date().getFullYear()} Hit Wave Media
             </div>
           </div>
-
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: "16px 16px 24px",
-            }}
-          >
-            {isLoading ? (
-              <div style={{ textAlign: "center", padding: 60, color: "rgba(170,182,232,.4)" }}>
-                Loading tracks...
-              </div>
-            ) : !tracks || tracks.length === 0 ? (
-              <div style={{ textAlign: "center", padding: 60, color: "rgba(170,182,232,.4)" }}>
-                No tracks available
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-                  gap: 14,
-                }}
-              >
-                {tracks.map((track) => {
-                  const isActive = currentTrackId === track.id;
-                  const isThisPlaying = isActive && isPlaying;
-
-                  return (
-                    <JukeboxTile
-                      key={track.id}
-                      track={track}
-                      isActive={isActive}
-                      isThisPlaying={isThisPlaying}
-                      onToggle={() => {
-                        if (track.fileUrl) {
-                          toggle(track.id, track.fileUrl, {
-                            title: track.title,
-                            artist: track.artist,
-                            coverUrl: track.coverUrl,
-                          });
-                        }
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div
-            style={{
-              borderTop: "1px solid rgba(108,240,255,.1)",
-              padding: "10px",
-              textAlign: "center",
-              color: "rgba(170,182,232,.2)",
-              fontSize: 10,
-              background: "rgba(8,10,25,.6)",
-            }}
-          >
-            &copy; {new Date().getFullYear()} Hit Wave Media
-          </div>
         </div>
+
+        <div
+          style={{
+            width: "60%",
+            height: 6,
+            margin: "0 auto",
+            background: "linear-gradient(90deg, transparent, rgba(108,240,255,.15), rgba(160,107,255,.1), rgba(108,240,255,.15), transparent)",
+            borderRadius: "0 0 10px 10px",
+            boxShadow: "0 4px 20px rgba(108,240,255,.08)",
+          }}
+        />
       </div>
     </div>
   );
