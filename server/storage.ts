@@ -73,9 +73,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNewTracks(): Promise<Track[]> {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    return db.select().from(tracks).where(gte(tracks.createdAt, sevenDaysAgo)).orderBy(desc(tracks.createdAt));
+    return db.select().from(tracks).orderBy(desc(tracks.createdAt)).limit(12);
   }
 
   async getCreators(): Promise<Creator[]> {
