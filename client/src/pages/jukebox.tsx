@@ -158,16 +158,22 @@ function JukeboxTile({ track, isActive, isThisPlaying, onToggle }: {
 
 export default function Jukebox() {
   const { data: rawTracks, isLoading } = useQuery<Track[]>({
-    queryKey: ["/api/tracks", "all"],
+    queryKey: ["/api/tracks", "jukebox"],
+    queryFn: async () => {
+      const res = await fetch("/api/tracks/all");
+      if (!res.ok) throw new Error("Failed to load");
+      const data: Track[] = await res.json();
+      return data.sort((a, b) => a.id - b.id);
+    },
     refetchOnWindowFocus: false,
     refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 
-  const frozenRef = useRef<Track[] | null>(null);
-  if (rawTracks && rawTracks.length > 0 && !frozenRef.current) {
-    frozenRef.current = [...rawTracks];
-  }
-  const tracks = frozenRef.current;
+  const tracks = rawTracks ?? null;
 
   const { currentTrackId, isPlaying, toggle } = useAudioPlayer();
 
