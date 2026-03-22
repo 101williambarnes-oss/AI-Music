@@ -24,13 +24,14 @@ import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import Studios from "@/pages/studios";
 import About from "@/pages/about";
+import Jukebox from "@/pages/jukebox";
 import NotFound from "@/pages/not-found";
 import { AudioPlayerProvider } from "@/lib/audioPlayer";
 import { PlaylistProvider } from "@/lib/playlistContext";
 
 function FloatingHomeButton() {
   const [location] = useLocation();
-  if (location === "/" || location.endsWith("/dashboard") || location === "/admin") return null;
+  if (location === "/" || location.endsWith("/dashboard") || location === "/admin" || location === "/jukebox") return null;
   return (
     <a
       href="/"
@@ -64,6 +65,7 @@ function Router() {
       <Route path="/admin" component={Admin} />
       <Route path="/studios" component={Studios} />
       <Route path="/about" component={About} />
+      <Route path="/jukebox" component={Jukebox} />
       <Route path="/downloads" component={Downloads} />
       <Route path="/mockup" component={Mockup} />
       <Route component={NotFound} />
