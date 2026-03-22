@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
-import { Search, Music, User, X, Library, ListMusic, ShieldCheck, Heart, Play, ChevronRight, Info } from "lucide-react";
+import { Search, Music, User, X, Library, ListMusic, ShieldCheck, Heart, Play, ChevronRight, Info, Disc3 } from "lucide-react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { useLocation } from "wouter";
 import { useAudioPlayer } from "@/lib/audioPlayer";
@@ -553,6 +553,10 @@ export default function Home() {
             My Library
           </a>
         )}
+        <a href="/jukebox" className="quick-nav-tab" data-testid="link-quick-jukebox">
+          <Disc3 style={{ width: 14, height: 14 }} />
+          Jukebox
+        </a>
         <a href="/about" className="quick-nav-tab" data-testid="link-quick-about">
           <Info style={{ width: 14, height: 14 }} />
           About Us
