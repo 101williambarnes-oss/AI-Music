@@ -31,7 +31,7 @@ import { PlaylistProvider } from "@/lib/playlistContext";
 
 function FloatingHomeButton() {
   const [location] = useLocation();
-  if (location === "/" || location.endsWith("/dashboard") || location === "/admin" || location === "/jukebox") return null;
+  if (location === "/" || location.endsWith("/dashboard") || location === "/admin") return null;
   return (
     <a
       href="/"
