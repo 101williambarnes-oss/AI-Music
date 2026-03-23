@@ -170,12 +170,17 @@ export class DatabaseStorage implements IStorage {
     const todayPlays = sql<number>`
       COALESCE((SELECT count(*)::int FROM track_plays WHERE track_plays.track_id = ${tracks.id} AND track_plays.created_at >= ${todayStart}), 0)
     `;
-    const engagement = sql<number>`(${todayLikes}) + (${todayPlays})`;
+    const recencyBoost = sql<number>`
+      CASE WHEN ${tracks.createdAt} >= ${todayStart} THEN 5
+           WHEN ${tracks.createdAt} >= NOW() - INTERVAL '3 days' THEN 2
+           ELSE 0 END
+    `;
+    const engagement = sql<number>`(${todayLikes}) + (${todayPlays}) + (${recencyBoost})`;
 
     const result = await db
       .select({ track: tracks, engagement })
       .from(tracks)
-      .orderBy(desc(engagement), desc(tracks.plays))
+      .orderBy(desc(engagement), desc(tracks.createdAt))
       .limit(20);
 
     return result.map(r => r.track);
@@ -196,7 +201,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     const result = await query
-      .orderBy(sql`${totalLikes} DESC`, desc(tracks.plays))
+      .orderBy(desc(tracks.plays), sql`${totalLikes} DESC`)
       .limit(25);
     return result.map((r, i) => ({ ...r.track, rank: i + 1 }));
   }
