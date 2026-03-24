@@ -1,0 +1,52 @@
+
+Gemini said
+To make William Allen act as a "live" intelligent DJ who knows the creator's history and the specific backstory of each song, you need an Autonomous AI Agent layer. Since he needs to "know" things (like this being Jim's 20th song or that Jim is from Salt Lake), a simple playback tool won't work.
+
+You are essentially building a Dynamic Audio Pipeline. Here is the architecture to set this up:
+
+1. The "Memory" (The Database)
+William needs a place to store what he "knows" about the creators.
+
+The Tool: Use a simple Google Sheet or a Notion Database.
+
+The Data: Create columns for Creator Name, Hometown, Total Songs Played, and Song Backstory.
+
+How it works: Every time a new song is added to the folder, William "reads" this sheet to see if he has met this creator before.
+
+2. The "Brain" (LLM Orchestration)
+You need an AI (like GPT-4 or Gemini) to write the script for William in real-time.
+
+The Prompt: You give the AI a "System Instruction" like this:
+
+"You are William Allen, a smooth AI DJ. You are introducing a song by [Creator]. This is their [Number] song on this station. They are from [Location]. The song is about [Backstory]. Write a 10-second intro in your signature style."
+
+The Automation: Use Make.com or Zapier. It can trigger whenever a new song file is detected, send the creator info to the AI to write the script, and then send that script to your voice generator (like ElevenLabs).
+
+3. The "Voice" (Dynamic TTS)
+Since William's voice is already created, you need to use the API of your voice provider.
+
+API Integration: Your automation (from Step 2) sends the newly written script to the API.
+
+The Output: The API returns an MP3 file of William saying that specific intro.
+
+4. The "Glue" (Audio Stitching)
+To get the intro and the song into one file automatically, you use a "Headless" audio processor.
+
+The Tool: FFmpeg (a command-line tool that can be automated).
+
+The Command: A simple script tells the computer: "Take William_Intro_01.mp3 and merge it with Jim_Song_SaltLake.mp3 into one final file."
+
+How to Start Building This
+If you aren't a coder, the easiest path is using Make.com to connect these pieces:
+
+Trigger: Watch a folder (Google Drive/Dropbox) for a new song.
+
+Action: Search your Database (Google Sheets) for the creator's info.
+
+Action: Send info to an AI to write the script.
+
+Action: Send script to your Voice API to create William's audio.
+
+Action: Use a "Cloud Convert" or FFmpeg tool to merge the files.
+
+Would you like me to help you write the specific "System Prompt" that defines William Allen's personality so his scripts always sound consistent?
