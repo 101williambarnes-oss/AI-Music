@@ -267,6 +267,8 @@ ONLY output the spoken words. Nothing else. No quotes, no stage directions, no p
 
     console.log("DJ intro script for track", trackId, ":", introScript);
 
+    let audioBuffer: Buffer | null = null;
+
     const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: "POST",
       headers: {
@@ -283,13 +285,34 @@ ONLY output the spoken words. Nothing else. No quotes, no stage directions, no p
       }),
     });
 
-    if (!ttsRes.ok) {
+    if (ttsRes.ok) {
+      audioBuffer = Buffer.from(await ttsRes.arrayBuffer());
+      console.log("DJ intro: Used ElevenLabs TTS");
+    } else {
       const errText = await ttsRes.text();
-      console.error("DJ intro: ElevenLabs TTS failed:", errText);
-      throw new Error("ElevenLabs TTS failed: " + errText);
-    }
+      console.warn("DJ intro: ElevenLabs TTS failed, falling back to OpenAI TTS:", errText);
 
-    const audioBuffer = Buffer.from(await ttsRes.arrayBuffer());
+      const openaiTtsRes = await fetch("https://api.openai.com/v1/audio/speech", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${openaiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "tts-1",
+          voice: "onyx",
+          input: introScript + ".",
+        }),
+      });
+
+      if (!openaiTtsRes.ok) {
+        const openaiErr = await openaiTtsRes.text();
+        console.error("DJ intro: OpenAI TTS also failed:", openaiErr);
+        throw new Error("Both ElevenLabs and OpenAI TTS failed");
+      }
+      audioBuffer = Buffer.from(await openaiTtsRes.arrayBuffer());
+      console.log("DJ intro: Used OpenAI TTS fallback (onyx voice)");
+    }
     const tempPath = path.join(uploadsDir, `dj-intro-${trackId}-${Date.now()}.mp3`);
     fs.writeFileSync(tempPath, audioBuffer);
 
