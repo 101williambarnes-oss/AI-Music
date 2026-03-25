@@ -238,39 +238,42 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
 
     if (!djIntroUrl && !alreadyPlayedIntro) {
-      loadAndPlay(audio, fileUrl);
-      fetch(`/api/tracks/${trackId}/dj-intro`, { method: "POST" })
+      playingIntroRef.current = true;
+      pendingSongUrlRef.current = fileUrl;
+      setIsPlayingIntro(true);
+
+      const abortController = new AbortController();
+      fetchAbortRef.current = abortController;
+
+      fetch(`/api/tracks/${trackId}/dj-intro`, {
+        method: "POST",
+        signal: abortController.signal,
+      })
         .then(r => r.json())
         .then(data => {
-          if (data?.djIntroUrl) {
+          if (data?.djIntroUrl && currentTrackIdRef.current === trackId) {
             generatedIntrosRef.current.set(trackId, data.djIntroUrl);
+            playedIntrosRef.current.add(trackId);
+            loadAndPlay(audio, data.djIntroUrl);
+          } else if (currentTrackIdRef.current === trackId) {
+            playingIntroRef.current = false;
+            setIsPlayingIntro(false);
+            pendingSongUrlRef.current = null;
+            loadAndPlay(audio, fileUrl);
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          if (currentTrackIdRef.current === trackId) {
+            playingIntroRef.current = false;
+            setIsPlayingIntro(false);
+            pendingSongUrlRef.current = null;
+            loadAndPlay(audio, fileUrl);
+          }
+        });
       return;
     }
 
     if (djIntroUrl && !alreadyPlayedIntro) {
-      if (Math.random() < 0.2) {
-        loadAndPlay(audio, fileUrl);
-
-        const abortController = new AbortController();
-        fetchAbortRef.current = abortController;
-
-        fetch(`/api/tracks/${trackId}/dj-short-intro`, {
-          method: "POST",
-          signal: abortController.signal,
-        })
-          .then(r => r.json())
-          .then(data => {
-            if (data?.djIntroUrl) {
-              generatedIntrosRef.current.set(trackId, data.djIntroUrl);
-            }
-          })
-          .catch(() => {});
-        return;
-      }
-
       playedIntrosRef.current.add(trackId);
       playingIntroRef.current = true;
       pendingSongUrlRef.current = fileUrl;
