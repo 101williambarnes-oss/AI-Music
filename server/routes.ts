@@ -113,10 +113,44 @@ async function generateDjIntro(trackId: number): Promise<string | null> {
     const creatorName = creator?.djName || creator?.name || track.artist || "Unknown Artist";
     const creatorCity = creator?.city || "";
     const creatorState = creator?.state || "";
-    const locationStr = creatorCity && creatorState ? `from ${creatorCity}, ${creatorState}` : "";
+    const locationStr = creatorCity && creatorState ? `from ${creatorCity}, ${creatorState}` : creatorCity ? `from ${creatorCity}` : creatorState ? `from ${creatorState}` : "";
     const songDesc = track.songDescription || "";
     const genre = track.genre || "";
     const aiTool = track.aiTool || "";
+
+    let creatorStats = "";
+    if (creator) {
+      try {
+        const creatorTracks = await db.select().from(tracks).where(eq(tracks.creatorId, creator.id));
+        const totalPlays = creatorTracks.reduce((sum, t) => sum + (t.plays || 0), 0);
+        const trackCount = creatorTracks.length;
+        const otherSongs = creatorTracks.filter(t => t.id !== trackId).map(t => t.title);
+        const followerCount = await storage.getFollowerCount(creator.id);
+
+        const joinDate = creatorTracks.length > 0 ? creatorTracks.reduce((earliest, t) => {
+          const d = t.createdAt ? new Date(t.createdAt) : new Date();
+          return d < earliest ? d : earliest;
+        }, new Date()) : null;
+        const daysSinceJoin = joinDate ? Math.floor((Date.now() - joinDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+        const top25Tracks = await db.select().from(tracks).orderBy(desc(tracks.plays));
+        const artistTop25 = top25Tracks.slice(0, 25).filter(t => t.creatorId === creator.id);
+
+        const statsLines: string[] = [];
+        statsLines.push(`This artist has ${trackCount} song${trackCount !== 1 ? "s" : ""} on Hit Wave Media.`);
+        if (totalPlays > 0) statsLines.push(`Their music has been played ${totalPlays} total times.`);
+        if (followerCount > 0) statsLines.push(`They have ${followerCount} follower${followerCount !== 1 ? "s" : ""}.`);
+        if (daysSinceJoin > 30) statsLines.push(`They've been on the platform for ${Math.floor(daysSinceJoin / 30)} month${Math.floor(daysSinceJoin / 30) !== 1 ? "s" : ""}.`);
+        else if (daysSinceJoin > 0) statsLines.push(`They joined ${daysSinceJoin} day${daysSinceJoin !== 1 ? "s" : ""} ago.`);
+        if (otherSongs.length > 0) statsLines.push(`Their other songs include: ${otherSongs.slice(0, 5).map(s => `"${s}"`).join(", ")}.`);
+        if (artistTop25.length > 0) statsLines.push(`They currently have ${artistTop25.length} song${artistTop25.length !== 1 ? "s" : ""} in the Top 25.`);
+        if (trackCount === 1) statsLines.push(`This is their very first song on Hit Wave — they're brand new!`);
+
+        creatorStats = "\n\nWHAT YOU KNOW ABOUT THIS ARTIST:\n" + statsLines.join("\n");
+      } catch (e) {
+        console.error("DJ intro: Error getting creator stats:", e);
+      }
+    }
 
     const prompt = `You ARE William Allen. Not playing a character. You ARE him.
 
@@ -139,12 +173,17 @@ HOW YOU TREAT ARTISTS:
 - If you know what the song is about, you tease it — make the listener curious.
 - You make every creator feel like they're the most important artist on the platform right now.
 - You want the listener to feel like they're about to hear something that could change their whole night.
+- If you know their history — how many songs they have, how many plays, followers — USE IT. Reference their journey. Make them feel seen.
+- If this is their first song, welcome them like family. Make it special.
+- If they have multiple songs, reference one you loved. Show them you remember.
+- If they're in the Top 25, hype that up. They earned it.
 
 WHAT YOU NEVER DO:
 - You never sound corporate or polished or rehearsed
 - You never use the same opening twice in a row
 - You never sound fake excited. If you're excited, it's REAL
 - You never rush. You take your time. You let the moment breathe.
+- You never list stats like a robot. You weave what you know into conversation naturally.
 
 Write a DJ intro for this song. You're live on air right now. Take your time. Be personal. Make the artist feel like a star and make the listener excited to hear what's coming. 3-4 sentences is perfect. End with the song title, then STOP.
 
@@ -152,6 +191,7 @@ Song: "${track.title}"
 Artist: ${creatorName}${locationStr ? ` ${locationStr}` : ""}
 Genre: ${genre}
 ${songDesc ? `About: ${songDesc}` : ""}
+${aiTool ? `Created with: ${aiTool}` : ""}${creatorStats}
 
 ONLY output the spoken words. Nothing else. No quotes, no stage directions, no parentheses.`;
 
