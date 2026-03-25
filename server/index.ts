@@ -150,8 +150,13 @@ app.use((req, res, next) => {
         clicked_at TIMESTAMP NOT NULL DEFAULT NOW()
       )
     `);
+    await ensurePool.query(`ALTER TABLE tracks ADD COLUMN IF NOT EXISTS song_description TEXT`);
+    await ensurePool.query(`ALTER TABLE tracks ADD COLUMN IF NOT EXISTS dj_intro_url TEXT`);
+    await ensurePool.query(`ALTER TABLE creators ADD COLUMN IF NOT EXISTS city TEXT`);
+    await ensurePool.query(`ALTER TABLE creators ADD COLUMN IF NOT EXISTS state TEXT`);
+    await ensurePool.query(`ALTER TABLE creators ADD COLUMN IF NOT EXISTS dj_name TEXT`);
     await ensurePool.end();
-    console.log("weekly_winners table, explicit column, password_reset_tokens, site_visits, and studio_clicks ensured");
+    console.log("weekly_winners table, explicit column, password_reset_tokens, site_visits, studio_clicks, and DJ columns ensured");
 
     await registerRoutes(httpServer, app);
     console.log("Routes registered");
