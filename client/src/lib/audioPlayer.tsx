@@ -47,13 +47,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const introAudioRef = useRef<HTMLAudioElement | null>(null);
   const currentTrackIdRef = useRef<number | null>(null);
   const countedPlaysRef = useRef<Set<number>>(new Set());
   const playedIntrosRef = useRef<Set<number>>(new Set());
   const generatedIntrosRef = useRef<Map<number, string>>(new Map());
   const onEndedRef = useRef<OnEndedCallback | null>(null);
   const pendingSongUrlRef = useRef<string | null>(null);
+  const playingIntroRef = useRef(false);
 
   const setOnEnded = useCallback((cb: OnEndedCallback | null) => {
     onEndedRef.current = cb;
@@ -65,6 +65,20 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     audio.preload = "auto";
     audioRef.current = audio;
     audio.addEventListener("ended", () => {
+      if (playingIntroRef.current) {
+        playingIntroRef.current = false;
+        setIsPlayingIntro(false);
+        const songUrl = pendingSongUrlRef.current;
+        if (songUrl) {
+          audio.src = songUrl;
+          audio.load();
+          const tryPlay = () => { audio.play().catch(() => setIsPlaying(false)); };
+          if (audio.readyState >= 2) tryPlay();
+          else audio.addEventListener("canplay", tryPlay, { once: true });
+          pendingSongUrlRef.current = null;
+        }
+        return;
+      }
       setIsPlaying(false);
       const tid = currentTrackIdRef.current;
       if (tid !== null && onEndedRef.current) {
@@ -72,39 +86,34 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       }
     });
 
-    const introAudio = new Audio();
-    introAudio.setAttribute("playsinline", "true");
-    introAudio.preload = "auto";
-    introAudioRef.current = introAudio;
-
-    introAudio.addEventListener("ended", () => {
-      setIsPlayingIntro(false);
-      const songUrl = pendingSongUrlRef.current;
-      if (songUrl && audioRef.current) {
-        const mainAudio = audioRef.current;
-        mainAudio.src = songUrl;
-        mainAudio.load();
-        const tryPlay = () => {
-          mainAudio.play().catch(() => setIsPlaying(false));
-        };
-        if (mainAudio.readyState >= 2) {
-          tryPlay();
-        } else {
-          mainAudio.addEventListener("canplay", tryPlay, { once: true });
-        }
-        pendingSongUrlRef.current = null;
-      }
-    });
-
     return () => {
       audio.pause();
-      introAudio.pause();
     };
   }, []);
 
+  const playAudio = useCallback((audio: HTMLAudioElement, url: string, onFail?: () => void) => {
+    audio.src = url;
+    audio.load();
+    const tryPlay = () => {
+      audio.play().catch(() => { if (onFail) onFail(); else setIsPlaying(false); });
+    };
+    if (audio.readyState >= 2) tryPlay();
+    else audio.addEventListener("canplay", tryPlay, { once: true });
+  }, []);
+
+  const playIntroThenSong = useCallback((audio: HTMLAudioElement, introUrl: string, songUrl: string) => {
+    playingIntroRef.current = true;
+    pendingSongUrlRef.current = songUrl;
+    setIsPlayingIntro(true);
+    playAudio(audio, introUrl, () => {
+      playingIntroRef.current = false;
+      setIsPlayingIntro(false);
+      playAudio(audio, songUrl);
+    });
+  }, [playAudio]);
+
   const play = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => {
     const audio = audioRef.current;
-    const introAudio = introAudioRef.current;
     if (!audio) return;
 
     const isNewTrack = currentTrackIdRef.current !== trackId;
@@ -127,16 +136,12 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
     if (isNewTrack) {
       audio.pause();
-      if (introAudio) introAudio.pause();
+      playingIntroRef.current = false;
       setIsPlayingIntro(false);
       pendingSongUrlRef.current = null;
 
       if (options?.skipIntro) {
-        audio.src = fileUrl;
-        audio.load();
-        const tryPlay = () => { audio.play().catch(() => setIsPlaying(false)); };
-        if (audio.readyState >= 2) tryPlay();
-        else audio.addEventListener("canplay", tryPlay, { once: true });
+        playAudio(audio, fileUrl);
         return;
       }
 
@@ -148,11 +153,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         if (cached) {
           djIntroUrl = cached;
         } else {
-          audio.src = fileUrl;
-          audio.load();
-          const tryPlay = () => { audio.play().catch(() => setIsPlaying(false)); };
-          if (audio.readyState >= 2) tryPlay();
-          else audio.addEventListener("canplay", tryPlay, { once: true });
+          playAudio(audio, fileUrl);
 
           fetch(`/api/tracks/${trackId}/dj-intro`, { method: "POST" })
             .then(r => r.json())
@@ -166,84 +167,21 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         }
       }
 
-      const useShortIntro = djIntroUrl && !alreadyPlayedIntro && Math.random() < 0.2;
-      if (useShortIntro && introAudio) {
+      if (djIntroUrl && !alreadyPlayedIntro) {
         playedIntrosRef.current.add(trackId);
-        pendingSongUrlRef.current = fileUrl;
-        setIsPlayingIntro(true);
 
-        fetch(`/api/tracks/${trackId}/dj-short-intro`, { method: "POST" })
-          .then(r => r.json())
-          .then(data => {
-            if (data?.djIntroUrl && introAudio) {
-              introAudio.src = data.djIntroUrl;
-              introAudio.load();
-              const tryShort = () => {
-                introAudio.play().catch(() => {
-                  setIsPlayingIntro(false);
-                  audio.src = fileUrl;
-                  audio.load();
-                  const tryMain = () => { audio.play().catch(() => setIsPlaying(false)); };
-                  if (audio.readyState >= 2) tryMain();
-                  else audio.addEventListener("canplay", tryMain, { once: true });
-                });
-              };
-              if (introAudio.readyState >= 2) tryShort();
-              else introAudio.addEventListener("canplay", tryShort, { once: true });
-            } else {
-              setIsPlayingIntro(false);
-              audio.src = fileUrl;
-              audio.load();
-              const tryMain = () => { audio.play().catch(() => setIsPlaying(false)); };
-              if (audio.readyState >= 2) tryMain();
-              else audio.addEventListener("canplay", tryMain, { once: true });
-            }
-          })
-          .catch(() => {
-            setIsPlayingIntro(false);
-            audio.src = fileUrl;
-            audio.load();
-            const tryMain = () => { audio.play().catch(() => setIsPlaying(false)); };
-            if (audio.readyState >= 2) tryMain();
-            else audio.addEventListener("canplay", tryMain, { once: true });
-          });
-        return;
-      }
+        const useShortIntro = Math.random() < 0.2;
+        if (useShortIntro) {
+          playAudio(audio, fileUrl);
 
-      if (djIntroUrl && !alreadyPlayedIntro && introAudio) {
-        playedIntrosRef.current.add(trackId);
-        pendingSongUrlRef.current = fileUrl;
-        setIsPlayingIntro(true);
-        introAudio.src = djIntroUrl;
-        introAudio.load();
-        const tryIntro = () => {
-          introAudio.play().catch(() => {
-            setIsPlayingIntro(false);
-            audio.src = fileUrl;
-            audio.load();
-            const tryMain = () => { audio.play().catch(() => setIsPlaying(false)); };
-            if (audio.readyState >= 2) tryMain();
-            else audio.addEventListener("canplay", tryMain, { once: true });
-          });
-        };
-        if (introAudio.readyState >= 2) {
-          tryIntro();
-        } else {
-          introAudio.addEventListener("canplay", tryIntro, { once: true });
+          fetch(`/api/tracks/${trackId}/dj-short-intro`, { method: "POST" })
+            .catch(() => {});
+          return;
         }
+
+        playIntroThenSong(audio, djIntroUrl, fileUrl);
       } else {
-        audio.src = fileUrl;
-        audio.load();
-        const tryPlay = () => {
-          audio.play().catch(() => {
-            setIsPlaying(false);
-          });
-        };
-        if (audio.readyState >= 2) {
-          tryPlay();
-        } else {
-          audio.addEventListener("canplay", tryPlay, { once: true });
-        }
+        playAudio(audio, fileUrl);
       }
     } else {
       audio.play().catch(() => {
@@ -262,27 +200,18 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         });
       }).catch(() => {});
     }
-  }, []);
-
-  const isPlayingIntroRef = useRef(false);
-  useEffect(() => { isPlayingIntroRef.current = isPlayingIntro; }, [isPlayingIntro]);
+  }, [playAudio, playIntroThenSong]);
 
   const pause = useCallback(() => {
     const audio = audioRef.current;
-    const introAudio = introAudioRef.current;
-    if (isPlayingIntroRef.current && introAudio) {
-      introAudio.pause();
-    } else if (audio) {
-      audio.pause();
-    }
+    if (audio) audio.pause();
     setIsPlaying(false);
   }, []);
 
   const stop = useCallback(() => {
     const audio = audioRef.current;
-    const introAudio = introAudioRef.current;
     if (audio) { audio.pause(); audio.currentTime = 0; }
-    if (introAudio) { introAudio.pause(); introAudio.currentTime = 0; }
+    playingIntroRef.current = false;
     setIsPlaying(false);
     setIsPlayingIntro(false);
     pendingSongUrlRef.current = null;
@@ -296,9 +225,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       pause();
     } else if (currentTrackIdRef.current === trackId && !isPlayingRef.current) {
       setIsPlaying(true);
-      if (isPlayingIntroRef.current && introAudioRef.current) {
-        introAudioRef.current.play().catch(() => setIsPlaying(false));
-      } else if (audioRef.current) {
+      if (audioRef.current) {
         audioRef.current.play().catch(() => setIsPlaying(false));
       }
     } else {
