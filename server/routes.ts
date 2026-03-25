@@ -199,9 +199,9 @@ Write ONLY the intro script William should say. No quotes, no stage directions.`
         text: introScript,
         model_id: "eleven_multilingual_v2",
         voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-          style: 0.4,
+          stability: 0.75,
+          similarity_boost: 0.8,
+          style: 0.2,
           use_speaker_boost: true,
         },
       }),
@@ -1477,7 +1477,8 @@ export async function registerRoutes(
       const track = await storage.getTrack(trackId);
       if (!track) return res.status(404).json({ message: "Track not found" });
 
-      if (track.djIntroUrl) {
+      const forceRegenerate = req.body?.force === true || req.query.force === "true";
+      if (track.djIntroUrl && !forceRegenerate) {
         return res.json({ djIntroUrl: track.djIntroUrl });
       }
 
