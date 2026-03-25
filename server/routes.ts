@@ -839,15 +839,22 @@ export async function registerRoutes(
         return res.status(401).json({ message: "User not found" });
       }
 
+      const isAdmin = user.id === 2;
       const creator = await storage.getCreatorByUserId(user.id);
-      if (!creator) {
-        return res.status(403).json({ message: "You are not a creator" });
-      }
 
-      const creatorTracks = await storage.getTracksByCreatorId(creator.id);
-      const track = creatorTracks.find(t => t.id === trackId);
+      let track: any = null;
+      if (isAdmin) {
+        const allTracks = await db.select().from(tracks).where(eq(tracks.id, trackId));
+        track = allTracks[0] || null;
+      } else {
+        if (!creator) {
+          return res.status(403).json({ message: "You are not a creator" });
+        }
+        const creatorTracks = await storage.getTracksByCreatorId(creator.id);
+        track = creatorTracks.find(t => t.id === trackId);
+      }
       if (!track) {
-        return res.status(403).json({ message: "You can only delete your own tracks" });
+        return res.status(403).json({ message: isAdmin ? "Track not found" : "You can only delete your own tracks" });
       }
 
       if (track.fileUrl) {
@@ -871,7 +878,10 @@ export async function registerRoutes(
       }
 
       await storage.deleteTrack(trackId);
-      await storage.decrementCreatorTrackCount(creator.id);
+      const trackCreatorId = track.creatorId;
+      if (trackCreatorId) {
+        await storage.decrementCreatorTrackCount(trackCreatorId);
+      }
 
       res.json({ message: "Track deleted" });
     } catch (error) {

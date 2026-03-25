@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Users, Music, Headphones, Heart, MessageCircle, UserPlus, Eye, BarChart3, Crown, TrendingUp, MousePointerClick } from "lucide-react";
+import { Users, Music, Headphones, Heart, MessageCircle, UserPlus, Eye, BarChart3, Crown, TrendingUp, MousePointerClick, Trash2 } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -39,6 +40,8 @@ function getHeaders(): Record<string, string> {
 
 export default function Admin() {
   const [user] = useState<AuthUser | null>(getUser);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [trackSearch, setTrackSearch] = useState("");
 
   const { data, isLoading, isError } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
@@ -50,6 +53,25 @@ export default function Admin() {
     enabled: !!user,
     retry: false,
   });
+
+  const { data: allTracks } = useQuery<any[]>({
+    queryKey: ["/api/tracks/all"],
+    enabled: !!user && user.id === 2,
+  });
+
+  async function handleAdminDelete(trackId: number, title: string) {
+    if (!confirm(`Delete "${title}" permanently? This cannot be undone.`)) return;
+    setDeletingId(trackId);
+    try {
+      await apiRequest("DELETE", `/api/tracks/${trackId}`);
+      queryClient.invalidateQueries({ queryKey: ["/api/tracks/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/home-data"] });
+    } catch (e: any) {
+      alert("Failed to delete: " + e.message);
+    }
+    setDeletingId(null);
+  }
 
   if (!user) {
     return (
@@ -296,6 +318,56 @@ export default function Admin() {
             </div>
           ))}
         </div>
+
+        {allTracks && (
+          <>
+            <div style={sectionTitleStyle}>
+              <Music size={18} style={{ color: "#ff4fd8" }} />
+              Manage All Tracks ({allTracks.length})
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <input
+                type="text"
+                placeholder="Search tracks by title or artist..."
+                value={trackSearch}
+                onChange={(e) => setTrackSearch(e.target.value)}
+                style={{ width: "100%", padding: "10px 14px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(108,240,255,.15)", borderRadius: 6, color: "#eaf0ff", fontSize: 14, outline: "none" }}
+                data-testid="input-track-search"
+              />
+            </div>
+            <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(108,240,255,.1)", borderRadius: 8, overflow: "hidden", maxHeight: 500, overflowY: "auto" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "40px 1fr 120px 60px 50px", ...tableHeaderStyle, position: "sticky", top: 0, background: "#0c1020", zIndex: 1 }}>
+                <span>ID</span>
+                <span>Title</span>
+                <span>Artist</span>
+                <span style={{ textAlign: "center" }}>Plays</span>
+                <span></span>
+              </div>
+              {allTracks
+                .filter(t => {
+                  if (!trackSearch) return true;
+                  const s = trackSearch.toLowerCase();
+                  return t.title.toLowerCase().includes(s) || t.artist.toLowerCase().includes(s);
+                })
+                .map((track: any) => (
+                <div key={track.id} style={{ display: "grid", gridTemplateColumns: "40px 1fr 120px 60px 50px", ...cellStyle, alignItems: "center" }} data-testid={`row-manage-track-${track.id}`}>
+                  <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>{track.id}</span>
+                  <span style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.title}</span>
+                  <span style={{ fontSize: 13, color: "rgba(170,182,232,.6)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.artist}</span>
+                  <span style={{ textAlign: "center", fontSize: 13 }}>{track.plays}</span>
+                  <button
+                    onClick={() => handleAdminDelete(track.id, track.title)}
+                    disabled={deletingId === track.id}
+                    style={{ background: "rgba(255,79,216,.1)", border: "1px solid rgba(255,79,216,.3)", borderRadius: 4, padding: "4px 8px", cursor: deletingId === track.id ? "wait" : "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    data-testid={`button-delete-track-${track.id}`}
+                  >
+                    <Trash2 size={14} style={{ color: "#ff4fd8" }} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         <div style={{ marginTop: 32, textAlign: "center" }}>
           <a href="/" style={{ display: "inline-block", padding: "10px 28px", background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.2)", borderRadius: 6, color: "#6cf0ff", fontWeight: 700, fontSize: 14, textDecoration: "none" }} data-testid="link-admin-back">Back to Home</a>
