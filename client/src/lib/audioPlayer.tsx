@@ -55,6 +55,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const pendingSongUrlRef = useRef<string | null>(null);
   const playingIntroRef = useRef(false);
   const isPlayingRef = useRef(false);
+  const fetchAbortRef = useRef<AbortController | null>(null);
+  const loadingRef = useRef(false);
 
   const setOnEnded = useCallback((cb: OnEndedCallback | null) => {
     onEndedRef.current = cb;
@@ -63,11 +65,47 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
   const loadAndPlay = useCallback((audio: HTMLAudioElement, url: string) => {
+    audio.oncanplay = null;
+    audio.onerror = null;
+    loadingRef.current = true;
+
     audio.src = url;
     audio.load();
-    const doPlay = () => { audio.play().catch(() => setIsPlaying(false)); };
-    if (audio.readyState >= 2) doPlay();
-    else audio.addEventListener("canplay", doPlay, { once: true });
+
+    const doPlay = () => {
+      audio.oncanplay = null;
+      audio.onerror = null;
+      loadingRef.current = false;
+      audio.play().catch(() => {
+        setIsPlaying(false);
+        loadingRef.current = false;
+      });
+    };
+
+    const onError = () => {
+      audio.oncanplay = null;
+      audio.onerror = null;
+      loadingRef.current = false;
+      if (playingIntroRef.current) {
+        playingIntroRef.current = false;
+        setIsPlayingIntro(false);
+        const songUrl = pendingSongUrlRef.current;
+        pendingSongUrlRef.current = null;
+        if (songUrl) {
+          setIsPlaying(true);
+          loadAndPlay(audio, songUrl);
+          return;
+        }
+      }
+      setIsPlaying(false);
+    };
+
+    if (audio.readyState >= 2) {
+      doPlay();
+    } else {
+      audio.oncanplay = doPlay;
+      audio.onerror = onError;
+    }
   }, []);
 
   useEffect(() => {
@@ -96,6 +134,16 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       }
     });
 
+    audio.addEventListener("pause", () => {
+      if (!playingIntroRef.current && !loadingRef.current) {
+        setIsPlaying(false);
+      }
+    });
+
+    audio.addEventListener("play", () => {
+      setIsPlaying(true);
+    });
+
     return () => { audio.pause(); };
   }, [loadAndPlay]);
 
@@ -112,9 +160,18 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }).catch(() => {});
   }, []);
 
+  const cancelPendingFetch = useCallback(() => {
+    if (fetchAbortRef.current) {
+      fetchAbortRef.current.abort();
+      fetchAbortRef.current = null;
+    }
+  }, []);
+
   const play = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    cancelPendingFetch();
 
     const isNewTrack = currentTrackIdRef.current !== trackId;
     currentTrackIdRef.current = trackId;
@@ -135,14 +192,33 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
 
     if (!isNewTrack) {
-      audio.play().catch(() => setIsPlaying(false));
+      if (audio.src && audio.readyState >= 2) {
+        audio.play().catch(() => setIsPlaying(false));
+      } else if (audio.src) {
+        audio.oncanplay = () => {
+          audio.oncanplay = null;
+          audio.onerror = null;
+          audio.play().catch(() => setIsPlaying(false));
+        };
+        audio.onerror = () => {
+          audio.oncanplay = null;
+          audio.onerror = null;
+          loadingRef.current = false;
+          setIsPlaying(false);
+        };
+      } else {
+        loadAndPlay(audio, fileUrl);
+      }
       return;
     }
 
     audio.pause();
+    audio.oncanplay = null;
+    audio.onerror = null;
     playingIntroRef.current = false;
     setIsPlayingIntro(false);
     pendingSongUrlRef.current = null;
+    loadingRef.current = false;
 
     countPlay(trackId);
 
@@ -175,31 +251,27 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
 
     if (djIntroUrl && !alreadyPlayedIntro) {
-      playedIntrosRef.current.add(trackId);
-
       if (Math.random() < 0.2) {
-        playingIntroRef.current = true;
-        pendingSongUrlRef.current = fileUrl;
-        setIsPlayingIntro(true);
-        fetch(`/api/tracks/${trackId}/dj-short-intro`, { method: "POST" })
+        loadAndPlay(audio, fileUrl);
+
+        const abortController = new AbortController();
+        fetchAbortRef.current = abortController;
+
+        fetch(`/api/tracks/${trackId}/dj-short-intro`, {
+          method: "POST",
+          signal: abortController.signal,
+        })
           .then(r => r.json())
           .then(data => {
-            if (data?.djIntroUrl && currentTrackIdRef.current === trackId) {
-              loadAndPlay(audio, data.djIntroUrl);
-            } else {
-              playingIntroRef.current = false;
-              setIsPlayingIntro(false);
-              loadAndPlay(audio, fileUrl);
+            if (data?.djIntroUrl) {
+              generatedIntrosRef.current.set(trackId, data.djIntroUrl);
             }
           })
-          .catch(() => {
-            playingIntroRef.current = false;
-            setIsPlayingIntro(false);
-            loadAndPlay(audio, fileUrl);
-          });
+          .catch(() => {});
         return;
       }
 
+      playedIntrosRef.current.add(trackId);
       playingIntroRef.current = true;
       pendingSongUrlRef.current = fileUrl;
       setIsPlayingIntro(true);
@@ -208,7 +280,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
 
     loadAndPlay(audio, fileUrl);
-  }, [loadAndPlay, countPlay]);
+  }, [loadAndPlay, countPlay, cancelPendingFetch]);
 
   const pause = useCallback(() => {
     const audio = audioRef.current;
@@ -218,25 +290,42 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
   const stop = useCallback(() => {
     const audio = audioRef.current;
-    if (audio) { audio.pause(); audio.currentTime = 0; }
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.oncanplay = null;
+      audio.onerror = null;
+    }
+    cancelPendingFetch();
     playingIntroRef.current = false;
     setIsPlaying(false);
     setIsPlayingIntro(false);
     pendingSongUrlRef.current = null;
-  }, []);
+    loadingRef.current = false;
+  }, [cancelPendingFetch]);
 
   const toggle = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => {
+    const audio = audioRef.current;
+
     if (currentTrackIdRef.current === trackId && isPlayingRef.current) {
+      if (loadingRef.current) {
+        stop();
+        return;
+      }
       pause();
     } else if (currentTrackIdRef.current === trackId && !isPlayingRef.current) {
-      setIsPlaying(true);
-      if (audioRef.current) {
-        audioRef.current.play().catch(() => setIsPlaying(false));
+      if (!audio?.src || audio.src === "" || audio.readyState < 1) {
+        play(trackId, fileUrl, meta, options);
+      } else {
+        setIsPlaying(true);
+        audio.play().catch(() => {
+          play(trackId, fileUrl, meta, options);
+        });
       }
     } else {
       play(trackId, fileUrl, meta, options);
     }
-  }, [play, pause]);
+  }, [play, pause, stop]);
 
   const seek = useCallback((time: number) => {
     const audio = audioRef.current;
