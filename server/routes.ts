@@ -301,7 +301,7 @@ ONLY output the spoken words. Nothing else. No quotes, no stage directions, no p
     return djIntroUrl;
   } catch (err: any) {
     console.error("DJ intro generation error:", err?.message || err);
-    return null;
+    throw err;
   }
 }
 
