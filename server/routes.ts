@@ -93,22 +93,22 @@ async function extractEmbeddedArtwork(filePath: string): Promise<string | null> 
 }
 
 async function generateDjIntro(trackId: number): Promise<string | null> {
+  const track = await storage.getTrack(trackId);
+  if (!track) throw new Error("Track not found: " + trackId);
+  if (track.djIntroUrl) return track.djIntroUrl;
+
+  let creator = track.creatorId ? await storage.getCreatorById(track.creatorId) : null;
+
+  const openaiKey = process.env.OPENAI_API_KEY;
+  const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
+  const voiceId = process.env.ELEVENLABS_VOICE_ID || "nF3LfwDKm2NpoSYUrBwg";
+  const assistantId = "asst_LO0FJB1MtzTLrrkQ37RuAVSO";
+
+  if (!openaiKey || !elevenLabsKey) {
+    throw new Error("Missing API keys - openai:" + !!openaiKey + " elevenlabs:" + !!elevenLabsKey);
+  }
+
   try {
-    const track = await storage.getTrack(trackId);
-    if (!track) return null;
-    if (track.djIntroUrl) return track.djIntroUrl;
-
-    let creator = track.creatorId ? await storage.getCreatorById(track.creatorId) : null;
-
-    const openaiKey = process.env.OPENAI_API_KEY;
-    const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
-    const voiceId = process.env.ELEVENLABS_VOICE_ID || "nF3LfwDKm2NpoSYUrBwg";
-    const assistantId = "asst_LO0FJB1MtzTLrrkQ37RuAVSO";
-
-    if (!openaiKey || !elevenLabsKey || !voiceId) {
-      console.log("DJ intro: Missing API keys - openai:", !!openaiKey, "elevenlabs:", !!elevenLabsKey, "voiceId:", !!voiceId);
-      return null;
-    }
 
     const creatorName = creator?.djName || creator?.name || track.artist || "Unknown Artist";
     const creatorCity = creator?.city || "";
@@ -1592,18 +1592,16 @@ export async function registerRoutes(
         return res.json({ djIntroUrl: track.djIntroUrl });
       }
 
+      let genError = "";
       const djIntroUrl = await generateDjIntro(trackId).catch((err: any) => {
-        console.error("DJ intro generation caught error:", err?.message || err);
+        genError = err?.message || String(err);
+        console.error("DJ intro generation error:", genError);
         return null;
       });
       if (!djIntroUrl) {
-        const openaiKey = process.env.OPENAI_API_KEY;
-        const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
-        const voiceId = process.env.ELEVENLABS_VOICE_ID;
         return res.status(500).json({ 
           message: "Failed to generate DJ intro", 
-          detail: "generateDjIntro returned null",
-          keys: { openai: !!openaiKey, elevenlabs: !!elevenLabsKey, voiceId: !!voiceId, voiceIdFallback: "nF3LfwDKm2NpoSYUrBwg" }
+          detail: genError || "unknown error"
         });
       }
 
