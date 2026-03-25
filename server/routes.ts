@@ -256,6 +256,16 @@ ONLY output the spoken words. Nothing else. No quotes, no stage directions, no p
     introScript = introScript.replace(/^["']|["']$/g, "").trim();
     if (introScript.length > 1000) introScript = introScript.substring(0, 1000);
 
+    const songTitle = track.title.trim();
+    const lastTitleIdx = introScript.toLowerCase().lastIndexOf(songTitle.toLowerCase());
+    if (lastTitleIdx !== -1) {
+      introScript = introScript.substring(0, lastTitleIdx + songTitle.length).trim();
+    }
+    introScript = introScript.replace(/[.!?,;:\s]+$/, "").trim();
+    if (!introScript.toLowerCase().endsWith(songTitle.toLowerCase())) {
+      introScript = introScript + "... " + songTitle;
+    }
+
     console.log("DJ intro script for track", trackId, ":", introScript);
 
     const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
@@ -265,7 +275,7 @@ ONLY output the spoken words. Nothing else. No quotes, no stage directions, no p
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        text: introScript.trim().replace(/[^.!?"']$/, "$&.") + " ...",
+        text: introScript + ".",
         model_id: "eleven_monolingual_v1",
         voice_settings: {
           stability: 0.82,
@@ -569,8 +579,16 @@ export async function registerRoutes(
       if (!isAdmin) {
         return res.status(403).json({ message: "Access denied" });
       }
-      await db.execute(sql`UPDATE tracks SET dj_intro_url = NULL`);
-      res.json({ ok: true, message: "All DJ intros cleared" });
+      const { trackIds } = req.body;
+      if (trackIds && Array.isArray(trackIds) && trackIds.length > 0) {
+        for (const tid of trackIds) {
+          await db.execute(sql`UPDATE tracks SET dj_intro_url = NULL WHERE id = ${tid}`);
+        }
+        res.json({ ok: true, message: `Cleared DJ intros for ${trackIds.length} track(s)` });
+      } else {
+        await db.execute(sql`UPDATE tracks SET dj_intro_url = NULL`);
+        res.json({ ok: true, message: "All DJ intros cleared" });
+      }
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
