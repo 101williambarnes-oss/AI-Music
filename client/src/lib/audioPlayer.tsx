@@ -10,14 +10,18 @@ type TrackMeta = {
 
 type OnEndedCallback = (trackId: number) => void;
 
+type PlayOptions = {
+  skipIntro?: boolean;
+};
+
 type AudioPlayerState = {
   currentTrackId: number | null;
   isPlaying: boolean;
   isPlayingIntro: boolean;
-  play: (trackId: number, fileUrl: string, meta?: TrackMeta) => void;
+  play: (trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => void;
   pause: () => void;
   stop: () => void;
-  toggle: (trackId: number, fileUrl: string, meta?: TrackMeta) => void;
+  toggle: (trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => void;
   seek: (time: number) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
@@ -98,7 +102,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     };
   }, []);
 
-  const play = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta) => {
+  const play = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => {
     const audio = audioRef.current;
     const introAudio = introAudioRef.current;
     if (!audio) return;
@@ -126,6 +130,15 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       if (introAudio) introAudio.pause();
       setIsPlayingIntro(false);
       pendingSongUrlRef.current = null;
+
+      if (options?.skipIntro) {
+        audio.src = fileUrl;
+        audio.load();
+        const tryPlay = () => { audio.play().catch(() => setIsPlaying(false)); };
+        if (audio.readyState >= 2) tryPlay();
+        else audio.addEventListener("canplay", tryPlay, { once: true });
+        return;
+      }
 
       let djIntroUrl = meta?.djIntroUrl;
       const alreadyPlayedIntro = playedIntrosRef.current.has(trackId);
@@ -234,7 +247,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const isPlayingRef = useRef(false);
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
-  const toggle = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta) => {
+  const toggle = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => {
     if (currentTrackIdRef.current === trackId && isPlayingRef.current) {
       pause();
     } else if (currentTrackIdRef.current === trackId && !isPlayingRef.current) {
@@ -245,7 +258,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         audioRef.current.play().catch(() => setIsPlaying(false));
       }
     } else {
-      play(trackId, fileUrl, meta);
+      play(trackId, fileUrl, meta, options);
     }
   }, [play, pause]);
 
