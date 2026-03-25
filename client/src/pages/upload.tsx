@@ -22,6 +22,10 @@ export default function Upload() {
   const [preview, setPreview] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [songDescription, setSongDescription] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [needsLocation, setNeedsLocation] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
@@ -32,6 +36,19 @@ export default function Upload() {
     if (stored) {
       setIsLoggedIn(true);
       setAuthChecking(false);
+      const userData = JSON.parse(stored);
+      if (userData?.creatorId) {
+        fetch(`/api/creators/${userData.creatorId}`)
+          .then(r => r.ok ? r.json() : null)
+          .then((data: any) => {
+            if (data?.creator && (!data.creator.city || !data.creator.state)) {
+              setNeedsLocation(true);
+            }
+          })
+          .catch(() => setNeedsLocation(true));
+      } else {
+        setNeedsLocation(true);
+      }
     } else {
       fetch("/api/auth/me")
         .then((res) => {
@@ -40,6 +57,7 @@ export default function Upload() {
               if (data?.user) {
                 localStorage.setItem("hwm_user", JSON.stringify(data.user));
                 setIsLoggedIn(true);
+                setNeedsLocation(true);
               }
             });
           }
@@ -135,6 +153,9 @@ export default function Upload() {
       formData.append("aiTools", JSON.stringify(aiTools));
       formData.append("file", file);
       formData.append("explicit", String(isExplicit));
+      if (songDescription.trim()) formData.append("songDescription", songDescription.trim());
+      if (city.trim()) formData.append("city", city.trim());
+      if (state.trim()) formData.append("state", state.trim());
       if (coverFile) formData.append("cover", coverFile);
       if (userData?.id) formData.append("userId", String(userData.id));
 
@@ -236,6 +257,33 @@ export default function Upload() {
                 ))}
               </select>
             </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>About This Song</label>
+              <textarea
+                value={songDescription}
+                onChange={(e) => setSongDescription(e.target.value)}
+                placeholder="Tell listeners a little about this track..."
+                maxLength={200}
+                rows={2}
+                style={{ ...inputStyle, resize: "vertical", minHeight: 50 }}
+                data-testid="input-song-description"
+              />
+              <div style={{ color: "rgba(170,182,232,.3)", fontSize: 11, marginTop: 4 }}>{songDescription.length}/200</div>
+            </div>
+
+            {needsLocation && (
+              <div style={{ marginBottom: 16, display: "flex", gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>City</label>
+                  <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Your city" style={inputStyle} data-testid="input-city" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>State</label>
+                  <input type="text" value={state} onChange={(e) => setState(e.target.value)} placeholder="Your state" style={inputStyle} data-testid="input-state" />
+                </div>
+              </div>
+            )}
 
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Upload File *</label>

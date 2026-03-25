@@ -368,6 +368,7 @@ export default function Jukebox() {
                               title: track.title,
                               artist: track.artist,
                               coverUrl: track.coverUrl,
+                              djIntroUrl: (track as any).djIntroUrl,
                             });
                           }
                         }}

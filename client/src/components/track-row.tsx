@@ -45,13 +45,13 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
     if (isMedia) {
       wantModalRef.current = true;
       if (currentTrackId !== track.id) {
-        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
       } else if (!isPlaying) {
-        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
       }
       setShowVideoModal(true);
     } else {
-      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
     }
   }, [hasAudio, isMedia, track.id, track.fileUrl, track.title, track.artist, track.coverUrl, play, toggle, currentTrackId, isPlaying]);
 

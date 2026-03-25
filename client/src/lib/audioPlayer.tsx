@@ -5,6 +5,7 @@ type TrackMeta = {
   title?: string;
   artist?: string;
   coverUrl?: string | null;
+  djIntroUrl?: string | null;
 };
 
 type OnEndedCallback = (trackId: number) => void;
@@ -12,6 +13,7 @@ type OnEndedCallback = (trackId: number) => void;
 type AudioPlayerState = {
   currentTrackId: number | null;
   isPlaying: boolean;
+  isPlayingIntro: boolean;
   play: (trackId: number, fileUrl: string, meta?: TrackMeta) => void;
   pause: () => void;
   stop: () => void;
@@ -25,6 +27,7 @@ type AudioPlayerState = {
 const AudioPlayerContext = createContext<AudioPlayerState>({
   currentTrackId: null,
   isPlaying: false,
+  isPlayingIntro: false,
   play: () => {},
   pause: () => {},
   stop: () => {},
@@ -38,10 +41,14 @@ const AudioPlayerContext = createContext<AudioPlayerState>({
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrackId, setCurrentTrackId] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlayingIntro, setIsPlayingIntro] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const introAudioRef = useRef<HTMLAudioElement | null>(null);
   const currentTrackIdRef = useRef<number | null>(null);
   const countedPlaysRef = useRef<Set<number>>(new Set());
+  const playedIntrosRef = useRef<Set<number>>(new Set());
   const onEndedRef = useRef<OnEndedCallback | null>(null);
+  const pendingSongUrlRef = useRef<string | null>(null);
 
   const setOnEnded = useCallback((cb: OnEndedCallback | null) => {
     onEndedRef.current = cb;
@@ -59,13 +66,40 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         onEndedRef.current(tid);
       }
     });
+
+    const introAudio = new Audio();
+    introAudio.setAttribute("playsinline", "true");
+    introAudio.preload = "auto";
+    introAudioRef.current = introAudio;
+
+    introAudio.addEventListener("ended", () => {
+      setIsPlayingIntro(false);
+      const songUrl = pendingSongUrlRef.current;
+      if (songUrl && audioRef.current) {
+        const mainAudio = audioRef.current;
+        mainAudio.src = songUrl;
+        mainAudio.load();
+        const tryPlay = () => {
+          mainAudio.play().catch(() => setIsPlaying(false));
+        };
+        if (mainAudio.readyState >= 2) {
+          tryPlay();
+        } else {
+          mainAudio.addEventListener("canplay", tryPlay, { once: true });
+        }
+        pendingSongUrlRef.current = null;
+      }
+    });
+
     return () => {
       audio.pause();
+      introAudio.pause();
     };
   }, []);
 
   const play = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta) => {
     const audio = audioRef.current;
+    const introAudio = introAudioRef.current;
     if (!audio) return;
 
     const isNewTrack = currentTrackIdRef.current !== trackId;
@@ -88,17 +122,47 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
     if (isNewTrack) {
       audio.pause();
-      audio.src = fileUrl;
-      audio.load();
-      const tryPlay = () => {
-        audio.play().catch(() => {
-          setIsPlaying(false);
-        });
-      };
-      if (audio.readyState >= 2) {
-        tryPlay();
+      if (introAudio) introAudio.pause();
+      setIsPlayingIntro(false);
+      pendingSongUrlRef.current = null;
+
+      const djIntroUrl = meta?.djIntroUrl;
+      const alreadyPlayedIntro = playedIntrosRef.current.has(trackId);
+
+      if (djIntroUrl && !alreadyPlayedIntro && introAudio) {
+        playedIntrosRef.current.add(trackId);
+        pendingSongUrlRef.current = fileUrl;
+        setIsPlayingIntro(true);
+        introAudio.src = djIntroUrl;
+        introAudio.load();
+        const tryIntro = () => {
+          introAudio.play().catch(() => {
+            setIsPlayingIntro(false);
+            audio.src = fileUrl;
+            audio.load();
+            const tryMain = () => { audio.play().catch(() => setIsPlaying(false)); };
+            if (audio.readyState >= 2) tryMain();
+            else audio.addEventListener("canplay", tryMain, { once: true });
+          });
+        };
+        if (introAudio.readyState >= 2) {
+          tryIntro();
+        } else {
+          introAudio.addEventListener("canplay", tryIntro, { once: true });
+        }
       } else {
-        audio.addEventListener("canplay", tryPlay, { once: true });
+        audio.src = fileUrl;
+        audio.load();
+        const tryPlay = () => {
+          audio.play().catch(() => {
+            setIsPlaying(false);
+          });
+        };
+        if (audio.readyState >= 2) {
+          tryPlay();
+        } else {
+          audio.addEventListener("canplay", tryPlay, { once: true });
+        }
       }
     } else {
       audio.play().catch(() => {
@@ -119,19 +183,28 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }, []);
 
+  const isPlayingIntroRef = useRef(false);
+  useEffect(() => { isPlayingIntroRef.current = isPlayingIntro; }, [isPlayingIntro]);
+
   const pause = useCallback(() => {
     const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
+    const introAudio = introAudioRef.current;
+    if (isPlayingIntroRef.current && introAudio) {
+      introAudio.pause();
+    } else if (audio) {
+      audio.pause();
+    }
     setIsPlaying(false);
   }, []);
 
   const stop = useCallback(() => {
     const audio = audioRef.current;
-    if (!audio) return;
-    audio.pause();
-    audio.currentTime = 0;
+    const introAudio = introAudioRef.current;
+    if (audio) { audio.pause(); audio.currentTime = 0; }
+    if (introAudio) { introAudio.pause(); introAudio.currentTime = 0; }
     setIsPlaying(false);
+    setIsPlayingIntro(false);
+    pendingSongUrlRef.current = null;
   }, []);
 
   const isPlayingRef = useRef(false);
@@ -140,6 +213,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const toggle = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta) => {
     if (currentTrackIdRef.current === trackId && isPlayingRef.current) {
       pause();
+    } else if (currentTrackIdRef.current === trackId && !isPlayingRef.current) {
+      setIsPlaying(true);
+      if (isPlayingIntroRef.current && introAudioRef.current) {
+        introAudioRef.current.play().catch(() => setIsPlaying(false));
+      } else if (audioRef.current) {
+        audioRef.current.play().catch(() => setIsPlaying(false));
+      }
     } else {
       play(trackId, fileUrl, meta);
     }
@@ -160,7 +240,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   return (
-    <AudioPlayerContext.Provider value={{ currentTrackId, isPlaying, play, pause, stop, toggle, seek, getCurrentTime, getDuration, setOnEnded }}>
+    <AudioPlayerContext.Provider value={{ currentTrackId, isPlaying, isPlayingIntro, play, pause, stop, toggle, seek, getCurrentTime, getDuration, setOnEnded }}>
       {children}
     </AudioPlayerContext.Provider>
   );

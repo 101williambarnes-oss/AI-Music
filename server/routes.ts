@@ -92,6 +92,142 @@ async function extractEmbeddedArtwork(filePath: string): Promise<string | null> 
   }
 }
 
+async function generateDjIntro(trackId: number): Promise<string | null> {
+  try {
+    const track = await storage.getTrack(trackId);
+    if (!track) return null;
+    if (track.djIntroUrl) return track.djIntroUrl;
+
+    let creator = track.creatorId ? await storage.getCreatorById(track.creatorId) : null;
+
+    const openaiKey = process.env.OPENAI_API_KEY;
+    const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
+    const voiceId = process.env.ELEVENLABS_VOICE_ID;
+    const assistantId = "asst_LO0FJB1MtzTLrrkQ37RuAVSO";
+
+    if (!openaiKey || !elevenLabsKey || !voiceId) {
+      console.log("DJ intro: Missing API keys, skipping");
+      return null;
+    }
+
+    const creatorName = creator?.name || track.artist || "Unknown Artist";
+    const creatorCity = creator?.city || "";
+    const creatorState = creator?.state || "";
+    const locationStr = creatorCity && creatorState ? `from ${creatorCity}, ${creatorState}` : "";
+    const songDesc = track.songDescription || "";
+    const genre = track.genre || "";
+    const aiTool = track.aiTool || "";
+
+    const prompt = `You are William Allen, the AI DJ for Hit Wave Media. Write a SHORT, energetic DJ intro (2-3 sentences max, under 30 words) for this song. Be natural, vary your style each time. Don't be repetitive or formulaic.
+
+Song: "${track.title}"
+Artist: ${creatorName}${locationStr ? ` ${locationStr}` : ""}
+Genre: ${genre}
+${songDesc ? `About: ${songDesc}` : ""}
+${aiTool ? `Created with: ${aiTool}` : ""}
+
+Write ONLY the intro script William should say. No quotes, no stage directions.`;
+
+    const threadRes = await fetch("https://api.openai.com/v1/threads", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${openaiKey}`, "Content-Type": "application/json", "OpenAI-Beta": "assistants=v2" },
+      body: JSON.stringify({}),
+    });
+    if (!threadRes.ok) {
+      console.error("DJ intro: Failed to create thread:", await threadRes.text());
+      return null;
+    }
+    const thread = await threadRes.json() as any;
+
+    const msgRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${openaiKey}`, "Content-Type": "application/json", "OpenAI-Beta": "assistants=v2" },
+      body: JSON.stringify({ role: "user", content: prompt }),
+    });
+    if (!msgRes.ok) {
+      console.error("DJ intro: Failed to add message:", await msgRes.text());
+      return null;
+    }
+
+    const runRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${openaiKey}`, "Content-Type": "application/json", "OpenAI-Beta": "assistants=v2" },
+      body: JSON.stringify({ assistant_id: assistantId }),
+    });
+    if (!runRes.ok) {
+      console.error("DJ intro: Failed to create run:", await runRes.text());
+      return null;
+    }
+    const run = await runRes.json() as any;
+
+    let runStatus = run.status;
+    let attempts = 0;
+    while (runStatus !== "completed" && runStatus !== "failed" && attempts < 30) {
+      await new Promise(r => setTimeout(r, 1000));
+      const checkRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs/${run.id}`, {
+        headers: { "Authorization": `Bearer ${openaiKey}`, "OpenAI-Beta": "assistants=v2" },
+      });
+      const checkData = await checkRes.json() as any;
+      runStatus = checkData.status;
+      attempts++;
+    }
+
+    if (runStatus !== "completed") {
+      console.error("DJ intro: OpenAI run did not complete, status:", runStatus);
+      return null;
+    }
+
+    const msgsRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+      headers: { "Authorization": `Bearer ${openaiKey}`, "OpenAI-Beta": "assistants=v2" },
+    });
+    const msgsData = await msgsRes.json() as any;
+    const introScript = msgsData.data?.[0]?.content?.[0]?.text?.value;
+    if (!introScript) {
+      console.error("DJ intro: No script generated");
+      return null;
+    }
+
+    console.log("DJ intro script for track", trackId, ":", introScript);
+
+    const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: "POST",
+      headers: {
+        "xi-api-key": elevenLabsKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        text: introScript,
+        model_id: "eleven_multilingual_v2",
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+          style: 0.4,
+          use_speaker_boost: true,
+        },
+      }),
+    });
+
+    if (!ttsRes.ok) {
+      const errText = await ttsRes.text();
+      console.error("DJ intro: ElevenLabs TTS failed:", errText);
+      return null;
+    }
+
+    const audioBuffer = Buffer.from(await ttsRes.arrayBuffer());
+    const tempPath = path.join(uploadsDir, `dj-intro-${trackId}-${Date.now()}.mp3`);
+    fs.writeFileSync(tempPath, audioBuffer);
+
+    const djIntroUrl = await uploadToCloudinary(tempPath, "video");
+    await storage.updateTrackDjIntroUrl(trackId, djIntroUrl);
+
+    console.log("DJ intro generated for track", trackId, ":", djIntroUrl);
+    return djIntroUrl;
+  } catch (err: any) {
+    console.error("DJ intro generation error:", err?.message || err);
+    return null;
+  }
+}
+
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -472,7 +608,7 @@ export async function registerRoutes(
       return res.status(401).json({ message: "You must be signed in to upload" });
     }
     try {
-      const { title, genre, aiTools, explicit: explicitFlag } = req.body;
+      const { title, genre, aiTools, explicit: explicitFlag, songDescription, city, state } = req.body;
       if (!title || !genre) {
         return res.status(400).json({ message: "Title and genre are required" });
       }
@@ -522,6 +658,10 @@ export async function registerRoutes(
         fileUrl = await uploadToCloudinary(mainFile.path, resourceType);
       }
 
+      if (city && state && (!creator.city || !creator.state)) {
+        await storage.updateCreatorLocation(creator.id, city, state);
+      }
+
       let parsedTools: string[] = [];
       try { parsedTools = aiTools ? JSON.parse(aiTools) : []; } catch {}
       const aiToolStr = parsedTools.length > 0 ? parsedTools.join(", ") : null;
@@ -538,9 +678,14 @@ export async function registerRoutes(
         coverUrl,
         aiTool: aiToolStr,
         explicit: explicitFlag === "true" || explicitFlag === true,
+        songDescription: songDescription || null,
       });
 
       await storage.incrementCreatorTrackCount(creator.id);
+
+      generateDjIntro(track.id).catch((err: any) => {
+        console.error("DJ intro generation failed for track", track.id, err?.message || err);
+      });
 
       res.json({ track, creatorId: creator.id });
     } catch (error) {
@@ -1318,6 +1463,30 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Admin stats error:", error);
       res.status(500).json({ message: "Failed to load admin stats" });
+    }
+  });
+
+  app.post("/api/tracks/:id/dj-intro", async (req, res) => {
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+
+      const track = await storage.getTrack(trackId);
+      if (!track) return res.status(404).json({ message: "Track not found" });
+
+      if (track.djIntroUrl) {
+        return res.json({ djIntroUrl: track.djIntroUrl });
+      }
+
+      const djIntroUrl = await generateDjIntro(trackId);
+      if (!djIntroUrl) {
+        return res.status(500).json({ message: "Failed to generate DJ intro" });
+      }
+
+      res.json({ djIntroUrl });
+    } catch (error) {
+      console.error("DJ intro endpoint error:", error);
+      res.status(500).json({ message: "Failed to generate DJ intro" });
     }
   });
 

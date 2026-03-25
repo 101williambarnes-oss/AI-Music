@@ -30,6 +30,8 @@ export const tracks = pgTable("tracks", {
   coverUrl: text("cover_url"),
   aiTool: text("ai_tool"),
   explicit: boolean("explicit").notNull().default(false),
+  songDescription: text("song_description"),
+  djIntroUrl: text("dj_intro_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -40,6 +42,8 @@ export const creators = pgTable("creators", {
   avatarColor: text("avatar_color").notNull().default("purple"),
   userId: integer("user_id"),
   avatarUrl: text("avatar_url"),
+  city: text("city"),
+  state: text("state"),
 });
 
 export const likes = pgTable("likes", {

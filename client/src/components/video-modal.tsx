@@ -24,11 +24,11 @@ export function VideoModal({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
-  const { currentTrackId, isPlaying, toggle, stop, seek, getCurrentTime, getDuration } = useAudioPlayer();
+  const { currentTrackId, isPlaying, isPlayingIntro, toggle, stop, seek, getCurrentTime, getDuration } = useAudioPlayer();
   const { addTrack, removeTrack: removeFromPlaylist, isInPlaylist } = usePlaylist();
   const inPlaylist = isInPlaylist(track.id);
   const isThisTrack = currentTrackId === track.id;
-  const isCurrentlyPlaying = isThisTrack && isPlaying;
+  const isCurrentlyPlaying = isThisTrack && isPlaying && !isPlayingIntro;
   const isVideoFile = !!track.fileUrl && /\.(mp4|webm|mov)$/i.test(track.fileUrl);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -79,7 +79,7 @@ export function VideoModal({
 
   function handleToggle() {
     if (track.fileUrl) {
-      toggle(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+      toggle(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
     }
   }
 

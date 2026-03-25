@@ -42,11 +42,11 @@ function MiniTrackCard({ track, index }: { track: TrackWithLikes; index?: number
     if (isMedia) {
       wantModalRef.current = true;
       if (currentTrackId !== track.id || !isPlaying) {
-        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
       }
       setShowVideoModal(true);
     } else {
-      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
     }
   }, [hasAudio, isMedia, track, play, toggle, currentTrackId, isPlaying]);
 
@@ -160,11 +160,11 @@ function NewSongCard({ track }: { track: TrackWithLikes }) {
     if (isMedia) {
       wantModalRef.current = true;
       if (currentTrackId !== track.id || !isPlaying) {
-        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
       }
       setShowVideoModal(true);
     } else {
-      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
     }
   }, [hasAudio, isMedia, track, play, toggle, currentTrackId, isPlaying]);
 
