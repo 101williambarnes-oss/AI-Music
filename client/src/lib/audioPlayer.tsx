@@ -166,6 +166,50 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         }
       }
 
+      const useShortIntro = djIntroUrl && !alreadyPlayedIntro && Math.random() < 0.2;
+      if (useShortIntro && introAudio) {
+        playedIntrosRef.current.add(trackId);
+        pendingSongUrlRef.current = fileUrl;
+        setIsPlayingIntro(true);
+
+        fetch(`/api/tracks/${trackId}/dj-short-intro`, { method: "POST" })
+          .then(r => r.json())
+          .then(data => {
+            if (data?.djIntroUrl && introAudio) {
+              introAudio.src = data.djIntroUrl;
+              introAudio.load();
+              const tryShort = () => {
+                introAudio.play().catch(() => {
+                  setIsPlayingIntro(false);
+                  audio.src = fileUrl;
+                  audio.load();
+                  const tryMain = () => { audio.play().catch(() => setIsPlaying(false)); };
+                  if (audio.readyState >= 2) tryMain();
+                  else audio.addEventListener("canplay", tryMain, { once: true });
+                });
+              };
+              if (introAudio.readyState >= 2) tryShort();
+              else introAudio.addEventListener("canplay", tryShort, { once: true });
+            } else {
+              setIsPlayingIntro(false);
+              audio.src = fileUrl;
+              audio.load();
+              const tryMain = () => { audio.play().catch(() => setIsPlaying(false)); };
+              if (audio.readyState >= 2) tryMain();
+              else audio.addEventListener("canplay", tryMain, { once: true });
+            }
+          })
+          .catch(() => {
+            setIsPlayingIntro(false);
+            audio.src = fileUrl;
+            audio.load();
+            const tryMain = () => { audio.play().catch(() => setIsPlaying(false)); };
+            if (audio.readyState >= 2) tryMain();
+            else audio.addEventListener("canplay", tryMain, { once: true });
+          });
+        return;
+      }
+
       if (djIntroUrl && !alreadyPlayedIntro && introAudio) {
         playedIntrosRef.current.add(trackId);
         pendingSongUrlRef.current = fileUrl;

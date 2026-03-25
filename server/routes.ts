@@ -1634,5 +1634,85 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/tracks/:id/dj-short-intro", async (req, res) => {
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+
+      const track = await storage.getTrack(trackId);
+      if (!track) return res.status(404).json({ message: "Track not found" });
+
+      const creator = track.creatorId ? await storage.getCreatorById(track.creatorId) : null;
+      const creatorName = creator?.djName || creator?.name || track.artist || "Unknown Artist";
+
+      const shortLines = [
+        `Alright, here's another one from ${creatorName}, this is "${track.title}"`,
+        `Coming up next, ${creatorName} with "${track.title}"`,
+        `Now we got ${creatorName} bringing us "${track.title}"`,
+        `Oh, this one right here, ${creatorName}, "${track.title}"`,
+        `Y'all ready? ${creatorName} coming at you with "${track.title}"`,
+        `Keep it locked, here's ${creatorName} with "${track.title}"`,
+        `Next up on Hit Wave, it's ${creatorName}, "${track.title}"`,
+        `Man, I love this one. ${creatorName}, "${track.title}"`,
+        `We keep it moving, here's ${creatorName}, "${track.title}"`,
+        `This is what I'm talking about. ${creatorName}, "${track.title}"`,
+      ];
+      const line = shortLines[Math.floor(Math.random() * shortLines.length)];
+
+      const openaiKey = process.env.OPENAI_API_KEY;
+      const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
+      const voiceId = process.env.ELEVENLABS_VOICE_ID || "nF3LfwDKm2NpoSYUrBwg";
+
+      if (!elevenLabsKey && !openaiKey) {
+        return res.status(500).json({ message: "No TTS API keys available" });
+      }
+
+      let audioBuffer: Buffer | null = null;
+
+      if (elevenLabsKey) {
+        const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+          method: "POST",
+          headers: { "xi-api-key": elevenLabsKey, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: line + ".",
+            model_id: "eleven_monolingual_v1",
+            voice_settings: { stability: 0.82, similarity_boost: 0.85 },
+          }),
+        });
+        if (ttsRes.ok) {
+          audioBuffer = Buffer.from(await ttsRes.arrayBuffer());
+        } else {
+          console.warn("Short intro: ElevenLabs failed, trying OpenAI TTS");
+        }
+      }
+
+      if (!audioBuffer && openaiKey) {
+        const openaiTtsRes = await fetch("https://api.openai.com/v1/audio/speech", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${openaiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ model: "tts-1", voice: "onyx", input: line + "." }),
+        });
+        if (openaiTtsRes.ok) {
+          audioBuffer = Buffer.from(await openaiTtsRes.arrayBuffer());
+        }
+      }
+
+      if (!audioBuffer) {
+        return res.status(500).json({ message: "TTS generation failed" });
+      }
+
+      const tempPath = path.join(uploadsDir, `dj-short-${trackId}-${Date.now()}.mp3`);
+      fs.writeFileSync(tempPath, audioBuffer);
+      const shortIntroUrl = await uploadToCloudinary(tempPath, "video");
+      try { fs.unlinkSync(tempPath); } catch {}
+
+      console.log("DJ short intro for track", trackId, ":", line);
+      res.json({ djIntroUrl: shortIntroUrl });
+    } catch (error: any) {
+      console.error("DJ short intro error:", error);
+      res.status(500).json({ message: "Failed to generate short intro" });
+    }
+  });
+
   return httpServer;
 }
