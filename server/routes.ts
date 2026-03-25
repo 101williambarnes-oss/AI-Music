@@ -250,8 +250,7 @@ ONLY output the spoken words. Nothing else. No quotes, no stage directions, no p
     const msgsData = await msgsRes.json() as any;
     let introScript = msgsData.data?.[0]?.content?.[0]?.text?.value;
     if (!introScript) {
-      console.error("DJ intro: No script generated");
-      return null;
+      throw new Error("OpenAI Assistant returned no script text");
     }
     introScript = introScript.replace(/^["']|["']$/g, "").trim();
     if (introScript.length > 1000) introScript = introScript.substring(0, 1000);
@@ -287,7 +286,7 @@ ONLY output the spoken words. Nothing else. No quotes, no stage directions, no p
     if (!ttsRes.ok) {
       const errText = await ttsRes.text();
       console.error("DJ intro: ElevenLabs TTS failed:", errText);
-      return null;
+      throw new Error("ElevenLabs TTS failed: " + errText);
     }
 
     const audioBuffer = Buffer.from(await ttsRes.arrayBuffer());
