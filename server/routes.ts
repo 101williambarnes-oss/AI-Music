@@ -118,15 +118,14 @@ async function generateDjIntro(trackId: number): Promise<string | null> {
     const genre = track.genre || "";
     const aiTool = track.aiTool || "";
 
-    const prompt = `You are William Allen, the AI DJ for Hit Wave Media. Write a SHORT, energetic DJ intro (2-3 sentences max, under 30 words) for this song. Be natural, vary your style each time. Don't be repetitive or formulaic.
+    const prompt = `You are William Allen, the AI DJ for Hit Wave Media. Write a very short DJ intro for this song. MAX 1-2 sentences, under 20 words total. Be hype and natural. End with the song title, then STOP. Do NOT add anything after the song title. No extra commentary, no "let's go", no filler after the title.
 
 Song: "${track.title}"
 Artist: ${creatorName}${locationStr ? ` ${locationStr}` : ""}
 Genre: ${genre}
 ${songDesc ? `About: ${songDesc}` : ""}
-${aiTool ? `Created with: ${aiTool}` : ""}
 
-Write ONLY the intro script William should say. No quotes, no stage directions.`;
+Reply with ONLY the spoken intro. No quotes, no stage directions, no extra text.`;
 
     const threadRes = await fetch("https://api.openai.com/v1/threads", {
       method: "POST",
@@ -181,11 +180,13 @@ Write ONLY the intro script William should say. No quotes, no stage directions.`
       headers: { "Authorization": `Bearer ${openaiKey}`, "OpenAI-Beta": "assistants=v2" },
     });
     const msgsData = await msgsRes.json() as any;
-    const introScript = msgsData.data?.[0]?.content?.[0]?.text?.value;
+    let introScript = msgsData.data?.[0]?.content?.[0]?.text?.value;
     if (!introScript) {
       console.error("DJ intro: No script generated");
       return null;
     }
+    introScript = introScript.replace(/^["']|["']$/g, "").trim();
+    if (introScript.length > 200) introScript = introScript.substring(0, 200);
 
     console.log("DJ intro script for track", trackId, ":", introScript);
 
