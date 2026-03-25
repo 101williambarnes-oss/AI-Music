@@ -106,7 +106,7 @@ async function generateDjIntro(trackId: number): Promise<string | null> {
     const assistantId = "asst_LO0FJB1MtzTLrrkQ37RuAVSO";
 
     if (!openaiKey || !elevenLabsKey || !voiceId) {
-      console.log("DJ intro: Missing API keys, skipping");
+      console.log("DJ intro: Missing API keys - openai:", !!openaiKey, "elevenlabs:", !!elevenLabsKey, "voiceId:", !!voiceId);
       return null;
     }
 
@@ -1485,13 +1485,13 @@ export async function registerRoutes(
 
       const djIntroUrl = await generateDjIntro(trackId);
       if (!djIntroUrl) {
-        return res.status(500).json({ message: "Failed to generate DJ intro" });
+        return res.status(500).json({ message: "Failed to generate DJ intro", detail: "generateDjIntro returned null - check server logs" });
       }
 
       res.json({ djIntroUrl });
-    } catch (error) {
+    } catch (error: any) {
       console.error("DJ intro endpoint error:", error);
-      res.status(500).json({ message: "Failed to generate DJ intro" });
+      res.status(500).json({ message: "Failed to generate DJ intro", detail: error?.message || "unknown error" });
     }
   });
 
