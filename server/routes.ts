@@ -197,13 +197,11 @@ Reply with ONLY the spoken intro. No quotes, no stage directions, no extra text.
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        text: introScript,
-        model_id: "eleven_multilingual_v2",
+        text: introScript.trim().replace(/[^.!?]$/, "$&."),
+        model_id: "eleven_monolingual_v1",
         voice_settings: {
-          stability: 0.75,
-          similarity_boost: 0.8,
-          style: 0.2,
-          use_speaker_boost: true,
+          stability: 0.9,
+          similarity_boost: 0.85,
         },
       }),
     });
