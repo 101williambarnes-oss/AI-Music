@@ -141,7 +141,6 @@ export default function Upload() {
     if (!title.trim()) return setError("Title is required.");
     if (!genre.trim()) return setError("Genre is required.");
     if (!file) return setError("Please select a file to upload.");
-    if (!coverFile) return setError("Please add a cover image or video for your song.");
     if (aiTools.length === 0) return setError("Select at least one AI tool used.");
     if (!ownsRights) return setError("You must confirm you own all rights.");
     if (!agreesTerms) return setError("You must agree to the platform terms.");
