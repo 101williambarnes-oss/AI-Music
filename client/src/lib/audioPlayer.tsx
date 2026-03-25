@@ -131,19 +131,26 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       const alreadyPlayedIntro = playedIntrosRef.current.has(trackId);
 
       if (!djIntroUrl && !alreadyPlayedIntro) {
-        fetch(`/api/tracks/${trackId}/dj-intro`, { method: "POST" })
-          .then(r => r.json())
-          .then(data => {
-            if (data?.djIntroUrl) {
-              generatedIntrosRef.current.set(trackId, data.djIntroUrl);
-            }
-          })
-          .catch(() => {});
-      }
-
-      if (!djIntroUrl && !alreadyPlayedIntro) {
         const cached = generatedIntrosRef.current.get(trackId);
-        if (cached) djIntroUrl = cached;
+        if (cached) {
+          djIntroUrl = cached;
+        } else {
+          audio.src = fileUrl;
+          audio.load();
+          const tryPlay = () => { audio.play().catch(() => setIsPlaying(false)); };
+          if (audio.readyState >= 2) tryPlay();
+          else audio.addEventListener("canplay", tryPlay, { once: true });
+
+          fetch(`/api/tracks/${trackId}/dj-intro`, { method: "POST" })
+            .then(r => r.json())
+            .then(data => {
+              if (data?.djIntroUrl) {
+                generatedIntrosRef.current.set(trackId, data.djIntroUrl);
+              }
+            })
+            .catch(() => {});
+          return;
+        }
       }
 
       if (djIntroUrl && !alreadyPlayedIntro && introAudio) {

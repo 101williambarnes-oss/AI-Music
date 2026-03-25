@@ -102,7 +102,7 @@ async function generateDjIntro(trackId: number): Promise<string | null> {
 
     const openaiKey = process.env.OPENAI_API_KEY;
     const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
-    const voiceId = process.env.ELEVENLABS_VOICE_ID;
+    const voiceId = process.env.ELEVENLABS_VOICE_ID || "nF3LfwDKm2NpoSYUrBwg";
     const assistantId = "asst_LO0FJB1MtzTLrrkQ37RuAVSO";
 
     if (!openaiKey || !elevenLabsKey || !voiceId) {
