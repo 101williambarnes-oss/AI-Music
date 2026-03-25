@@ -47,6 +47,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const currentTrackIdRef = useRef<number | null>(null);
   const countedPlaysRef = useRef<Set<number>>(new Set());
   const playedIntrosRef = useRef<Set<number>>(new Set());
+  const generatedIntrosRef = useRef<Map<number, string>>(new Map());
   const onEndedRef = useRef<OnEndedCallback | null>(null);
   const pendingSongUrlRef = useRef<string | null>(null);
 
@@ -126,8 +127,24 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setIsPlayingIntro(false);
       pendingSongUrlRef.current = null;
 
-      const djIntroUrl = meta?.djIntroUrl;
+      let djIntroUrl = meta?.djIntroUrl;
       const alreadyPlayedIntro = playedIntrosRef.current.has(trackId);
+
+      if (!djIntroUrl && !alreadyPlayedIntro) {
+        fetch(`/api/tracks/${trackId}/dj-intro`, { method: "POST" })
+          .then(r => r.json())
+          .then(data => {
+            if (data?.djIntroUrl) {
+              generatedIntrosRef.current.set(trackId, data.djIntroUrl);
+            }
+          })
+          .catch(() => {});
+      }
+
+      if (!djIntroUrl && !alreadyPlayedIntro) {
+        const cached = generatedIntrosRef.current.get(trackId);
+        if (cached) djIntroUrl = cached;
+      }
 
       if (djIntroUrl && !alreadyPlayedIntro && introAudio) {
         playedIntrosRef.current.add(trackId);
