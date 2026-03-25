@@ -41,6 +41,7 @@ export interface IStorage {
   deleteComment(commentId: number): Promise<void>;
   updateCreatorAvatar(creatorId: number, avatarUrl: string): Promise<void>;
   updateCreatorLocation(creatorId: number, city: string, state: string): Promise<void>;
+  updateCreatorDjName(creatorId: number, djName: string): Promise<void>;
   updateTrackDjIntroUrl(trackId: number, djIntroUrl: string): Promise<void>;
   getFollowerCount(creatorId: number): Promise<number>;
   getFollowingCount(userId: number): Promise<number>;
@@ -266,6 +267,10 @@ export class DatabaseStorage implements IStorage {
 
   async updateCreatorLocation(creatorId: number, city: string, state: string): Promise<void> {
     await db.update(creators).set({ city, state }).where(eq(creators.id, creatorId));
+  }
+
+  async updateCreatorDjName(creatorId: number, djName: string): Promise<void> {
+    await db.update(creators).set({ djName }).where(eq(creators.id, creatorId));
   }
 
   async updateTrackDjIntroUrl(trackId: number, djIntroUrl: string): Promise<void> {

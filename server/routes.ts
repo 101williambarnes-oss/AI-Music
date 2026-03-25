@@ -110,7 +110,7 @@ async function generateDjIntro(trackId: number): Promise<string | null> {
       return null;
     }
 
-    const creatorName = creator?.name || track.artist || "Unknown Artist";
+    const creatorName = creator?.djName || creator?.name || track.artist || "Unknown Artist";
     const creatorCity = creator?.city || "";
     const creatorState = creator?.state || "";
     const locationStr = creatorCity && creatorState ? `from ${creatorCity}, ${creatorState}` : "";
@@ -608,7 +608,7 @@ export async function registerRoutes(
       return res.status(401).json({ message: "You must be signed in to upload" });
     }
     try {
-      const { title, genre, aiTools, explicit: explicitFlag, songDescription, city, state } = req.body;
+      const { title, genre, aiTools, explicit: explicitFlag, songDescription, city, state, djName } = req.body;
       if (!title || !genre) {
         return res.status(400).json({ message: "Title and genre are required" });
       }
@@ -660,6 +660,9 @@ export async function registerRoutes(
 
       if (city && state && (!creator.city || !creator.state)) {
         await storage.updateCreatorLocation(creator.id, city, state);
+      }
+      if (djName && !creator.djName) {
+        await storage.updateCreatorDjName(creator.id, djName);
       }
 
       let parsedTools: string[] = [];

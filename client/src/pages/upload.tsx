@@ -23,9 +23,11 @@ export default function Upload() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [songDescription, setSongDescription] = useState("");
+  const [djName, setDjName] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [needsLocation, setNeedsLocation] = useState(false);
+  const [needsDjName, setNeedsDjName] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
@@ -41,13 +43,15 @@ export default function Upload() {
         fetch(`/api/creators/${userData.creatorId}`)
           .then(r => r.ok ? r.json() : null)
           .then((data: any) => {
-            if (data?.creator && (!data.creator.city || !data.creator.state)) {
-              setNeedsLocation(true);
+            if (data?.creator) {
+              if (!data.creator.city || !data.creator.state) setNeedsLocation(true);
+              if (!data.creator.djName) setNeedsDjName(true);
             }
           })
-          .catch(() => setNeedsLocation(true));
+          .catch(() => { setNeedsLocation(true); setNeedsDjName(true); });
       } else {
         setNeedsLocation(true);
+        setNeedsDjName(true);
       }
     } else {
       fetch("/api/auth/me")
@@ -58,6 +62,7 @@ export default function Upload() {
                 localStorage.setItem("hwm_user", JSON.stringify(data.user));
                 setIsLoggedIn(true);
                 setNeedsLocation(true);
+                setNeedsDjName(true);
               }
             });
           }
@@ -154,6 +159,7 @@ export default function Upload() {
       formData.append("file", file);
       formData.append("explicit", String(isExplicit));
       if (songDescription.trim()) formData.append("songDescription", songDescription.trim());
+      if (djName.trim()) formData.append("djName", djName.trim());
       if (city.trim()) formData.append("city", city.trim());
       if (state.trim()) formData.append("state", state.trim());
       if (coverFile) formData.append("cover", coverFile);
@@ -257,6 +263,14 @@ export default function Upload() {
                 ))}
               </select>
             </div>
+
+            {needsDjName && (
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Name or AI Handle</label>
+                <input type="text" value={djName} onChange={(e) => setDjName(e.target.value)} placeholder="What should DJ William Allen call you?" style={inputStyle} data-testid="input-dj-name" />
+                <div style={{ color: "rgba(170,182,232,.3)", fontSize: 11, marginTop: 4 }}>This is the name the DJ will use to introduce your songs</div>
+              </div>
+            )}
 
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>About This Song</label>
