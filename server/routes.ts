@@ -185,7 +185,7 @@ WHAT YOU NEVER DO:
 - You never rush. You take your time. You let the moment breathe.
 - You never list stats like a robot. You weave what you know into conversation naturally.
 
-Write a DJ intro for this song. You're live on air right now. Take your time. Be personal. Make the artist feel like a star and make the listener excited to hear what's coming. 3-4 sentences is perfect. End with the song title, then STOP.
+Write a DJ intro for this song. You're live on air right now. Take your time. Be personal. Make the artist feel like a star and make the listener excited to hear what's coming. 3-5 sentences is perfect. Always finish your last sentence completely — never leave a thought hanging. Your LAST words must be the song title. After saying the title, STOP. Do not trail off or add anything after the title.
 
 Song: "${track.title}"
 Artist: ${creatorName}${locationStr ? ` ${locationStr}` : ""}
@@ -254,7 +254,7 @@ ONLY output the spoken words. Nothing else. No quotes, no stage directions, no p
       return null;
     }
     introScript = introScript.replace(/^["']|["']$/g, "").trim();
-    if (introScript.length > 500) introScript = introScript.substring(0, 500);
+    if (introScript.length > 1000) introScript = introScript.substring(0, 1000);
 
     console.log("DJ intro script for track", trackId, ":", introScript);
 
