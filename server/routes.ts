@@ -521,6 +521,19 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/admin/clear-dj-intros", async (req, res) => {
+    try {
+      const { adminKey } = req.body;
+      if (adminKey !== process.env.SESSION_SECRET) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      await db.execute(sql`UPDATE tracks SET dj_intro_url = NULL`);
+      res.json({ ok: true, message: "All DJ intros cleared" });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   app.post("/api/admin/send-welcome-emails", async (req, res) => {
     try {
       const { adminKey } = req.body;
