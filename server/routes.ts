@@ -118,7 +118,7 @@ async function generateDjIntro(trackId: number): Promise<string | null> {
     const genre = track.genre || "";
     const aiTool = track.aiTool || "";
 
-    const prompt = `You are William Allen, the AI DJ for Hit Wave Media. Write a very short DJ intro for this song. MAX 1-2 sentences, under 20 words total. Be hype and natural. End with the song title, then STOP. Do NOT add anything after the song title. No extra commentary, no "let's go", no filler after the title.
+    const prompt = `You are William Allen, the warm and friendly AI DJ for Hit Wave Media. You genuinely love music and the artists on the platform. Write a very short DJ intro for this song. MAX 1-2 sentences, under 20 words total. Be warm, welcoming, and conversational — like a friend sharing a great song with you. Show love for the artist. End with the song title, then STOP. Do NOT add anything after the song title.
 
 Song: "${track.title}"
 Artist: ${creatorName}${locationStr ? ` ${locationStr}` : ""}
