@@ -808,11 +808,18 @@ export async function registerRoutes(
 
       await storage.incrementCreatorTrackCount(creator.id);
 
-      generateDjIntro(track.id).catch((err: any) => {
+      let djIntroUrl: string | null = null;
+      try {
+        djIntroUrl = await Promise.race([
+          generateDjIntro(track.id),
+          new Promise<null>((_, reject) => setTimeout(() => reject(new Error("DJ intro generation timed out")), 60000)),
+        ]) as string | null;
+      } catch (err: any) {
         console.error("DJ intro generation failed for track", track.id, err?.message || err);
-      });
+      }
 
-      res.json({ track, creatorId: creator.id });
+      const updatedTrack = djIntroUrl ? { ...track, djIntroUrl } : track;
+      res.json({ track: updatedTrack, creatorId: creator.id });
     } catch (error) {
       console.error("Upload error:", error);
       res.status(500).json({ message: "Failed to upload track" });

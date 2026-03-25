@@ -409,7 +409,7 @@ export default function Upload() {
               }}
               data-testid="button-upload-submit"
             >
-              {loading ? "Uploading..." : "Upload Track"}
+              {loading ? "Uploading & Generating DJ Intro..." : "Upload Track"}
             </button>
           </form>
         </section>
