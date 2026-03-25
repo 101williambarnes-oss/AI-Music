@@ -1645,19 +1645,50 @@ export async function registerRoutes(
       const creator = track.creatorId ? await storage.getCreatorById(track.creatorId) : null;
       const creatorName = creator?.djName || creator?.name || track.artist || "Unknown Artist";
 
-      const shortLines = [
-        `Alright, here's another one from ${creatorName}, this is "${track.title}"`,
-        `Coming up next, ${creatorName} with "${track.title}"`,
-        `Now we got ${creatorName} bringing us "${track.title}"`,
-        `Oh, this one right here, ${creatorName}, "${track.title}"`,
-        `Y'all ready? ${creatorName} coming at you with "${track.title}"`,
-        `Keep it locked, here's ${creatorName} with "${track.title}"`,
-        `Next up on Hit Wave, it's ${creatorName}, "${track.title}"`,
-        `Man, I love this one. ${creatorName}, "${track.title}"`,
-        `We keep it moving, here's ${creatorName}, "${track.title}"`,
-        `This is what I'm talking about. ${creatorName}, "${track.title}"`,
-      ];
-      const line = shortLines[Math.floor(Math.random() * shortLines.length)];
+      const openaiKeyForScript = process.env.OPENAI_API_KEY;
+      let line = "";
+
+      if (openaiKeyForScript) {
+        try {
+          const genre = track.genre || "";
+          const songDesc = track.songDescription || "";
+          const shortPrompt = `You are William Allen, a veteran radio DJ from Memphis. Write a SHORT 2-sentence DJ intro for this song. Be warm and personal — mention one thing about the artist or song that makes the listener curious. Your last words MUST be the song title, then STOP. Keep it around 10-12 seconds when spoken aloud.
+
+Song: "${track.title}"
+Artist: ${creatorName}
+${genre ? `Genre: ${genre}` : ""}
+${songDesc ? `About: ${songDesc}` : ""}
+
+ONLY output the spoken words. No quotes, no stage directions.`;
+
+          const chatRes = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${openaiKeyForScript}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: "gpt-4o-mini",
+              messages: [{ role: "user", content: shortPrompt }],
+              max_tokens: 80,
+              temperature: 0.9,
+            }),
+          });
+          if (chatRes.ok) {
+            const chatData = await chatRes.json() as any;
+            const generated = chatData.choices?.[0]?.message?.content?.trim();
+            if (generated) line = generated;
+          }
+        } catch (e) {
+          console.warn("Short intro: OpenAI script generation failed, using template");
+        }
+      }
+
+      if (!line) {
+        const shortLines = [
+          `Alright y'all, we got ${creatorName} coming through right now, and I'm telling you, you're gonna want to hear this one. This is "${track.title}"`,
+          `Man, let me tell you about this next artist. ${creatorName} has been making some serious waves on Hit Wave Media. Here they come with "${track.title}"`,
+          `Oh, this one right here. ${creatorName} put something special together and I can't wait for y'all to hear it. This is "${track.title}"`,
+        ];
+        line = shortLines[Math.floor(Math.random() * shortLines.length)];
+      }
 
       const openaiKey = process.env.OPENAI_API_KEY;
       const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
