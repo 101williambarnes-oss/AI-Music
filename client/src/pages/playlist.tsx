@@ -12,7 +12,7 @@ export default function Playlist() {
     if (tracks.length === 0) return;
     const first = tracks[0];
     if (first.fileUrl) {
-      play(first.id, first.fileUrl, { title: first.title, artist: first.artist, coverUrl: first.coverUrl });
+      play(first.id, first.fileUrl, { title: first.title, artist: first.artist, coverUrl: first.coverUrl, djIntroUrl: (first as any).djIntroUrl });
     }
   }
 

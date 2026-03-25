@@ -58,7 +58,7 @@ export function PlaylistProvider({ children }: { children: React.ReactNode }) {
       if (idx !== -1 && idx < current.length - 1) {
         const next = current[idx + 1];
         if (next.fileUrl) {
-          play(next.id, next.fileUrl, { title: next.title, artist: next.artist, coverUrl: next.coverUrl });
+          play(next.id, next.fileUrl, { title: next.title, artist: next.artist, coverUrl: next.coverUrl, djIntroUrl: (next as any).djIntroUrl });
         }
       }
     };
