@@ -1592,9 +1592,19 @@ export async function registerRoutes(
         return res.json({ djIntroUrl: track.djIntroUrl });
       }
 
-      const djIntroUrl = await generateDjIntro(trackId);
+      const djIntroUrl = await generateDjIntro(trackId).catch((err: any) => {
+        console.error("DJ intro generation caught error:", err?.message || err);
+        return null;
+      });
       if (!djIntroUrl) {
-        return res.status(500).json({ message: "Failed to generate DJ intro", detail: "generateDjIntro returned null - check server logs" });
+        const openaiKey = process.env.OPENAI_API_KEY;
+        const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
+        const voiceId = process.env.ELEVENLABS_VOICE_ID;
+        return res.status(500).json({ 
+          message: "Failed to generate DJ intro", 
+          detail: "generateDjIntro returned null",
+          keys: { openai: !!openaiKey, elevenlabs: !!elevenLabsKey, voiceId: !!voiceId, voiceIdFallback: "nF3LfwDKm2NpoSYUrBwg" }
+        });
       }
 
       res.json({ djIntroUrl });
