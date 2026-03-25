@@ -217,13 +217,11 @@ ONLY output the spoken words. Nothing else. No quotes, no stage directions, no p
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        text: introScript.trim().replace(/[^.!?"']$/, "$&."),
-        model_id: "eleven_multilingual_v2",
+        text: introScript.trim().replace(/[^.!?"']$/, "$&.") + " ...",
+        model_id: "eleven_monolingual_v1",
         voice_settings: {
-          stability: 0.78,
-          similarity_boost: 0.82,
-          style: 0.2,
-          use_speaker_boost: true,
+          stability: 0.82,
+          similarity_boost: 0.85,
         },
       }),
     });
