@@ -178,8 +178,25 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       playedIntrosRef.current.add(trackId);
 
       if (Math.random() < 0.2) {
-        loadAndPlay(audio, fileUrl);
-        fetch(`/api/tracks/${trackId}/dj-short-intro`, { method: "POST" }).catch(() => {});
+        playingIntroRef.current = true;
+        pendingSongUrlRef.current = fileUrl;
+        setIsPlayingIntro(true);
+        fetch(`/api/tracks/${trackId}/dj-short-intro`, { method: "POST" })
+          .then(r => r.json())
+          .then(data => {
+            if (data?.djIntroUrl && currentTrackIdRef.current === trackId) {
+              loadAndPlay(audio, data.djIntroUrl);
+            } else {
+              playingIntroRef.current = false;
+              setIsPlayingIntro(false);
+              loadAndPlay(audio, fileUrl);
+            }
+          })
+          .catch(() => {
+            playingIntroRef.current = false;
+            setIsPlayingIntro(false);
+            loadAndPlay(audio, fileUrl);
+          });
         return;
       }
 
