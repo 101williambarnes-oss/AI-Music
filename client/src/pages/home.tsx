@@ -209,20 +209,10 @@ export default function Home() {
   return (
     <div className="hwm-app mockup-bg">
       <header className="mockup-topbar" data-testid="header-main">
-        <div className="mockup-topbar-left">
+        <div className="mockup-topbar-row1">
           <a href="/" data-testid="link-logo" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
             <img src={siteLogo} alt="Hit Wave Media" className="mockup-logo" data-testid="img-logo" />
           </a>
-          <div className="mockup-brand">
-            <div className="mockup-brand-title" data-testid="text-brand">
-              <span style={{ fontWeight: 900, fontStyle: "italic", color: "#fff" }}>Hit Wave Media</span>{" "}
-              <span style={{ fontWeight: 400, fontSize: "0.75em", color: "rgba(255,255,255,.5)" }}>for</span>{" "}
-              <span style={{ fontWeight: 700, color: "#fff" }}>Music Creators</span>
-            </div>
-            <div className="mockup-brand-sub" data-testid="text-tagline">AI-Only Music Platform</div>
-          </div>
-        </div>
-        <div className="mockup-topbar-right">
           <nav className="mockup-topbar-nav mockup-nav-row1" data-testid="nav-quick-links">
             <a href="/top-25" data-testid="link-quick-top25">Top 25</a>
             <a href="/trending" data-testid="link-quick-trending">Trending</a>
@@ -235,36 +225,7 @@ export default function Home() {
             <a href="/jukebox" data-testid="link-quick-jukebox">Jukebox</a>
             <a href="/about" data-testid="link-quick-about">About Us</a>
           </nav>
-          <nav className="mockup-topbar-nav mockup-nav-row2" data-testid="nav-auth-links">
-            {user ? (
-              <>
-                <a href={user.creatorId ? `/creator/${user.creatorId}` : "/upload"} className="mockup-nav-user" data-testid="link-user-profile">
-                  <User size={14} /> {user.name}
-                </a>
-                <button
-                  className="mockup-nav-auth mockup-nav-logout"
-                  onClick={() => {
-                    fetch("/api/auth/signout", { method: "POST" });
-                    localStorage.removeItem("hwm_user");
-                    setUser(null);
-                  }}
-                  data-testid="button-logout"
-                >
-                  <LogOut size={13} /> Log Out
-                </button>
-              </>
-            ) : (
-              <>
-                <a href="/sign-in" className="mockup-nav-auth" data-testid="link-sign-in">Sign In</a>
-                <a href="/sign-up" className="mockup-nav-auth mockup-nav-signup" data-testid="link-sign-up">Sign Up</a>
-                <span className="mockup-nav-divider">|</span>
-                <a href="/sign-in" className="mockup-nav-auth mockup-nav-creator" data-testid="link-creator-login">Creator Sign In</a>
-                <a href="/sign-up" className="mockup-nav-auth mockup-nav-creator" data-testid="link-creator-signup">Creator Sign Up</a>
-              </>
-            )}
-          </nav>
-        </div>
-        <div className="mockup-search-bar" ref={searchRef} data-testid="search-bar">
+          <div className="mockup-search-bar" ref={searchRef} data-testid="search-bar">
           <Search size={15} className="mockup-search-icon" />
           <input
             type="text"
@@ -311,6 +272,44 @@ export default function Home() {
               ))}
             </div>
           )}
+        </div>
+        </div>
+        <div className="mockup-topbar-row2">
+          <div className="mockup-brand-center" data-testid="text-brand">
+            <span style={{ fontWeight: 900, fontStyle: "italic", color: "#fff", fontSize: "16px" }}>Hit Wave Media</span>{" "}
+            <span style={{ fontWeight: 400, fontSize: "12px", color: "rgba(255,255,255,.5)" }}>for</span>{" "}
+            <span style={{ fontWeight: 700, color: "#fff", fontSize: "15px" }}>Music Creators</span>
+            <span style={{ margin: "0 8px", color: "rgba(108,240,255,.3)" }}>—</span>
+            <span style={{ color: "#6cf0ff", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }} data-testid="text-tagline">AI-Only Music Platform</span>
+          </div>
+          <nav className="mockup-topbar-nav mockup-nav-auth" data-testid="nav-auth-links">
+            {user ? (
+              <>
+                <a href={user.creatorId ? `/creator/${user.creatorId}` : "/upload"} className="mockup-nav-user" data-testid="link-user-profile">
+                  <User size={14} /> {user.name}
+                </a>
+                <button
+                  className="mockup-nav-auth-btn mockup-nav-logout"
+                  onClick={() => {
+                    fetch("/api/auth/signout", { method: "POST" });
+                    localStorage.removeItem("hwm_user");
+                    setUser(null);
+                  }}
+                  data-testid="button-logout"
+                >
+                  <LogOut size={13} /> Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <a href="/sign-in" className="mockup-nav-auth-btn" data-testid="link-sign-in">Sign In</a>
+                <a href="/sign-up" className="mockup-nav-auth-btn mockup-nav-signup" data-testid="link-sign-up">Sign Up</a>
+                <span className="mockup-nav-divider">|</span>
+                <a href="/sign-in" className="mockup-nav-auth-btn mockup-nav-creator" data-testid="link-creator-login">Creator Sign In</a>
+                <a href="/sign-up" className="mockup-nav-auth-btn mockup-nav-creator" data-testid="link-creator-signup">Creator Sign Up</a>
+              </>
+            )}
+          </nav>
         </div>
       </header>
 
