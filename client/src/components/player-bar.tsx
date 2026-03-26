@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Heart, List } from "lucide-react";
 
 function formatTime(seconds: number): string {
   if (!seconds || !isFinite(seconds)) return "0:00";
@@ -84,11 +84,8 @@ export function PlayerBar() {
   }, [muted, volume, setAudioVolume]);
 
   const handlePlayPause = useCallback(() => {
-    if (isPlaying) {
-      pause();
-    } else {
-      resume();
-    }
+    if (isPlaying) pause();
+    else resume();
   }, [isPlaying, pause, resume]);
 
   if (!currentTrackId || !trackMeta) return null;
@@ -113,38 +110,45 @@ export function PlayerBar() {
             <div className="player-bar-artist" data-testid="player-bar-artist">
               {isPlayingIntro ? `Introducing: ${trackMeta.title}` : trackMeta.artist}
             </div>
+            <div className="player-bar-time-inline" data-testid="player-bar-time-current">
+              {formatTime(progress)} / {formatTime(duration)}
+            </div>
           </div>
+        </div>
+
+        <div className="player-bar-progress-wide" ref={progressRef} onClick={handleProgressClick} data-testid="player-bar-progress">
+          <div className="player-bar-progress-fill" style={{ width: `${pct}%` }} />
+          <div className="player-bar-progress-thumb" style={{ left: `${pct}%` }} />
         </div>
 
         <div className="player-bar-center">
           <div className="player-bar-controls">
-            <button className="player-bar-btn player-bar-skip-btn" data-testid="button-player-prev">
-              <SkipBack size={18} />
+            <button onClick={toggleMute} className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-mute">
+              {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
+            <button className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-prev">
+              <SkipBack size={20} />
             </button>
             <button
               onClick={handlePlayPause}
               className="player-bar-btn player-bar-play"
               data-testid="button-player-play"
             >
-              {isPlaying ? <Pause size={22} /> : <Play size={22} style={{ marginLeft: 2 }} />}
+              {isPlaying ? <Pause size={24} /> : <Play size={24} style={{ marginLeft: 2 }} />}
             </button>
-            <button className="player-bar-btn player-bar-skip-btn" data-testid="button-player-next">
-              <SkipForward size={18} />
+            <button className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-next">
+              <SkipForward size={20} />
             </button>
-          </div>
-          <div className="player-bar-progress-row">
-            <span className="player-bar-time" data-testid="player-bar-time-current">{formatTime(progress)}</span>
-            <div className="player-bar-progress" ref={progressRef} onClick={handleProgressClick} data-testid="player-bar-progress">
-              <div className="player-bar-progress-fill" style={{ width: `${pct}%` }} />
-              <div className="player-bar-progress-thumb" style={{ left: `${pct}%` }} />
-            </div>
-            <span className="player-bar-time" data-testid="player-bar-time-total">{formatTime(duration)}</span>
+            <button className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-list">
+              <List size={18} />
+            </button>
           </div>
         </div>
 
         <div className="player-bar-right">
+          <Heart size={18} className="player-bar-heart" />
           <div className="player-bar-volume">
-            <button onClick={toggleMute} className="player-bar-btn" data-testid="button-player-mute">
+            <button onClick={toggleMute} className="player-bar-btn" data-testid="button-player-mute-right">
               {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
             </button>
             <input

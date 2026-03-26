@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
-import { Search, Music, User, X, Library, ListMusic, ShieldCheck, Heart, Play, ChevronRight, Info, Disc3 } from "lucide-react";
+import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, Info, Disc3, MoreVertical } from "lucide-react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { useLocation } from "wouter";
 import { useAudioPlayer } from "@/lib/audioPlayer";
@@ -18,11 +18,9 @@ type HomeData = {
   newCreators: Creator[];
 };
 
-function MiniTrackCard({ track, index }: { track: TrackWithLikes; index?: number }) {
+function Top25Row({ track, index }: { track: TrackWithLikes; index: number }) {
   const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
-  const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
-  const hasAudio = !!track.fileUrl;
-  const isMedia = !!track.fileUrl;
+  const isActive = currentTrackId === track.id && isPlaying;
   const [showVideoModal, setShowVideoModal] = useState(false);
   const wantModalRef = useRef(false);
   const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
@@ -38,109 +36,45 @@ function MiniTrackCard({ track, index }: { track: TrackWithLikes; index?: number
   }, [isPlaying, currentTrackId, track.id]);
 
   const handleClick = useCallback(() => {
-    if (!hasAudio) return;
-    if (isMedia) {
-      wantModalRef.current = true;
-      if (currentTrackId !== track.id || !isPlaying) {
-        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
-      }
-      setShowVideoModal(true);
-    } else {
-      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
+    if (!track.fileUrl) return;
+    wantModalRef.current = true;
+    if (currentTrackId !== track.id || !isPlaying) {
+      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
     }
-  }, [hasAudio, isMedia, track, play, toggle, currentTrackId, isPlaying]);
-
-  const thumbSrc = track.coverUrl || creatorData?.creator?.avatarUrl || null;
+    setShowVideoModal(true);
+  }, [track, play, currentTrackId, isPlaying]);
 
   return (
     <>
       <div
         onClick={handleClick}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "8px 10px",
-          borderRadius: 10,
-          cursor: hasAudio ? "pointer" : "default",
-          background: isCurrentlyPlaying ? "rgba(160,107,255,.12)" : "transparent",
-          transition: "background .2s",
-        }}
-        className="home-track-row"
+        className="mockup-top25-row"
+        style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined }}
         data-testid={`home-track-${track.id}`}
       >
-        {index !== undefined && (
-          <span style={{
-            fontSize: 18, fontWeight: 800, color: index < 3 ? "#ff4fd8" : "rgba(255,255,255,.5)",
-            width: 24, textAlign: "center", flexShrink: 0,
-          }} data-testid={`text-rank-${index + 1}`}>
-            {index + 1}
-          </span>
-        )}
-        <div style={{
-          width: 48, height: 48, borderRadius: 8, overflow: "hidden", flexShrink: 0,
-          background: "rgba(160,107,255,.15)", position: "relative",
-        }}>
-          {thumbSrc ? (
-            <img src={thumbSrc} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Music size={20} style={{ color: "rgba(160,107,255,.5)" }} />
-            </div>
-          )}
-          {isCurrentlyPlaying && (
-            <div style={{
-              position: "absolute", inset: 0, background: "rgba(0,0,0,.4)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <span style={{ color: "#ff4fd8", fontSize: 14 }}>{"\u275A\u275A"}</span>
-            </div>
-          )}
+        <span className="mockup-rank" style={{ color: index < 3 ? "#ff4fd8" : "rgba(255,255,255,.45)" }} data-testid={`text-rank-${index + 1}`}>
+          {index + 1}.
+        </span>
+        <div className="mockup-top25-info">
+          <div className="mockup-top25-title" data-testid={`text-title-${track.id}`}>{track.title}</div>
+          <div className="mockup-top25-artist">{track.artist}</div>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden",
-            textOverflow: "ellipsis", whiteSpace: "nowrap",
-          }} data-testid={`text-title-${track.id}`}>
-            {track.title}
-            {track.explicit && (
-              <span style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                width: 14, height: 14, borderRadius: 3, background: "rgba(255,79,216,.15)",
-                border: "1px solid rgba(255,79,216,.3)", color: "#ff4fd8", fontSize: 8,
-                fontWeight: 800, marginLeft: 5, verticalAlign: "middle",
-              }}>E</span>
-            )}
-          </div>
-          <div style={{
-            fontSize: 11, color: "rgba(170,182,232,.6)", overflow: "hidden",
-            textOverflow: "ellipsis", whiteSpace: "nowrap",
-          }}>
-            {track.artist}
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 2, flexShrink: 0 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.7)" }}>
-            {(track.plays || 0).toLocaleString()}
-          </span>
-          <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#ff4fd8" }}>
-            <Heart size={10} fill="#ff4fd8" />
-            {(track.likeCount || 0).toLocaleString()}
-          </span>
-        </div>
+        <span className="mockup-plays">{(track.plays || 0).toLocaleString()}</span>
+        <span className="mockup-likes">
+          <Heart size={11} fill="#ff4fd8" color="#ff4fd8" />
+          {(track.likeCount || 0).toLocaleString()}
+        </span>
       </div>
-      {showVideoModal && isMedia && (
+      {showVideoModal && track.fileUrl && (
         <VideoModal track={track} onClose={() => { wantModalRef.current = false; setShowVideoModal(false); }} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
       )}
     </>
   );
 }
 
-function NewSongCard({ track }: { track: TrackWithLikes }) {
-  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
-  const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
-  const hasAudio = !!track.fileUrl;
-  const isMedia = !!track.fileUrl;
+function NewSongRow({ track }: { track: TrackWithLikes }) {
+  const { currentTrackId, isPlaying, play } = useAudioPlayer();
+  const isActive = currentTrackId === track.id && isPlaying;
   const [showVideoModal, setShowVideoModal] = useState(false);
   const wantModalRef = useRef(false);
   const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
@@ -156,17 +90,13 @@ function NewSongCard({ track }: { track: TrackWithLikes }) {
   }, [isPlaying, currentTrackId, track.id]);
 
   const handleClick = useCallback(() => {
-    if (!hasAudio) return;
-    if (isMedia) {
-      wantModalRef.current = true;
-      if (currentTrackId !== track.id || !isPlaying) {
-        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
-      }
-      setShowVideoModal(true);
-    } else {
-      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
+    if (!track.fileUrl) return;
+    wantModalRef.current = true;
+    if (currentTrackId !== track.id || !isPlaying) {
+      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
     }
-  }, [hasAudio, isMedia, track, play, toggle, currentTrackId, isPlaying]);
+    setShowVideoModal(true);
+  }, [track, play, currentTrackId, isPlaying]);
 
   const thumbSrc = track.coverUrl || creatorData?.creator?.avatarUrl || null;
 
@@ -174,71 +104,85 @@ function NewSongCard({ track }: { track: TrackWithLikes }) {
     <>
       <div
         onClick={handleClick}
-        style={{
-          cursor: hasAudio ? "pointer" : "default",
-          borderRadius: 14,
-          overflow: "hidden",
-          background: "rgba(15,20,40,.7)",
-          border: "1px solid rgba(160,107,255,.15)",
-          transition: "transform .2s, border-color .2s",
-          minWidth: 150,
-          flex: "0 0 auto",
-        }}
-        className="new-song-card"
+        className="mockup-newsong-row"
+        style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined }}
         data-testid={`new-song-card-${track.id}`}
       >
-        <div style={{
-          width: "100%", aspectRatio: "1", position: "relative", overflow: "hidden",
-          background: "linear-gradient(135deg, rgba(160,107,255,.2), rgba(255,79,216,.1))",
-        }}>
+        <div className="mockup-newsong-thumb">
           {thumbSrc ? (
-            <img src={thumbSrc} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src={thumbSrc} alt={track.title} />
           ) : (
-            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Music size={40} style={{ color: "rgba(160,107,255,.4)" }} />
+            <div className="mockup-newsong-thumb-placeholder">
+              <Music size={24} style={{ color: "rgba(160,107,255,.4)" }} />
             </div>
           )}
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 50%)",
-          }} />
-          <div style={{
-            position: "absolute", bottom: 8, left: 8, right: 8,
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-          }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: "50%",
-              background: isCurrentlyPlaying ? "rgba(255,79,216,.9)" : "rgba(160,107,255,.9)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 2px 10px rgba(0,0,0,.4)",
-            }}>
-              {isCurrentlyPlaying ? (
-                <span style={{ color: "#fff", fontSize: 12 }}>{"\u275A\u275A"}</span>
-              ) : (
-                <Play size={16} fill="#fff" color="#fff" style={{ marginLeft: 2 }} />
-              )}
+          {isActive && (
+            <div className="mockup-newsong-playing">
+              <span style={{ color: "#fff", fontSize: 12 }}>{"\u275A\u275A"}</span>
             </div>
-            <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: "#ff4fd8", fontWeight: 700 }}>
-              <Heart size={10} fill="#ff4fd8" /> {(track.likeCount || 0).toLocaleString()}
-            </span>
-          </div>
+          )}
         </div>
-        <div style={{ padding: "10px 10px 12px" }}>
-          <div style={{
-            fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden",
-            textOverflow: "ellipsis", whiteSpace: "nowrap",
-          }}>
-            {track.title}
+        <div className="mockup-newsong-info">
+          <div className="mockup-newsong-title">
+            {track.title} - <span style={{ color: "rgba(108,240,255,.7)" }}>{track.artist}</span>
           </div>
-          <div style={{ fontSize: 11, color: "rgba(170,182,232,.5)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {track.artist}
-          </div>
-          <div style={{ fontSize: 11, color: "rgba(170,182,232,.4)", marginTop: 2 }}>
-            {(track.plays || 0).toLocaleString()} plays
-          </div>
+          <div className="mockup-newsong-artist">{track.artist}</div>
         </div>
+        <span className="mockup-newsong-plays">{(track.plays || 0).toLocaleString()} Plays</span>
+        <Heart size={14} className="mockup-newsong-heart" />
+        <MoreVertical size={14} className="mockup-newsong-menu" />
       </div>
-      {showVideoModal && isMedia && (
+      {showVideoModal && track.fileUrl && (
+        <VideoModal track={track} onClose={() => { wantModalRef.current = false; setShowVideoModal(false); }} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
+      )}
+    </>
+  );
+}
+
+function TrendingRow({ track, index }: { track: TrackWithLikes; index: number }) {
+  const { currentTrackId, isPlaying, play } = useAudioPlayer();
+  const isActive = currentTrackId === track.id && isPlaying;
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const wantModalRef = useRef(false);
+  const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
+    queryKey: ["/api/creators", track.creatorId],
+    enabled: !!track.creatorId,
+  });
+
+  useEffect(() => {
+    if (wantModalRef.current && isPlaying && currentTrackId === track.id) {
+      wantModalRef.current = false;
+      setShowVideoModal(true);
+    }
+  }, [isPlaying, currentTrackId, track.id]);
+
+  const handleClick = useCallback(() => {
+    if (!track.fileUrl) return;
+    wantModalRef.current = true;
+    if (currentTrackId !== track.id || !isPlaying) {
+      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
+    }
+    setShowVideoModal(true);
+  }, [track, play, currentTrackId, isPlaying]);
+
+  return (
+    <>
+      <div
+        onClick={handleClick}
+        className="mockup-trending-row"
+        style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined }}
+        data-testid={`trending-track-${track.id}`}
+      >
+        <span className="mockup-rank" style={{ color: "rgba(255,255,255,.45)" }}>{index + 1}.</span>
+        <div className="mockup-trending-info">
+          <span className="mockup-trending-title">{track.title}</span>
+          <span className="mockup-trending-sep"> - </span>
+          <span className="mockup-trending-artist">{track.artist}</span>
+        </div>
+        <Heart size={13} className="mockup-trending-heart" />
+        <MoreVertical size={13} className="mockup-trending-menu" />
+      </div>
+      {showVideoModal && track.fileUrl && (
         <VideoModal track={track} onClose={() => { wantModalRef.current = false; setShowVideoModal(false); }} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
       )}
     </>
@@ -246,12 +190,12 @@ function NewSongCard({ track }: { track: TrackWithLikes }) {
 }
 
 export default function Home() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showDropdown, setShowDropdown] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [cleanMode, setCleanMode] = useState(() => {
     try { return localStorage.getItem("hwm_clean_mode") === "true"; } catch { return false; }
   });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
   const [, navigate] = useLocation();
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -260,28 +204,15 @@ export default function Home() {
       const stored = localStorage.getItem("hwm_user");
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed && parsed.id) {
-          setUser(parsed);
-        } else {
-          localStorage.removeItem("hwm_user");
-        }
+        if (parsed && parsed.id) setUser(parsed);
+        else localStorage.removeItem("hwm_user");
       }
-    } catch {
-      localStorage.removeItem("hwm_user");
-    }
+    } catch { localStorage.removeItem("hwm_user"); }
   }, []);
 
-  const { data: homeData, isLoading } = useQuery<HomeData>({
-    queryKey: ["/api/home-data"],
-  });
-
-  const { data: allTracks = [] } = useQuery<Track[]>({
-    queryKey: ["/api/tracks", "all"],
-  });
-
-  const { data: creators = [] } = useQuery<Creator[]>({
-    queryKey: ["/api/creators"],
-  });
+  const { data: homeData, isLoading } = useQuery<HomeData>({ queryKey: ["/api/home-data"] });
+  const { data: allTracks = [] } = useQuery<Track[]>({ queryKey: ["/api/tracks", "all"] });
+  const { data: creators = [] } = useQuery<Creator[]>({ queryKey: ["/api/creators"] });
 
   function cleanFilter(tracks: TrackWithLikes[]) {
     if (!cleanMode) return tracks;
@@ -290,9 +221,7 @@ export default function Home() {
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setShowDropdown(false);
-      }
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowDropdown(false);
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -304,36 +233,22 @@ export default function Home() {
         return t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q) || t.genre.toLowerCase().includes(q);
       }).slice(0, 8)
     : [];
-
   const searchResultCreators = searchQuery.length >= 1
     ? creators.filter((c) => c.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5)
     : [];
-
   const hasSearchResults = searchResultTracks.length > 0 || searchResultCreators.length > 0;
 
   function handleSearchSubmit() {
     if (!searchQuery.trim()) return;
     if (searchResultCreators.length === 1 && searchResultTracks.length === 0) {
-      navigate(`/creator/${searchResultCreators[0].id}`);
-      setShowDropdown(false);
-      setSearchQuery("");
-      return;
+      navigate(`/creator/${searchResultCreators[0].id}`); setShowDropdown(false); setSearchQuery(""); return;
     }
     if (searchResultTracks.length === 1 && searchResultCreators.length === 0) {
-      const track = searchResultTracks[0];
-      if (track.creatorId) {
-        navigate(`/creator/${track.creatorId}`);
-      }
-      setShowDropdown(false);
-      setSearchQuery("");
-      return;
+      const t = searchResultTracks[0];
+      if (t.creatorId) navigate(`/creator/${t.creatorId}`);
+      setShowDropdown(false); setSearchQuery(""); return;
     }
     setShowDropdown(true);
-  }
-
-  function clearSearch() {
-    setSearchQuery("");
-    setShowDropdown(false);
   }
 
   const top25 = cleanFilter(homeData?.top25 || []);
@@ -342,337 +257,111 @@ export default function Home() {
   const newCreators = homeData?.newCreators || [];
 
   return (
-    <div className="hwm-app landing-bg">
-      <div className="bg-lines" />
-
-      <div className="soundwave-bg" aria-hidden="true">
-        <svg viewBox="0 0 1440 200" preserveAspectRatio="none">
-          <path className="wave wave-1" d="M0,100 C120,60 240,140 360,100 C480,60 600,140 720,100 C840,60 960,140 1080,100 C1200,60 1320,140 1440,100" />
-          <path className="wave wave-2" d="M0,100 C120,140 240,60 360,100 C480,140 600,60 720,100 C840,140 960,60 1080,100 C1200,140 1320,60 1440,100" />
-          <path className="wave wave-3" d="M0,100 C160,50 320,150 480,100 C640,50 800,150 960,100 C1120,50 1280,150 1440,100" />
-        </svg>
-      </div>
-
-      <header className="site-topbar" data-testid="header-main">
-        <div className="topbar-left" style={{ display: "flex" }}>
-          <a href="/" data-testid="link-logo" style={{ textDecoration: "none" }}>
-            <img src={siteLogo} alt="Hit Wave Media" className="site-logo-banner" data-testid="img-logo" />
+    <div className="hwm-app mockup-bg">
+      <header className="mockup-topbar" data-testid="header-main">
+        <div className="mockup-topbar-left">
+          <a href="/" data-testid="link-logo" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
+            <img src={siteLogo} alt="Hit Wave Media" className="mockup-logo" data-testid="img-logo" />
           </a>
-        </div>
-        <div className="topbar-center">
-          <div className="search-wrap" ref={searchRef}>
-            <div className="search-box">
-              <Search className="search-icon" style={{ width: 16, height: 16, opacity: 0.6, flexShrink: 0 }} />
-              <input
-                type="text"
-                placeholder="Search tracks, creators, genres..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  if (e.target.value.length >= 1) setShowDropdown(true);
-                  else setShowDropdown(false);
-                }}
-                onFocus={() => { if (searchQuery.length >= 1) setShowDropdown(true); }}
-                onKeyDown={(e) => { if (e.key === "Enter") handleSearchSubmit(); }}
-                aria-label="Search tracks, creators, and genres"
-                data-testid="input-search"
-              />
-              {searchQuery && (
-                <button
-                  className="search-clear"
-                  onClick={clearSearch}
-                  data-testid="button-search-clear"
-                  aria-label="Clear search"
-                >
-                  <X style={{ width: 14, height: 14 }} />
-                </button>
-              )}
-              <button
-                className="search-submit"
-                onClick={handleSearchSubmit}
-                data-testid="button-search-submit"
-                aria-label="Search"
-              >
-                <Search style={{ width: 16, height: 16 }} />
-              </button>
+          <div className="mockup-brand">
+            <div className="mockup-brand-title" data-testid="text-brand">
+              <span style={{ fontWeight: 900, fontStyle: "italic", color: "#fff" }}>HITWAVE</span>{" "}
+              <span style={{ fontWeight: 400, color: "rgba(255,255,255,.7)" }}>STUDIOS</span>{" "}
+              <span style={{ fontWeight: 400, fontSize: "0.7em", color: "rgba(255,255,255,.5)" }}>for</span>{" "}
+              <span style={{ fontWeight: 700, color: "#fff" }}>MUSIC CREATORS</span>
             </div>
-            {showDropdown && searchQuery && (
-              <div className="search-dropdown" data-testid="search-dropdown">
-                {!hasSearchResults ? (
-                  <div className="search-no-results" data-testid="text-no-results">No results found for "{searchQuery}"</div>
-                ) : (
-                  <>
-                    {searchResultCreators.length > 0 && (
-                      <div className="search-section">
-                        <div className="search-section-label">Creators</div>
-                        {searchResultCreators.map((c) => (
-                          <a
-                            key={c.id}
-                            href={`/creator/${c.id}`}
-                            className="search-result-item"
-                            onClick={() => { setShowDropdown(false); setSearchQuery(""); }}
-                            data-testid={`search-result-creator-${c.id}`}
-                          >
-                            <User style={{ width: 14, height: 14, opacity: 0.6, flexShrink: 0 }} />
-                            <span className="search-result-name">{c.name}</span>
-                            <span className="search-result-meta">{c.trackCount} track{c.trackCount !== 1 ? "s" : ""}</span>
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                    {searchResultTracks.length > 0 && (
-                      <div className="search-section">
-                        <div className="search-section-label">Tracks</div>
-                        {searchResultTracks.map((t) => (
-                          <a
-                            key={t.id}
-                            href={t.creatorId ? `/creator/${t.creatorId}` : "#"}
-                            className="search-result-item"
-                            onClick={() => { setShowDropdown(false); setSearchQuery(""); }}
-                            data-testid={`search-result-track-${t.id}`}
-                          >
-                            <Music style={{ width: 14, height: 14, opacity: 0.6, flexShrink: 0 }} />
-                            <span className="search-result-name">{t.title}</span>
-                            <span className="search-result-meta">{t.artist} · {t.genre}</span>
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-            <div className="search-tagline" data-testid="text-tagline">Search and listen. No account required.</div>
+            <div className="mockup-brand-sub" data-testid="text-tagline">AI-Only Music Platform</div>
           </div>
         </div>
-        <button
-          onClick={() => {
-            const next = !cleanMode;
-            setCleanMode(next);
-            localStorage.setItem("hwm_clean_mode", String(next));
-          }}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            padding: "5px 10px",
-            borderRadius: 16,
-            border: cleanMode ? "1px solid rgba(108,240,255,.5)" : "1px solid rgba(255,255,255,.2)",
-            background: cleanMode ? "rgba(108,240,255,.12)" : "transparent",
-            color: cleanMode ? "#6cf0ff" : "rgba(255,255,255,.5)",
-            fontSize: 11,
-            fontWeight: 600,
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-            transition: "all .2s",
-          }}
-          title={cleanMode ? "Clean Mode is ON — explicit songs hidden" : "Turn on Clean Mode to hide explicit songs"}
-          data-testid="button-clean-mode"
-        >
-          <ShieldCheck size={13} />
-          Clean
-        </button>
-        <div className="topbar-actions">
-          {user ? (
-            <>
-              {user.creatorId && (
-                <a href={`/creator/${user.creatorId}`} className="topbar-library" data-testid="link-my-library">
-                  <Library style={{ width: 14, height: 14 }} />
-                  My Library
-                </a>
-              )}
-              {user.id === 2 && (
-                <a href="/admin" className="topbar-login" style={{ borderColor: "rgba(255,215,0,.4)", color: "#ffd700" }} data-testid="link-admin">Admin</a>
-              )}
-              <a href={user.creatorId ? `/creator/${user.creatorId}` : "/"} className="topbar-login" data-testid="link-creators-login">Creators Login</a>
-              <button
-                className="topbar-login"
-                style={{ background: "none", border: "none", cursor: "pointer", color: "inherit", font: "inherit", padding: 0 }}
-                onClick={async () => {
-                  await fetch("/api/auth/signout", { method: "POST" });
-                  localStorage.removeItem("hwm_user");
-                  setUser(null);
-                }}
-                data-testid="button-signout"
-              >
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <>
-              <span className="topbar-listen-msg" style={{ padding: "6px 10px", borderRadius: 16, border: "1px solid rgba(108,240,255,.3)", fontSize: 11, color: "#6cf0ff", fontWeight: 600, whiteSpace: "nowrap" }} data-testid="text-no-signup">Listen instantly. No signup required.</span>
-              <a href="/sign-in" className="topbar-login" data-testid="link-creators-login">Creators Login</a>
-              <a href="/sign-up" className="topbar-signup" data-testid="button-sign-up">Creator Sign Up</a>
-            </>
+        <nav className="mockup-topbar-nav" data-testid="nav-quick-links">
+          <a href="/top-25" data-testid="link-quick-top25">Top 25</a>
+          <a href="/trending" data-testid="link-quick-trending">Trending</a>
+          <a href="/new-songs" data-testid="link-quick-new-songs">New Songs</a>
+          <a href="/new-creators" data-testid="link-quick-new-creators">New Creators</a>
+          <a href="/playlist" data-testid="link-quick-playlist">My Playlist</a>
+          {user && user.creatorId && (
+            <a href={`/creator/${user.creatorId}`} data-testid="link-mobile-my-library">My Library</a>
           )}
-        </div>
+          <a href="/jukebox" data-testid="link-quick-jukebox">Jukebox</a>
+          <a href="/about" data-testid="link-quick-about">About Us</a>
+        </nav>
       </header>
 
-      <section className="hero" style={{ marginTop: 10, paddingTop: 18, paddingBottom: 10 }} data-testid="section-hero">
-        <div style={{ position: "relative", zIndex: 3, color: "#ffffff", fontSize: 18, fontWeight: 800, letterSpacing: 4, textTransform: "uppercase", textAlign: "center", textShadow: "0 0 10px rgba(255,255,255,.6), 0 0 30px rgba(108,240,255,.5), 0 0 60px rgba(160,107,255,.3)" }} data-testid="text-tagline">Hit Wave Media for Music Creators — AI Only Music Platform</div>
-      </section>
-
-      <div style={{ display: "flex", justifyContent: "center", padding: "10px 22px 0" }}>
-        <a href="/studios" className="studios-btn" data-testid="link-studios" onClick={() => {
-          try {
-            const vid = localStorage.getItem("hwm_vid") || "anon";
-            const data = JSON.stringify({ visitorId: vid });
-            if (navigator.sendBeacon) {
-              navigator.sendBeacon("/api/studio-click", new Blob([data], { type: "application/json" }));
-            } else {
-              fetch("/api/studio-click", { method: "POST", headers: { "x-visitor-id": vid }, keepalive: true }).catch(() => {});
-            }
-          } catch {}
-        }}>
-          Hit Wave Media for Music Creators
-        </a>
-      </div>
-
-      <nav className="quick-nav quick-nav-row1" data-testid="nav-quick-links">
-        <a href="/top-25" className="quick-nav-tab" data-testid="link-quick-top25">
-          Top 25
-        </a>
-        <a href="/trending" className="quick-nav-tab" data-testid="link-quick-trending">
-          Trending
-        </a>
-        <a href="/new-songs" className="quick-nav-tab" data-testid="link-quick-new-songs">
-          New Songs
-        </a>
-        <a href="/new-creators" className="quick-nav-tab" data-testid="link-quick-new-creators">
-          New Creators
-        </a>
-      </nav>
-      <nav className="quick-nav quick-nav-row2" data-testid="nav-quick-links-2">
-        <a href="/playlist" className="quick-nav-tab" data-testid="link-quick-playlist">
-          <ListMusic style={{ width: 14, height: 14 }} />
-          My Playlist
-        </a>
-        {user && user.creatorId && (
-          <a href={`/creator/${user.creatorId}`} className="quick-nav-tab" data-testid="link-mobile-my-library">
-            <Library style={{ width: 14, height: 14 }} />
-            My Library
-          </a>
-        )}
-        <a href="/jukebox" className="quick-nav-tab" data-testid="link-quick-jukebox">
-          <Disc3 style={{ width: 14, height: 14 }} />
-          Jukebox
-        </a>
-        <a href="/about" className="quick-nav-tab" data-testid="link-quick-about">
-          <Info style={{ width: 14, height: 14 }} />
-          About Us
-        </a>
-      </nav>
-
-      <div className="home-three-col" data-testid="section-content">
-        <section className="home-panel home-col-left" data-testid="section-top25">
-          <div className="home-section-header">
-            <a href="/top-25" className="home-section-title" data-testid="link-top25-header">
-              Top 25 Trending Songs
-            </a>
-            <a href="/top-25" className="home-see-all" data-testid="link-top25-see-all">
-              See All <ChevronRight size={14} />
-            </a>
+      <div className="mockup-three-col" data-testid="section-content">
+        <section className="mockup-panel" data-testid="section-top25">
+          <div className="mockup-panel-header">
+            <span className="mockup-panel-title">Top 25 Trending Songs</span>
+            <a href="/top-25" className="mockup-see-all" data-testid="link-top25-see-all">See All <ChevronRight size={13} /></a>
           </div>
           {isLoading ? (
-            <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
+            <div className="mockup-loading">Loading...</div>
           ) : (
-            <div className="home-top25-list">
+            <div className="mockup-top25-list">
               {top25.map((track, i) => (
-                <MiniTrackCard key={track.id} track={track} index={i} />
+                <Top25Row key={track.id} track={track} index={i} />
               ))}
             </div>
           )}
         </section>
 
-        <section className="home-panel home-col-center" data-testid="section-new-songs">
-          <div className="home-section-header">
-            <a href="/new-songs" className="home-section-title" data-testid="link-new-songs-header">
-              New Songs
-            </a>
-            <a href="/new-songs" className="home-see-all" data-testid="link-new-songs-see-all">
-              See All <ChevronRight size={14} />
-            </a>
+        <section className="mockup-panel" data-testid="section-new-songs">
+          <div className="mockup-panel-header">
+            <span className="mockup-panel-title">New Songs</span>
+            <a href="/new-songs" className="mockup-see-all" data-testid="link-new-songs-see-all">See All <ChevronRight size={13} /></a>
           </div>
           {isLoading ? (
-            <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
+            <div className="mockup-loading">Loading...</div>
           ) : (
-            <div className="home-new-songs-scroll">
+            <div className="mockup-newsong-list">
               {newSongs.map((track) => (
-                <NewSongCard key={track.id} track={track} />
+                <NewSongRow key={track.id} track={track} />
               ))}
             </div>
           )}
         </section>
 
-        <div className="home-col-right">
-          <section className="home-panel" data-testid="section-new-creators">
-            <div className="home-section-header">
-              <a href="/new-creators" className="home-section-title" data-testid="link-new-creators-header">
-                New Creators
-              </a>
-              <a href="/new-creators" className="home-see-all" data-testid="link-new-creators-see-all">
-                See All <ChevronRight size={14} />
-              </a>
+        <div className="mockup-col-right">
+          <section className="mockup-panel" data-testid="section-new-creators">
+            <div className="mockup-panel-header">
+              <span className="mockup-panel-title">New Creators</span>
+              <a href="/new-creators" className="mockup-see-all" data-testid="link-new-creators-see-all">See All <ChevronRight size={13} /></a>
             </div>
             {isLoading ? (
-              <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
+              <div className="mockup-loading">Loading...</div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "4px 6px 10px" }}>
+              <div className="mockup-creators-list">
                 {newCreators.map((creator) => (
                   <a
                     key={creator.id}
                     href={`/creator/${creator.id}`}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 12, padding: "10px 10px",
-                      borderRadius: 10, textDecoration: "none", transition: "background .2s",
-                    }}
-                    className="home-track-row"
+                    className="mockup-creator-row"
                     data-testid={`home-creator-${creator.id}`}
                   >
-                    <div style={{
-                      width: 44, height: 44, borderRadius: "50%", overflow: "hidden",
-                      background: `linear-gradient(135deg, rgba(160,107,255,.3), rgba(255,79,216,.2))`,
-                      flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
+                    <div className="mockup-creator-avatar">
                       {creator.avatarUrl ? (
-                        <img src={creator.avatarUrl} alt={creator.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <img src={creator.avatarUrl} alt={creator.name} />
                       ) : (
-                        <User size={20} style={{ color: "rgba(160,107,255,.6)" }} />
+                        <User size={18} style={{ color: "rgba(160,107,255,.6)" }} />
                       )}
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: 14, fontWeight: 700, color: "#fff",
-                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      }}>
-                        {creator.name}
-                      </div>
-                      <div style={{ fontSize: 11, color: "rgba(170,182,232,.5)" }}>
-                        {creator.trackCount} track{creator.trackCount !== 1 ? "s" : ""}
-                      </div>
-                    </div>
-                    <ChevronRight size={16} style={{ color: "rgba(170,182,232,.3)", flexShrink: 0 }} />
+                    <span className="mockup-creator-name">{creator.name}</span>
                   </a>
                 ))}
               </div>
             )}
           </section>
 
-          <section className="home-panel" data-testid="section-trending">
-            <div className="home-section-header">
-              <a href="/trending" className="home-section-title" data-testid="link-trending-header">
-                Trending Songs
-              </a>
-              <a href="/trending" className="home-see-all" data-testid="link-trending-see-all">
-                See All <ChevronRight size={14} />
-              </a>
+          <section className="mockup-panel" data-testid="section-trending">
+            <div className="mockup-panel-header">
+              <span className="mockup-panel-title">Trending Songs</span>
+              <a href="/trending" className="mockup-see-all" data-testid="link-trending-see-all">See All <ChevronRight size={13} /></a>
             </div>
             {isLoading ? (
-              <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
+              <div className="mockup-loading">Loading...</div>
             ) : (
-              <div className="home-top25-list">
+              <div className="mockup-trending-list">
                 {trending.map((track, i) => (
-                  <MiniTrackCard key={track.id} track={track} index={i} />
+                  <TrendingRow key={track.id} track={track} index={i} />
                 ))}
               </div>
             )}
@@ -680,12 +369,10 @@ export default function Home() {
         </div>
       </div>
 
-      <footer style={{ textAlign: "center", padding: "32px 16px 80px", borderTop: "1px solid rgba(108,240,255,.06)" }}>
-        <div style={{ fontSize: 12, color: "rgba(170,182,232,.35)" }}>
-          <a href="/terms" style={{ color: "rgba(170,182,232,.5)", textDecoration: "none" }} data-testid="link-footer-terms">Terms of Service</a>
-          <span style={{ margin: "0 10px" }}>·</span>
-          <span>&copy; {new Date().getFullYear()} Hit Wave Media</span>
-        </div>
+      <footer className="mockup-footer" data-testid="footer">
+        <a href="/terms" data-testid="link-footer-terms">Terms of Service</a>
+        <span> · </span>
+        <span>&copy; {new Date().getFullYear()} Hit Wave Media</span>
       </footer>
     </div>
   );
