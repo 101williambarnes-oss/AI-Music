@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
-import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, Info, Disc3, GripVertical } from "lucide-react";
+import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, Info, Disc3, GripVertical, LogOut } from "lucide-react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { useLocation } from "wouter";
 import { useAudioPlayer } from "@/lib/audioPlayer";
@@ -237,9 +237,22 @@ export default function Home() {
           </nav>
           <nav className="mockup-topbar-nav mockup-nav-row2" data-testid="nav-auth-links">
             {user ? (
-              <a href={user.creatorId ? `/creator/${user.creatorId}` : "/upload"} className="mockup-nav-user" data-testid="link-user-profile">
-                <User size={14} /> {user.name}
-              </a>
+              <>
+                <a href={user.creatorId ? `/creator/${user.creatorId}` : "/upload"} className="mockup-nav-user" data-testid="link-user-profile">
+                  <User size={14} /> {user.name}
+                </a>
+                <button
+                  className="mockup-nav-auth mockup-nav-logout"
+                  onClick={() => {
+                    fetch("/api/auth/signout", { method: "POST" });
+                    localStorage.removeItem("hwm_user");
+                    setUser(null);
+                  }}
+                  data-testid="button-logout"
+                >
+                  <LogOut size={13} /> Log Out
+                </button>
+              </>
             ) : (
               <>
                 <a href="/sign-in" className="mockup-nav-auth" data-testid="link-sign-in">Sign In</a>

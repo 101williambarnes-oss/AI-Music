@@ -415,6 +415,20 @@
   color: #6cf0ff !important;
   font-size: 13px !important;
 }
+.mockup-nav-logout {
+  display: flex !important;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  background: rgba(255,79,79,.08) !important;
+  color: rgba(255,150,150,.8) !important;
+  border-color: rgba(255,79,79,.2) !important;
+  font-size: 12px !important;
+}
+.mockup-nav-logout:hover {
+  background: rgba(255,79,79,.18) !important;
+  color: #ff6b6b !important;
+}
 .mockup-search-bar {
   position: relative;
   display: flex;
