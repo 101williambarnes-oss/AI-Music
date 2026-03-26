@@ -43,6 +43,8 @@ const AudioPlayerContext = createContext<AudioPlayerState>({
   setOnEnded: () => {},
 });
 
+const SILENCE_DATA_URI = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentTrackId, setCurrentTrackId] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -58,12 +60,24 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const isPlayingRef = useRef(false);
   const fetchAbortRef = useRef<AbortController | null>(null);
   const loadingRef = useRef(false);
+  const primedRef = useRef(false);
 
   const setOnEnded = useCallback((cb: OnEndedCallback | null) => {
     onEndedRef.current = cb;
   }, []);
 
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+  const primeAudio = useCallback((audio: HTMLAudioElement) => {
+    if (primedRef.current) return;
+    primedRef.current = true;
+    audio.src = SILENCE_DATA_URI;
+    audio.load();
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }).catch(() => {});
+  }, []);
 
   const loadAndPlay = useCallback((audio: HTMLAudioElement, url: string) => {
     audio.oncanplay = null;
@@ -172,6 +186,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     const audio = audioRef.current;
     if (!audio) return;
 
+    primeAudio(audio);
     cancelPendingFetch();
 
     const isNewTrack = currentTrackIdRef.current !== trackId;
@@ -193,9 +208,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
 
     if (!isNewTrack) {
-      if (audio.src && audio.readyState >= 2) {
+      if (audio.src && !audio.src.startsWith("data:") && audio.readyState >= 2) {
         audio.play().catch(() => setIsPlaying(false));
-      } else if (audio.src) {
+      } else if (audio.src && !audio.src.startsWith("data:")) {
         audio.oncanplay = () => {
           audio.oncanplay = null;
           audio.onerror = null;
@@ -239,8 +254,37 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
 
     if (!djIntroUrl && !alreadyPlayedIntro) {
-      playingIntroRef.current = true;
       pendingSongUrlRef.current = fileUrl;
+
+      if (meta?.djIntroUrl === undefined || meta?.djIntroUrl === null) {
+        playingIntroRef.current = true;
+        setIsPlayingIntro(true);
+
+        loadAndPlay(audio, fileUrl);
+
+        const abortController = new AbortController();
+        fetchAbortRef.current = abortController;
+
+        fetch(`/api/tracks/${trackId}/dj-intro`, {
+          method: "POST",
+          signal: abortController.signal,
+        })
+          .then(r => r.json())
+          .then(data => {
+            if (data?.djIntroUrl && currentTrackIdRef.current === trackId) {
+              generatedIntrosRef.current.set(trackId, data.djIntroUrl);
+              playedIntrosRef.current.add(trackId);
+            }
+          })
+          .catch(() => {});
+
+        playingIntroRef.current = false;
+        setIsPlayingIntro(false);
+        pendingSongUrlRef.current = null;
+        return;
+      }
+
+      playingIntroRef.current = true;
       setIsPlayingIntro(true);
 
       const abortController = new AbortController();
@@ -284,7 +328,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
 
     loadAndPlay(audio, fileUrl);
-  }, [loadAndPlay, countPlay, cancelPendingFetch]);
+  }, [loadAndPlay, countPlay, cancelPendingFetch, primeAudio]);
 
   const pause = useCallback(() => {
     const audio = audioRef.current;
@@ -318,7 +362,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       }
       pause();
     } else if (currentTrackIdRef.current === trackId && !isPlayingRef.current) {
-      if (!audio?.src || audio.src === "" || audio.readyState < 1) {
+      if (!audio?.src || audio.src === "" || audio.src.startsWith("data:") || audio.readyState < 1) {
         play(trackId, fileUrl, meta, options);
       } else {
         setIsPlaying(true);
