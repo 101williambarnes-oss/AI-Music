@@ -25,6 +25,7 @@ export function PlayerBar() {
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
   const [trackMeta, setTrackMeta] = useState<{ title: string; artist: string; coverUrl: string | null } | null>(null);
+  const [videoVisible, setVideoVisible] = useState(false);
   const [videoExpanded, setVideoExpanded] = useState(false);
   const progressRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -79,7 +80,11 @@ export function PlayerBar() {
 
   useEffect(() => {
     if (isVideo) {
-      setVideoExpanded(true);
+      setVideoVisible(true);
+      setVideoExpanded(false);
+    } else {
+      setVideoVisible(false);
+      setVideoExpanded(false);
     }
   }, [currentTrackId, isVideo]);
 
@@ -126,8 +131,8 @@ export function PlayerBar() {
 
   return (
     <div className="player-bar" data-testid="player-bar">
-      {isVideo && videoExpanded && currentFileUrl && (
-        <div className="player-bar-video-container" data-testid="player-bar-video">
+      {isVideo && videoVisible && currentFileUrl && (
+        <div className={`player-bar-video-container${videoExpanded ? " video-expanded" : ""}`} data-testid="player-bar-video">
           <video
             ref={videoRef}
             src={currentFileUrl}
@@ -135,19 +140,29 @@ export function PlayerBar() {
             playsInline
             className="player-bar-video"
           />
-          <button
-            className="player-bar-video-toggle"
-            onClick={() => setVideoExpanded(false)}
-            data-testid="button-video-minimize"
-          >
-            <Minimize2 size={16} />
-          </button>
+          <div className="player-bar-video-controls">
+            <button
+              className="player-bar-video-toggle"
+              onClick={() => setVideoExpanded(!videoExpanded)}
+              data-testid="button-video-expand"
+            >
+              {videoExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            </button>
+            <button
+              className="player-bar-video-toggle"
+              onClick={() => setVideoVisible(false)}
+              data-testid="button-video-close"
+              style={{ marginTop: 4 }}
+            >
+              ✕
+            </button>
+          </div>
         </div>
       )}
       <div className="player-bar-inner">
         <div className="player-bar-left-section">
-          <div className="player-bar-art" data-testid="player-bar-track-info" onClick={() => isVideo && setVideoExpanded(!videoExpanded)} style={isVideo ? { cursor: "pointer" } : undefined}>
-            {isVideo && !videoExpanded && currentFileUrl ? (
+          <div className="player-bar-art" data-testid="player-bar-track-info" onClick={() => isVideo && setVideoVisible(!videoVisible)} style={isVideo ? { cursor: "pointer" } : undefined}>
+            {isVideo && !videoVisible && currentFileUrl ? (
               <div className="player-bar-art-video-thumb">
                 <video src={currentFileUrl} muted playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 <div className="player-bar-art-video-badge"><Maximize2 size={12} /></div>
