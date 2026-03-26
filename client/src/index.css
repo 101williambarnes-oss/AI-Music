@@ -330,10 +330,11 @@
 .mockup-brand {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 .mockup-brand-title {
-  font-size: 14px;
-  letter-spacing: 1.5px;
+  font-size: 15px;
+  letter-spacing: 0.5px;
   white-space: nowrap;
 }
 .mockup-brand-sub {
@@ -342,13 +343,24 @@
   letter-spacing: 1px;
   margin-top: -1px;
 }
+.mockup-topbar-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-left: auto;
+  flex: 1;
+  min-width: 0;
+}
 .mockup-topbar-nav {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-left: auto;
   flex-wrap: nowrap;
   overflow-x: auto;
+}
+.mockup-nav-row2 {
+  justify-content: flex-end;
 }
 .mockup-topbar-nav::-webkit-scrollbar { display: none; }
 .mockup-topbar-nav a {
@@ -806,27 +818,41 @@
   }
   .mockup-topbar {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    align-items: center;
+    gap: 6px;
     padding: 10px 12px;
+  }
+  .mockup-topbar-left {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .mockup-topbar-right {
+    width: 100%;
+    align-items: center;
   }
   .mockup-topbar-nav {
     width: 100%;
+    justify-content: center;
     overflow-x: auto;
     gap: 2px;
   }
+  .mockup-nav-row2 {
+    justify-content: center;
+  }
   .mockup-topbar-nav a {
-    font-size: 12px;
-    padding: 4px 8px;
+    font-size: 11px;
+    padding: 4px 7px;
   }
   .mockup-brand-title {
-    font-size: 12px;
+    font-size: 13px;
+    text-align: center;
+  }
+  .mockup-brand-sub {
+    text-align: center;
   }
   .mockup-logo {
     height: 34px;
-  }
-  .mockup-nav-divider {
-    display: none;
   }
   .mockup-nav-auth {
     font-size: 10px !important;

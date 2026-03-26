@@ -215,38 +215,40 @@ export default function Home() {
           </a>
           <div className="mockup-brand">
             <div className="mockup-brand-title" data-testid="text-brand">
-              <span style={{ fontWeight: 900, fontStyle: "italic", color: "#fff" }}>HITWAVE</span>{" "}
-              <span style={{ fontWeight: 400, color: "rgba(255,255,255,.7)" }}>STUDIOS</span>{" "}
-              <span style={{ fontWeight: 400, fontSize: "0.7em", color: "rgba(255,255,255,.5)" }}>for</span>{" "}
-              <span style={{ fontWeight: 700, color: "#fff" }}>MUSIC CREATORS</span>
+              <span style={{ fontWeight: 900, fontStyle: "italic", color: "#fff" }}>Hit Wave Media</span>{" "}
+              <span style={{ fontWeight: 400, fontSize: "0.75em", color: "rgba(255,255,255,.5)" }}>for</span>{" "}
+              <span style={{ fontWeight: 700, color: "#fff" }}>Music Creators</span>
             </div>
             <div className="mockup-brand-sub" data-testid="text-tagline">AI-Only Music Platform</div>
           </div>
         </div>
-        <nav className="mockup-topbar-nav" data-testid="nav-quick-links">
-          <a href="/top-25" data-testid="link-quick-top25">Top 25</a>
-          <a href="/trending" data-testid="link-quick-trending">Trending</a>
-          <a href="/new-songs" data-testid="link-quick-new-songs">New Songs</a>
-          <a href="/new-creators" data-testid="link-quick-new-creators">New Creators</a>
-          <a href="/playlist" data-testid="link-quick-playlist">My Playlist</a>
-          {user && user.creatorId && (
-            <a href={`/creator/${user.creatorId}`} data-testid="link-mobile-my-library">My Library</a>
-          )}
-          <a href="/jukebox" data-testid="link-quick-jukebox">Jukebox</a>
-          <a href="/about" data-testid="link-quick-about">About Us</a>
-          <span className="mockup-nav-divider">|</span>
-          {user ? (
-            <a href={user.creatorId ? `/creator/${user.creatorId}` : "/upload"} className="mockup-nav-user" data-testid="link-user-profile">
-              <User size={14} /> {user.name}
-            </a>
-          ) : (
-            <>
-              <a href="/sign-in" className="mockup-nav-auth" data-testid="link-sign-in">Sign In</a>
-              <a href="/sign-up" className="mockup-nav-auth mockup-nav-signup" data-testid="link-sign-up">New Member</a>
-              <a href="/sign-in" className="mockup-nav-auth mockup-nav-creator" data-testid="link-creator-login">Creator Login</a>
-            </>
-          )}
-        </nav>
+        <div className="mockup-topbar-right">
+          <nav className="mockup-topbar-nav mockup-nav-row1" data-testid="nav-quick-links">
+            <a href="/top-25" data-testid="link-quick-top25">Top 25</a>
+            <a href="/trending" data-testid="link-quick-trending">Trending</a>
+            <a href="/new-songs" data-testid="link-quick-new-songs">New Songs</a>
+            <a href="/new-creators" data-testid="link-quick-new-creators">New Creators</a>
+            <a href="/playlist" data-testid="link-quick-playlist">My Playlist</a>
+            {user && user.creatorId && (
+              <a href={`/creator/${user.creatorId}`} data-testid="link-mobile-my-library">My Library</a>
+            )}
+            <a href="/jukebox" data-testid="link-quick-jukebox">Jukebox</a>
+            <a href="/about" data-testid="link-quick-about">About Us</a>
+          </nav>
+          <nav className="mockup-topbar-nav mockup-nav-row2" data-testid="nav-auth-links">
+            {user ? (
+              <a href={user.creatorId ? `/creator/${user.creatorId}` : "/upload"} className="mockup-nav-user" data-testid="link-user-profile">
+                <User size={14} /> {user.name}
+              </a>
+            ) : (
+              <>
+                <a href="/sign-in" className="mockup-nav-auth" data-testid="link-sign-in">Sign In</a>
+                <a href="/sign-up" className="mockup-nav-auth mockup-nav-signup" data-testid="link-sign-up">New Member</a>
+                <a href="/sign-in" className="mockup-nav-auth mockup-nav-creator" data-testid="link-creator-login">Creator Login</a>
+              </>
+            )}
+          </nav>
+        </div>
         <div className="mockup-search-bar" ref={searchRef} data-testid="search-bar">
           <Search size={15} className="mockup-search-icon" />
           <input
