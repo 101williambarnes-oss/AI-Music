@@ -234,7 +234,67 @@ export default function Home() {
           )}
           <a href="/jukebox" data-testid="link-quick-jukebox">Jukebox</a>
           <a href="/about" data-testid="link-quick-about">About Us</a>
+          <span className="mockup-nav-divider">|</span>
+          {user ? (
+            <a href={user.creatorId ? `/creator/${user.creatorId}` : "/upload"} className="mockup-nav-user" data-testid="link-user-profile">
+              <User size={14} /> {user.name}
+            </a>
+          ) : (
+            <>
+              <a href="/sign-in" className="mockup-nav-auth" data-testid="link-sign-in">Sign In</a>
+              <a href="/sign-up" className="mockup-nav-auth mockup-nav-signup" data-testid="link-sign-up">New Member</a>
+              <a href="/sign-in" className="mockup-nav-auth mockup-nav-creator" data-testid="link-creator-login">Creator Login</a>
+            </>
+          )}
         </nav>
+        <div className="mockup-search-bar" ref={searchRef} data-testid="search-bar">
+          <Search size={15} className="mockup-search-icon" />
+          <input
+            type="text"
+            placeholder="Search songs, artists..."
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setShowDropdown(true); }}
+            onFocus={() => { if (searchQuery.length >= 1) setShowDropdown(true); }}
+            onKeyDown={(e) => { if (e.key === "Enter") handleSearchSubmit(); }}
+            className="mockup-search-input"
+            data-testid="input-search"
+          />
+          {searchQuery && (
+            <button onClick={() => { setSearchQuery(""); setShowDropdown(false); }} className="mockup-search-clear" data-testid="button-search-clear">
+              <X size={13} />
+            </button>
+          )}
+          {showDropdown && hasSearchResults && (
+            <div className="mockup-search-dropdown" data-testid="search-dropdown">
+              {searchResultTracks.map((t) => (
+                <a
+                  key={t.id}
+                  href={`/track/${t.id}`}
+                  className="mockup-search-result"
+                  onClick={() => { setShowDropdown(false); setSearchQuery(""); }}
+                  data-testid={`search-result-track-${t.id}`}
+                >
+                  <Music size={13} />
+                  <span>{t.title}</span>
+                  <span className="mockup-search-result-artist">- {t.artist}</span>
+                </a>
+              ))}
+              {searchResultCreators.map((c) => (
+                <a
+                  key={c.id}
+                  href={`/creator/${c.id}`}
+                  className="mockup-search-result"
+                  onClick={() => { setShowDropdown(false); setSearchQuery(""); }}
+                  data-testid={`search-result-creator-${c.id}`}
+                >
+                  <User size={13} />
+                  <span>{c.name}</span>
+                  <span className="mockup-search-result-artist">Creator</span>
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
       </header>
 
       <div className="mockup-three-col" data-testid="section-content">

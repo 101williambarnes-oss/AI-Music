@@ -364,6 +364,124 @@
   color: #fff;
   background: rgba(160,107,255,.12);
 }
+.mockup-nav-divider {
+  color: rgba(255,255,255,.2);
+  font-size: 14px;
+  margin: 0 2px;
+  user-select: none;
+}
+.mockup-nav-auth {
+  font-size: 12px !important;
+  color: rgba(255,255,255,.55) !important;
+  padding: 4px 10px !important;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 6px !important;
+}
+.mockup-nav-auth:hover {
+  border-color: rgba(160,107,255,.35) !important;
+}
+.mockup-nav-signup {
+  background: rgba(160,107,255,.15) !important;
+  color: #a06bff !important;
+  border-color: rgba(160,107,255,.3) !important;
+}
+.mockup-nav-signup:hover {
+  background: rgba(160,107,255,.25) !important;
+}
+.mockup-nav-creator {
+  background: rgba(108,240,255,.08) !important;
+  color: rgba(108,240,255,.85) !important;
+  border-color: rgba(108,240,255,.2) !important;
+}
+.mockup-nav-creator:hover {
+  background: rgba(108,240,255,.15) !important;
+}
+.mockup-nav-user {
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  color: #6cf0ff !important;
+  font-size: 13px !important;
+}
+.mockup-search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.mockup-search-icon {
+  position: absolute;
+  left: 10px;
+  color: rgba(255,255,255,.35);
+  pointer-events: none;
+  z-index: 1;
+}
+.mockup-search-input {
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(108,240,255,.12);
+  border-radius: 20px;
+  padding: 7px 32px 7px 32px;
+  color: #fff;
+  font-size: 13px;
+  width: 200px;
+  outline: none;
+  transition: border-color .2s, width .2s;
+}
+.mockup-search-input::placeholder {
+  color: rgba(255,255,255,.3);
+}
+.mockup-search-input:focus {
+  border-color: rgba(108,240,255,.35);
+  width: 240px;
+}
+.mockup-search-clear {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.4);
+  cursor: pointer;
+  padding: 3px;
+  display: flex;
+  align-items: center;
+}
+.mockup-search-clear:hover {
+  color: #fff;
+}
+.mockup-search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  background: rgba(10,14,30,.95);
+  border: 1px solid rgba(108,240,255,.15);
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 300;
+  max-height: 320px;
+  overflow-y: auto;
+  box-shadow: 0 8px 30px rgba(0,0,0,.5);
+}
+.mockup-search-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  color: rgba(255,255,255,.8);
+  text-decoration: none;
+  font-size: 13px;
+  transition: background .15s;
+}
+.mockup-search-result:hover {
+  background: rgba(160,107,255,.12);
+  color: #fff;
+}
+.mockup-search-result-artist {
+  color: rgba(108,240,255,.6);
+  font-size: 12px;
+}
 .mockup-three-col {
   display: grid;
   grid-template-columns: 1fr 1.2fr 1fr;
@@ -706,6 +824,24 @@
   }
   .mockup-logo {
     height: 34px;
+  }
+  .mockup-nav-divider {
+    display: none;
+  }
+  .mockup-nav-auth {
+    font-size: 10px !important;
+    padding: 3px 7px !important;
+  }
+  .mockup-search-bar {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 4px;
+  }
+  .mockup-search-input {
+    width: 100%;
+  }
+  .mockup-search-input:focus {
+    width: 100%;
   }
 }
 
