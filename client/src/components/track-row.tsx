@@ -3,7 +3,7 @@ import { type Track } from "@shared/schema";
 import { Trash2, Download, Library, Share2, Plus, Check, Film } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
-import { VideoModal } from "@/components/video-modal";
+
 import { useQuery } from "@tanstack/react-query";
 import { usePlaylist } from "@/lib/playlistContext";
 
@@ -20,45 +20,24 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
   const videoRef = useRef<HTMLVideoElement>(null);
   const isVideo = !!track.fileUrl && /\.(mp4|webm|mov)$/i.test(track.fileUrl);
   const isMedia = !!track.fileUrl;
-  const [showVideoModal, setShowVideoModal] = useState(false);
-  const wantModalRef = useRef(false);
-
   useEffect(() => {
     if (!videoRef.current || !isVideo) return;
-    if (isCurrentlyPlaying && !showVideoModal) {
+    if (isCurrentlyPlaying) {
       videoRef.current.play().catch(() => {});
     } else {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
-  }, [isCurrentlyPlaying, isVideo, showVideoModal]);
-
-  useEffect(() => {
-    if (wantModalRef.current && isPlaying && currentTrackId === track.id) {
-      wantModalRef.current = false;
-      setShowVideoModal(true);
-    }
-  }, [isPlaying, currentTrackId, track.id]);
+  }, [isCurrentlyPlaying, isVideo]);
 
   const handleRowClick = useCallback(() => {
     if (!hasAudio) return;
-    if (isMedia) {
-      wantModalRef.current = true;
-      if (currentTrackId !== track.id) {
-        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
-      } else if (!isPlaying) {
-        play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
-      }
-      setShowVideoModal(true);
+    if (currentTrackId === track.id) {
+      toggle();
     } else {
-      toggle(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
+      play(track.id, track.fileUrl!, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
     }
-  }, [hasAudio, isMedia, track.id, track.fileUrl, track.title, track.artist, track.coverUrl, play, toggle, currentTrackId, isPlaying]);
-
-  function handleModalClose() {
-    wantModalRef.current = false;
-    setShowVideoModal(false);
-  }
+  }, [hasAudio, track.id, track.fileUrl, track.title, track.artist, track.coverUrl, play, toggle, currentTrackId]);
 
   const [generatingReel, setGeneratingReel] = useState(false);
 
@@ -337,9 +316,6 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
         )}
       </div>
       <TrackActions track={track} hideComments={hideComments} />
-      {showVideoModal && isMedia && (
-        <VideoModal track={track} onClose={handleModalClose} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
-      )}
     </div>
   );
 }
