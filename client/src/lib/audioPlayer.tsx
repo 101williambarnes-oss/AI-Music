@@ -21,12 +21,15 @@ type AudioPlayerState = {
   isPlayingIntro: boolean;
   play: (trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => void;
   pause: () => void;
+  resume: () => void;
   stop: () => void;
   toggle: (trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => void;
   seek: (time: number) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
   setOnEnded: (cb: OnEndedCallback | null) => void;
+  setVolume: (v: number) => void;
+  getVolume: () => number;
 };
 
 const AudioPlayerContext = createContext<AudioPlayerState>({
@@ -35,12 +38,15 @@ const AudioPlayerContext = createContext<AudioPlayerState>({
   isPlayingIntro: false,
   play: () => {},
   pause: () => {},
+  resume: () => {},
   stop: () => {},
   toggle: () => {},
   seek: () => {},
   getCurrentTime: () => 0,
   getDuration: () => 0,
   setOnEnded: () => {},
+  setVolume: () => {},
+  getVolume: () => 1,
 });
 
 const SILENCE_DATA_URI = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
@@ -389,8 +395,25 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     return audioRef.current?.duration ?? 0;
   }, []);
 
+  const resume = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio && audio.src && !audio.src.startsWith("data:")) {
+      setIsPlaying(true);
+      audio.play().catch(() => setIsPlaying(false));
+    }
+  }, []);
+
+  const setVolume = useCallback((v: number) => {
+    const audio = audioRef.current;
+    if (audio) audio.volume = Math.max(0, Math.min(1, v));
+  }, []);
+
+  const getVolume = useCallback(() => {
+    return audioRef.current?.volume ?? 1;
+  }, []);
+
   return (
-    <AudioPlayerContext.Provider value={{ currentTrackId, isPlaying, isPlayingIntro, play, pause, stop, toggle, seek, getCurrentTime, getDuration, setOnEnded }}>
+    <AudioPlayerContext.Provider value={{ currentTrackId, isPlaying, isPlayingIntro, play, pause, resume, stop, toggle, seek, getCurrentTime, getDuration, setOnEnded, setVolume, getVolume }}>
       {children}
     </AudioPlayerContext.Provider>
   );

@@ -28,6 +28,7 @@ import Jukebox from "@/pages/jukebox";
 import NotFound from "@/pages/not-found";
 import { AudioPlayerProvider } from "@/lib/audioPlayer";
 import { PlaylistProvider } from "@/lib/playlistContext";
+import { PlayerBar } from "@/components/player-bar";
 
 function FloatingHomeButton() {
   const [location] = useLocation();
@@ -82,6 +83,7 @@ function App() {
             <Toaster />
             <FloatingHomeButton />
             <Router />
+            <PlayerBar />
           </PlaylistProvider>
         </AudioPlayerProvider>
       </TooltipProvider>

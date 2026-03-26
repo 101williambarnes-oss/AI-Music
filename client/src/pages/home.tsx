@@ -509,7 +509,7 @@ export default function Home() {
       </header>
 
       <section className="hero" style={{ marginTop: 10, paddingTop: 18, paddingBottom: 10 }} data-testid="section-hero">
-        <div style={{ position: "relative", zIndex: 3, color: "#ffffff", fontSize: 18, fontWeight: 800, letterSpacing: 4, textTransform: "uppercase", textAlign: "center", textShadow: "0 0 10px rgba(255,255,255,.6), 0 0 30px rgba(108,240,255,.5), 0 0 60px rgba(160,107,255,.3)" }} data-testid="text-tagline">AI-Only Music Platform</div>
+        <div style={{ position: "relative", zIndex: 3, color: "#ffffff", fontSize: 18, fontWeight: 800, letterSpacing: 4, textTransform: "uppercase", textAlign: "center", textShadow: "0 0 10px rgba(255,255,255,.6), 0 0 30px rgba(108,240,255,.5), 0 0 60px rgba(160,107,255,.3)" }} data-testid="text-tagline">Hit Wave Media for Music Creators — AI Only Music Platform</div>
       </section>
 
       <div style={{ display: "flex", justifyContent: "center", padding: "10px 22px 0" }}>
@@ -524,7 +524,7 @@ export default function Home() {
             }
           } catch {}
         }}>
-          Hitwave Studios for Music Creators
+          Hit Wave Media for Music Creators
         </a>
       </div>
 
@@ -563,8 +563,8 @@ export default function Home() {
         </a>
       </nav>
 
-      <div className="home-sections" data-testid="section-content">
-        <section className="home-panel" data-testid="section-top25">
+      <div className="home-three-col" data-testid="section-content">
+        <section className="home-panel home-col-left" data-testid="section-top25">
           <div className="home-section-header">
             <a href="/top-25" className="home-section-title" data-testid="link-top25-header">
               Top 25 Trending Songs
@@ -576,7 +576,7 @@ export default function Home() {
           {isLoading ? (
             <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
           ) : (
-            <div className="home-top25-grid">
+            <div className="home-top25-list">
               {top25.map((track, i) => (
                 <MiniTrackCard key={track.id} track={track} index={i} />
               ))}
@@ -584,27 +584,27 @@ export default function Home() {
           )}
         </section>
 
-        <div className="home-two-col">
-          <section className="home-panel" data-testid="section-new-songs">
-            <div className="home-section-header">
-              <a href="/new-songs" className="home-section-title" data-testid="link-new-songs-header">
-                New Songs
-              </a>
-              <a href="/new-songs" className="home-see-all" data-testid="link-new-songs-see-all">
-                See All <ChevronRight size={14} />
-              </a>
+        <section className="home-panel home-col-center" data-testid="section-new-songs">
+          <div className="home-section-header">
+            <a href="/new-songs" className="home-section-title" data-testid="link-new-songs-header">
+              New Songs
+            </a>
+            <a href="/new-songs" className="home-see-all" data-testid="link-new-songs-see-all">
+              See All <ChevronRight size={14} />
+            </a>
+          </div>
+          {isLoading ? (
+            <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
+          ) : (
+            <div className="home-new-songs-scroll">
+              {newSongs.map((track) => (
+                <NewSongCard key={track.id} track={track} />
+              ))}
             </div>
-            {isLoading ? (
-              <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
-            ) : (
-              <div className="home-new-songs-scroll">
-                {newSongs.map((track) => (
-                  <NewSongCard key={track.id} track={track} />
-                ))}
-              </div>
-            )}
-          </section>
+          )}
+        </section>
 
+        <div className="home-col-right">
           <section className="home-panel" data-testid="section-new-creators">
             <div className="home-section-header">
               <a href="/new-creators" className="home-section-title" data-testid="link-new-creators-header">
@@ -657,31 +657,30 @@ export default function Home() {
               </div>
             )}
           </section>
-        </div>
 
-        <section className="home-panel" data-testid="section-trending">
-          <div className="home-section-header">
-            <a href="/trending" className="home-section-title" data-testid="link-trending-header">
-              Trending Songs
-            </a>
-            <a href="/trending" className="home-see-all" data-testid="link-trending-see-all">
-              See All <ChevronRight size={14} />
-            </a>
-          </div>
-          {isLoading ? (
-            <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
-          ) : (
-            <div className="home-top25-grid">
-              {trending.map((track, i) => (
-                <MiniTrackCard key={track.id} track={track} index={i} />
-              ))}
+          <section className="home-panel" data-testid="section-trending">
+            <div className="home-section-header">
+              <a href="/trending" className="home-section-title" data-testid="link-trending-header">
+                Trending Songs
+              </a>
+              <a href="/trending" className="home-see-all" data-testid="link-trending-see-all">
+                See All <ChevronRight size={14} />
+              </a>
             </div>
-          )}
-        </section>
-
+            {isLoading ? (
+              <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)" }}>Loading...</div>
+            ) : (
+              <div className="home-top25-list">
+                {trending.map((track, i) => (
+                  <MiniTrackCard key={track.id} track={track} index={i} />
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
       </div>
 
-      <footer style={{ textAlign: "center", padding: "32px 16px 24px", borderTop: "1px solid rgba(108,240,255,.06)" }}>
+      <footer style={{ textAlign: "center", padding: "32px 16px 80px", borderTop: "1px solid rgba(108,240,255,.06)" }}>
         <div style={{ fontSize: 12, color: "rgba(170,182,232,.35)" }}>
           <a href="/terms" style={{ color: "rgba(170,182,232,.5)", textDecoration: "none" }} data-testid="link-footer-terms">Terms of Service</a>
           <span style={{ margin: "0 10px" }}>·</span>
