@@ -1798,10 +1798,13 @@ ONLY output the spoken words. No quotes, no stage directions.`;
       const tempDir = path.join(uploadsDir, "reels");
       if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
-      const introPath = path.join(tempDir, `intro-${trackId}-${Date.now()}.mp3`);
-      const songPath = path.join(tempDir, `song-${trackId}-${Date.now()}.mp3`);
-      const combinedAudioPath = path.join(tempDir, `combined-${trackId}-${Date.now()}.mp3`);
-      const outputPath = path.join(tempDir, `reel-${trackId}-${Date.now()}.mp4`);
+      const ts = Date.now();
+      const introExt = track.djIntroUrl.match(/\.(mp3|mp4|m4a|wav|ogg|aac)$/i)?.[0] || ".mp3";
+      const songExt = track.fileUrl.match(/\.(mp3|mp4|m4a|wav|ogg|aac)$/i)?.[0] || ".mp4";
+      const introPath = path.join(tempDir, `intro-${trackId}-${ts}${introExt}`);
+      const songPath = path.join(tempDir, `song-${trackId}-${ts}${songExt}`);
+      const combinedAudioPath = path.join(tempDir, `combined-${trackId}-${ts}.aac`);
+      const outputPath = path.join(tempDir, `reel-${trackId}-${ts}.mp4`);
 
       const introRes = await fetch(track.djIntroUrl);
       if (!introRes.ok) return res.status(500).json({ message: "Failed to fetch DJ intro" });
@@ -1811,11 +1814,9 @@ ONLY output the spoken words. No quotes, no stage directions.`;
       if (!songRes.ok) return res.status(500).json({ message: "Failed to fetch song" });
       fs.writeFileSync(songPath, Buffer.from(await songRes.arrayBuffer()));
 
-      const concatListPath = path.join(tempDir, `list-${trackId}-${Date.now()}.txt`);
-      fs.writeFileSync(concatListPath, `file '${introPath}'\nfile '${songPath}'`);
-      execSync(`ffmpeg -y -f concat -safe 0 -i "${concatListPath}" -t 60 -c:a libmp3lame -q:a 2 "${combinedAudioPath}"`, { timeout: 30000 });
+      execSync(`ffmpeg -y -i "${introPath}" -i "${songPath}" -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1[outa]" -map "[outa]" -t 60 -c:a aac -b:a 192k "${combinedAudioPath}"`, { timeout: 30000 });
 
-      execSync(`ffmpeg -y -loop 1 -i "${logoPath}" -i "${combinedAudioPath}" -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black" -shortest -movflags +faststart "${outputPath}"`, { timeout: 60000 });
+      execSync(`ffmpeg -y -loop 1 -i "${logoPath}" -i "${combinedAudioPath}" -c:v libx264 -tune stillimage -c:a copy -pix_fmt yuv420p -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black" -shortest -movflags +faststart "${outputPath}"`, { timeout: 60000 });
 
       let creatorName = track.artist;
       if (track.creatorId) {
@@ -1832,7 +1833,6 @@ ONLY output the spoken words. No quotes, no stage directions.`;
         try { fs.unlinkSync(introPath); } catch {}
         try { fs.unlinkSync(songPath); } catch {}
         try { fs.unlinkSync(combinedAudioPath); } catch {}
-        try { fs.unlinkSync(concatListPath); } catch {}
         try { fs.unlinkSync(outputPath); } catch {}
       });
     } catch (error: any) {
