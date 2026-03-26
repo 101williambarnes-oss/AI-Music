@@ -344,6 +344,46 @@
   left: 50%;
   transform: translateX(-50%);
 }
+.mockup-brand-hwm {
+  font-weight: 900;
+  font-style: italic;
+  font-size: 17px;
+  background: linear-gradient(135deg, #ff4fd8, #a06bff, #6cf0ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 8px rgba(160,107,255,.4));
+}
+.mockup-brand-for {
+  font-weight: 400;
+  font-size: 12px;
+  color: rgba(255,255,255,.45);
+}
+.mockup-brand-mc {
+  font-weight: 700;
+  font-size: 16px;
+  background: linear-gradient(135deg, #6cf0ff, #a06bff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 6px rgba(108,240,255,.35));
+}
+.mockup-brand-dash {
+  margin: 0 8px;
+  color: rgba(108,240,255,.3);
+}
+.mockup-brand-ai {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #ff4fd8, #ff9040);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 6px rgba(255,79,216,.3));
+}
 .mockup-row2-right {
   flex: 1;
   display: flex;

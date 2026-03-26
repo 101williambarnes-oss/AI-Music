@@ -229,11 +229,11 @@ export default function Home() {
         <div className="mockup-topbar-row2">
           <div className="mockup-row2-spacer"></div>
           <div className="mockup-brand-center" data-testid="text-brand">
-            <span style={{ fontWeight: 900, fontStyle: "italic", color: "#fff", fontSize: "16px" }}>Hit Wave Media</span>{" "}
-            <span style={{ fontWeight: 400, fontSize: "12px", color: "rgba(255,255,255,.5)" }}>for</span>{" "}
-            <span style={{ fontWeight: 700, color: "#fff", fontSize: "15px" }}>Music Creators</span>
-            <span style={{ margin: "0 8px", color: "rgba(108,240,255,.3)" }}>—</span>
-            <span style={{ color: "#6cf0ff", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }} data-testid="text-tagline">AI-Only Music Platform</span>
+            <span className="mockup-brand-hwm">Hit Wave Media</span>{" "}
+            <span className="mockup-brand-for">for</span>{" "}
+            <span className="mockup-brand-mc">Music Creators</span>
+            <span className="mockup-brand-dash">—</span>
+            <span className="mockup-brand-ai" data-testid="text-tagline">AI-Only Music Platform</span>
           </div>
           <div className="mockup-row2-right">
             <div className="mockup-search-bar" ref={searchRef} data-testid="search-bar">
