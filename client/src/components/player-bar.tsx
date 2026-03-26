@@ -162,10 +162,10 @@ export function PlayerBar() {
       <div className="player-bar-inner">
         <div className="player-bar-left-section">
           <div className="player-bar-art" data-testid="player-bar-track-info" onClick={() => isVideo && setVideoVisible(!videoVisible)} style={isVideo ? { cursor: "pointer" } : undefined}>
-            {isVideo && !videoVisible && currentFileUrl ? (
+            {isVideo && currentFileUrl ? (
               <div className="player-bar-art-video-thumb">
                 <video src={currentFileUrl} muted playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                <div className="player-bar-art-video-badge"><Maximize2 size={12} /></div>
+                {!videoVisible && <div className="player-bar-art-video-badge"><Maximize2 size={12} /></div>}
               </div>
             ) : trackMeta.coverUrl ? (
               <img src={trackMeta.coverUrl} alt={trackMeta.title} />
