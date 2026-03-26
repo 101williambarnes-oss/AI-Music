@@ -1779,7 +1779,22 @@ ONLY output the spoken words. No quotes, no stage directions.`;
 
       const { execSync } = await import("child_process");
 
-      const logoPath = path.resolve("attached_assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png");
+      try {
+        execSync("ffmpeg -version", { stdio: "ignore" });
+      } catch {
+        return res.status(500).json({ message: "ffmpeg is not installed on this server" });
+      }
+
+      let logoPath = path.resolve("attached_assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png");
+      if (!fs.existsSync(logoPath)) {
+        logoPath = path.resolve("dist/public/images/og-preview.png");
+      }
+      if (!fs.existsSync(logoPath)) {
+        logoPath = path.resolve("client/public/images/og-preview.png");
+      }
+      if (!fs.existsSync(logoPath)) {
+        return res.status(500).json({ message: "Logo image not found on server" });
+      }
       const tempDir = path.join(uploadsDir, "reels");
       if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
