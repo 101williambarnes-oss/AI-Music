@@ -76,7 +76,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getNewTracks(): Promise<Track[]> {
-    return db.select().from(tracks).orderBy(desc(tracks.createdAt)).limit(12);
+    return db.select().from(tracks).orderBy(desc(tracks.createdAt)).limit(40);
   }
 
   async getCreators(): Promise<Creator[]> {
