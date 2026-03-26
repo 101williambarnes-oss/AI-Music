@@ -1079,12 +1079,16 @@ export async function registerRoutes(
       if (!creator) return next();
 
       const tracks = await storage.getTracksByCreatorId(creator.id);
+      const host = req.get("host") || "hitwavemedia.com";
+      const protocol = req.protocol === "https" || host.includes("hitwavemedia.com") ? "https" : req.protocol;
+      const baseUrl = `${protocol}://${host}`;
+      const defaultLogo = `${baseUrl}/images/og-preview.png`;
       const ogImage = creator.avatarUrl
-        ? `${req.protocol}://${req.get("host")}${creator.avatarUrl}`
-        : "";
+        ? `${baseUrl}${creator.avatarUrl}`
+        : defaultLogo;
       const ogTitle = `${creator.name} — Hit Wave Media`;
       const ogDesc = `Check out ${creator.name} on Hit Wave Media. ${creator.trackCount} track${creator.trackCount !== 1 ? "s" : ""} published. The Home of AI Music.`;
-      const ogUrl = `${req.protocol}://${req.get("host")}/creator/${id}`;
+      const ogUrl = `${baseUrl}/creator/${id}`;
 
       const html = `<!DOCTYPE html>
 <html lang="en">
@@ -1097,11 +1101,13 @@ export async function registerRoutes(
   <meta property="og:url" content="${ogUrl}" />
   <meta property="og:type" content="profile" />
   <meta property="og:site_name" content="Hit Wave Media" />
-  ${ogImage ? `<meta property="og:image" content="${ogImage}" />` : ""}
+  <meta property="og:image" content="${ogImage}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="675" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${ogTitle}" />
   <meta name="twitter:description" content="${ogDesc}" />
-  ${ogImage ? `<meta name="twitter:image" content="${ogImage}" />` : ""}
+  <meta name="twitter:image" content="${ogImage}" />
 </head>
 <body>
   <h1>${creator.name}</h1>
@@ -1137,7 +1143,7 @@ export async function registerRoutes(
       const host = req.get("host") || "hitwavemedia.com";
       const protocol = req.protocol === "https" || host.includes("hitwavemedia.com") ? "https" : req.protocol;
       const baseUrl = `${protocol}://${host}`;
-      const ogImage = track.coverUrl || `${baseUrl}/assets/ChatGPT_Image_Feb_25__2026__02_42_25_AM_1772012848904-CrhyMrYB.png`;
+      const ogImage = track.coverUrl || `${baseUrl}/images/og-preview.png`;
       const ogTitle = `${track.title} by ${creatorName}`;
       const ogDesc = `Listen to "${track.title}" by ${creatorName} on Hit Wave Media — The Home of AI Music. Tap to play.`;
       const ogUrl = `${baseUrl}/track/${id}`;
