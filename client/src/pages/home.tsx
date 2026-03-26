@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator } from "@shared/schema";
-import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, Info, Disc3, MoreVertical } from "lucide-react";
+import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, Info, Disc3, GripVertical } from "lucide-react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { useLocation } from "wouter";
 import { useAudioPlayer } from "@/lib/audioPlayer";
@@ -130,7 +130,7 @@ function NewSongRow({ track }: { track: TrackWithLikes }) {
         </div>
         <span className="mockup-newsong-plays">{(track.plays || 0).toLocaleString()} Plays</span>
         <Heart size={14} className="mockup-newsong-heart" />
-        <MoreVertical size={14} className="mockup-newsong-menu" />
+        <GripVertical size={14} className="mockup-newsong-menu" />
       </div>
       {showVideoModal && track.fileUrl && (
         <VideoModal track={track} onClose={() => { wantModalRef.current = false; setShowVideoModal(false); }} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
@@ -180,7 +180,7 @@ function TrendingRow({ track, index }: { track: TrackWithLikes; index: number })
           <span className="mockup-trending-artist">{track.artist}</span>
         </div>
         <Heart size={13} className="mockup-trending-heart" />
-        <MoreVertical size={13} className="mockup-trending-menu" />
+        <GripVertical size={13} className="mockup-trending-menu" />
       </div>
       {showVideoModal && track.fileUrl && (
         <VideoModal track={track} onClose={() => { wantModalRef.current = false; setShowVideoModal(false); }} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />

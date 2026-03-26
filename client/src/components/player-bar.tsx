@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Heart, List } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Heart, List, Monitor, Menu } from "lucide-react";
 
 function formatTime(seconds: number): string {
   if (!seconds || !isFinite(seconds)) return "0:00";
@@ -91,12 +91,14 @@ export function PlayerBar() {
   if (!currentTrackId || !trackMeta) return null;
 
   const pct = duration > 0 ? (progress / duration) * 100 : 0;
+  const displayTitle = isPlayingIntro ? "DJ William Allen" : trackMeta.title;
+  const displayArtist = isPlayingIntro ? `Introducing: ${trackMeta.title}` : trackMeta.artist;
 
   return (
     <div className="player-bar" data-testid="player-bar">
       <div className="player-bar-inner">
-        <div className="player-bar-track" data-testid="player-bar-track-info">
-          <div className="player-bar-art">
+        <div className="player-bar-left-section">
+          <div className="player-bar-art" data-testid="player-bar-track-info">
             {trackMeta.coverUrl ? (
               <img src={trackMeta.coverUrl} alt={trackMeta.title} />
             ) : (
@@ -105,63 +107,47 @@ export function PlayerBar() {
           </div>
           <div className="player-bar-info">
             <div className="player-bar-title" data-testid="player-bar-title">
-              {isPlayingIntro ? "DJ William Allen" : trackMeta.title}
+              {displayTitle} <span className="player-bar-dash">-</span> <span className="player-bar-artist-name">{displayArtist}</span>
             </div>
-            <div className="player-bar-artist" data-testid="player-bar-artist">
-              {isPlayingIntro ? `Introducing: ${trackMeta.title}` : trackMeta.artist}
-            </div>
-            <div className="player-bar-time-inline" data-testid="player-bar-time-current">
+            <div className="player-bar-time-text" data-testid="player-bar-time-current">
               {formatTime(progress)} / {formatTime(duration)}
             </div>
           </div>
-        </div>
-
-        <div className="player-bar-progress-wide" ref={progressRef} onClick={handleProgressClick} data-testid="player-bar-progress">
-          <div className="player-bar-progress-fill" style={{ width: `${pct}%` }} />
-          <div className="player-bar-progress-thumb" style={{ left: `${pct}%` }} />
-        </div>
-
-        <div className="player-bar-center">
-          <div className="player-bar-controls">
-            <button onClick={toggleMute} className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-mute">
-              {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-            </button>
-            <button className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-prev">
-              <SkipBack size={20} />
-            </button>
-            <button
-              onClick={handlePlayPause}
-              className="player-bar-btn player-bar-play"
-              data-testid="button-player-play"
-            >
-              {isPlaying ? <Pause size={24} /> : <Play size={24} style={{ marginLeft: 2 }} />}
-            </button>
-            <button className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-next">
-              <SkipForward size={20} />
-            </button>
-            <button className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-list">
-              <List size={18} />
-            </button>
+          <div className="player-bar-progress-wide" ref={progressRef} onClick={handleProgressClick} data-testid="player-bar-progress">
+            <div className="player-bar-progress-fill" style={{ width: `${pct}%` }} />
+            <div className="player-bar-progress-thumb" style={{ left: `${pct}%` }} />
           </div>
         </div>
 
-        <div className="player-bar-right">
-          <Heart size={18} className="player-bar-heart" />
-          <div className="player-bar-volume">
-            <button onClick={toggleMute} className="player-bar-btn" data-testid="button-player-mute-right">
-              {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
-            </button>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={muted ? 0 : volume}
-              onChange={handleVolumeChange}
-              className="player-bar-volume-slider"
-              data-testid="input-player-volume"
-            />
-          </div>
+        <div className="player-bar-transport">
+          <button onClick={toggleMute} className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-mute">
+            {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+          </button>
+          <button className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-prev">
+            <SkipBack size={22} />
+          </button>
+          <button
+            onClick={handlePlayPause}
+            className="player-bar-btn player-bar-play"
+            data-testid="button-player-play"
+          >
+            {isPlaying ? <Pause size={26} /> : <Play size={26} style={{ marginLeft: 3 }} />}
+          </button>
+          <button className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-next">
+            <SkipForward size={22} />
+          </button>
+          <button className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-list">
+            <List size={20} />
+          </button>
+        </div>
+
+        <div className="player-bar-right-section">
+          <Heart size={20} className="player-bar-heart-icon" fill="#ff4fd8" color="#ff4fd8" />
+          <Monitor size={18} className="player-bar-ctrl-icon" />
+          <button onClick={toggleMute} className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-mute-right">
+            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
+          <Menu size={20} className="player-bar-ctrl-icon" />
         </div>
       </div>
     </div>
