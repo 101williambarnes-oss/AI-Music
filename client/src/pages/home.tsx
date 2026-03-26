@@ -225,56 +225,9 @@ export default function Home() {
             <a href="/jukebox" data-testid="link-quick-jukebox">Jukebox</a>
             <a href="/about" data-testid="link-quick-about">About Us</a>
           </nav>
-          <div className="mockup-search-bar" ref={searchRef} data-testid="search-bar">
-          <Search size={15} className="mockup-search-icon" />
-          <input
-            type="text"
-            placeholder="Search songs, artists..."
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setShowDropdown(true); }}
-            onFocus={() => { if (searchQuery.length >= 1) setShowDropdown(true); }}
-            onKeyDown={(e) => { if (e.key === "Enter") handleSearchSubmit(); }}
-            className="mockup-search-input"
-            data-testid="input-search"
-          />
-          {searchQuery && (
-            <button onClick={() => { setSearchQuery(""); setShowDropdown(false); }} className="mockup-search-clear" data-testid="button-search-clear">
-              <X size={13} />
-            </button>
-          )}
-          {showDropdown && hasSearchResults && (
-            <div className="mockup-search-dropdown" data-testid="search-dropdown">
-              {searchResultTracks.map((t) => (
-                <a
-                  key={t.id}
-                  href={`/track/${t.id}`}
-                  className="mockup-search-result"
-                  onClick={() => { setShowDropdown(false); setSearchQuery(""); }}
-                  data-testid={`search-result-track-${t.id}`}
-                >
-                  <Music size={13} />
-                  <span>{t.title}</span>
-                  <span className="mockup-search-result-artist">- {t.artist}</span>
-                </a>
-              ))}
-              {searchResultCreators.map((c) => (
-                <a
-                  key={c.id}
-                  href={`/creator/${c.id}`}
-                  className="mockup-search-result"
-                  onClick={() => { setShowDropdown(false); setSearchQuery(""); }}
-                  data-testid={`search-result-creator-${c.id}`}
-                >
-                  <User size={13} />
-                  <span>{c.name}</span>
-                  <span className="mockup-search-result-artist">Creator</span>
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
         </div>
         <div className="mockup-topbar-row2">
+          <div className="mockup-row2-spacer"></div>
           <div className="mockup-brand-center" data-testid="text-brand">
             <span style={{ fontWeight: 900, fontStyle: "italic", color: "#fff", fontSize: "16px" }}>Hit Wave Media</span>{" "}
             <span style={{ fontWeight: 400, fontSize: "12px", color: "rgba(255,255,255,.5)" }}>for</span>{" "}
@@ -282,7 +235,55 @@ export default function Home() {
             <span style={{ margin: "0 8px", color: "rgba(108,240,255,.3)" }}>—</span>
             <span style={{ color: "#6cf0ff", fontSize: "13px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase" }} data-testid="text-tagline">AI-Only Music Platform</span>
           </div>
-          <nav className="mockup-topbar-nav mockup-nav-auth" data-testid="nav-auth-links">
+          <div className="mockup-row2-right">
+            <div className="mockup-search-bar" ref={searchRef} data-testid="search-bar">
+              <Search size={15} className="mockup-search-icon" />
+              <input
+                type="text"
+                placeholder="Search songs, artists..."
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setShowDropdown(true); }}
+                onFocus={() => { if (searchQuery.length >= 1) setShowDropdown(true); }}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSearchSubmit(); }}
+                className="mockup-search-input"
+                data-testid="input-search"
+              />
+              {searchQuery && (
+                <button onClick={() => { setSearchQuery(""); setShowDropdown(false); }} className="mockup-search-clear" data-testid="button-search-clear">
+                  <X size={13} />
+                </button>
+              )}
+              {showDropdown && hasSearchResults && (
+                <div className="mockup-search-dropdown" data-testid="search-dropdown">
+                  {searchResultTracks.map((t) => (
+                    <a
+                      key={t.id}
+                      href={`/track/${t.id}`}
+                      className="mockup-search-result"
+                      onClick={() => { setShowDropdown(false); setSearchQuery(""); }}
+                      data-testid={`search-result-track-${t.id}`}
+                    >
+                      <Music size={13} />
+                      <span>{t.title}</span>
+                      <span className="mockup-search-result-artist">- {t.artist}</span>
+                    </a>
+                  ))}
+                  {searchResultCreators.map((c) => (
+                    <a
+                      key={c.id}
+                      href={`/creator/${c.id}`}
+                      className="mockup-search-result"
+                      onClick={() => { setShowDropdown(false); setSearchQuery(""); }}
+                      data-testid={`search-result-creator-${c.id}`}
+                    >
+                      <User size={13} />
+                      <span>{c.name}</span>
+                      <span className="mockup-search-result-artist">Creator</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
             {user ? (
               <>
                 <a href={user.creatorId ? `/creator/${user.creatorId}` : "/upload"} className="mockup-nav-user" data-testid="link-user-profile">
@@ -309,7 +310,7 @@ export default function Home() {
                 <a href="/sign-up" className="mockup-nav-auth-btn mockup-nav-creator" data-testid="link-creator-signup">Creator Sign Up</a>
               </>
             )}
-          </nav>
+          </div>
         </div>
       </header>
 
