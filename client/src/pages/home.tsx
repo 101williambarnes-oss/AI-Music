@@ -5,7 +5,7 @@ import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, 
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { useLocation } from "wouter";
 import { useAudioPlayer } from "@/lib/audioPlayer";
-import { VideoModal } from "@/components/video-modal";
+
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -21,171 +21,121 @@ type HomeData = {
 function Top25Row({ track, index }: { track: TrackWithLikes; index: number }) {
   const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
   const isActive = currentTrackId === track.id && isPlaying;
-  const [showVideoModal, setShowVideoModal] = useState(false);
-  const wantModalRef = useRef(false);
-  const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
-    queryKey: ["/api/creators", track.creatorId],
-    enabled: !!track.creatorId,
-  });
-
-  useEffect(() => {
-    if (wantModalRef.current && isPlaying && currentTrackId === track.id) {
-      wantModalRef.current = false;
-      setShowVideoModal(true);
-    }
-  }, [isPlaying, currentTrackId, track.id]);
 
   const handleClick = useCallback(() => {
     if (!track.fileUrl) return;
-    wantModalRef.current = true;
-    if (currentTrackId !== track.id || !isPlaying) {
+    if (currentTrackId === track.id) {
+      toggle();
+    } else {
       play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
     }
-    setShowVideoModal(true);
-  }, [track, play, currentTrackId, isPlaying]);
+  }, [track, play, toggle, currentTrackId]);
 
   return (
-    <>
-      <div
-        onClick={handleClick}
-        className="mockup-top25-row"
-        style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined }}
-        data-testid={`home-track-${track.id}`}
-      >
-        <span className="mockup-rank" style={{ color: index < 3 ? "#ff4fd8" : "rgba(255,255,255,.45)" }} data-testid={`text-rank-${index + 1}`}>
-          {index + 1}.
-        </span>
-        <div className="mockup-top25-info">
-          <div className="mockup-top25-title" data-testid={`text-title-${track.id}`}>{track.title}</div>
-          <div className="mockup-top25-artist">{track.artist}</div>
-        </div>
-        <span className="mockup-plays">{(track.plays || 0).toLocaleString()}</span>
-        <span className="mockup-likes">
-          <Heart size={11} fill="#ff4fd8" color="#ff4fd8" />
-          {(track.likeCount || 0).toLocaleString()}
-        </span>
+    <div
+      onClick={handleClick}
+      className="mockup-top25-row"
+      style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined, cursor: "pointer" }}
+      data-testid={`home-track-${track.id}`}
+    >
+      <span className="mockup-rank" style={{ color: index < 3 ? "#ff4fd8" : "rgba(255,255,255,.45)" }} data-testid={`text-rank-${index + 1}`}>
+        {index + 1}.
+      </span>
+      <div className="mockup-top25-info">
+        <div className="mockup-top25-title" data-testid={`text-title-${track.id}`}>{track.title}</div>
+        <div className="mockup-top25-artist">{track.artist}</div>
       </div>
-      {showVideoModal && track.fileUrl && (
-        <VideoModal track={track} onClose={() => { wantModalRef.current = false; setShowVideoModal(false); }} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
-      )}
-    </>
+      <span className="mockup-plays">{(track.plays || 0).toLocaleString()}</span>
+      <span className="mockup-likes">
+        <Heart size={11} fill="#ff4fd8" color="#ff4fd8" />
+        {(track.likeCount || 0).toLocaleString()}
+      </span>
+    </div>
   );
 }
 
 function NewSongRow({ track }: { track: TrackWithLikes }) {
-  const { currentTrackId, isPlaying, play } = useAudioPlayer();
+  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
   const isActive = currentTrackId === track.id && isPlaying;
-  const [showVideoModal, setShowVideoModal] = useState(false);
-  const wantModalRef = useRef(false);
   const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
     queryKey: ["/api/creators", track.creatorId],
     enabled: !!track.creatorId,
   });
 
-  useEffect(() => {
-    if (wantModalRef.current && isPlaying && currentTrackId === track.id) {
-      wantModalRef.current = false;
-      setShowVideoModal(true);
-    }
-  }, [isPlaying, currentTrackId, track.id]);
-
   const handleClick = useCallback(() => {
     if (!track.fileUrl) return;
-    wantModalRef.current = true;
-    if (currentTrackId !== track.id || !isPlaying) {
+    if (currentTrackId === track.id) {
+      toggle();
+    } else {
       play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
     }
-    setShowVideoModal(true);
-  }, [track, play, currentTrackId, isPlaying]);
+  }, [track, play, toggle, currentTrackId]);
 
   const thumbSrc = track.coverUrl || creatorData?.creator?.avatarUrl || null;
 
   return (
-    <>
-      <div
-        onClick={handleClick}
-        className="mockup-newsong-row"
-        style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined }}
-        data-testid={`new-song-card-${track.id}`}
-      >
-        <div className="mockup-newsong-thumb">
-          {thumbSrc ? (
-            <img src={thumbSrc} alt={track.title} />
-          ) : (
-            <div className="mockup-newsong-thumb-placeholder">
-              <Music size={24} style={{ color: "rgba(160,107,255,.4)" }} />
-            </div>
-          )}
-          {isActive && (
-            <div className="mockup-newsong-playing">
-              <span style={{ color: "#fff", fontSize: 12 }}>{"\u275A\u275A"}</span>
-            </div>
-          )}
-        </div>
-        <div className="mockup-newsong-info">
-          <div className="mockup-newsong-title">
-            {track.title} - <span style={{ color: "rgba(108,240,255,.7)" }}>{track.artist}</span>
+    <div
+      onClick={handleClick}
+      className="mockup-newsong-row"
+      style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined, cursor: "pointer" }}
+      data-testid={`new-song-card-${track.id}`}
+    >
+      <div className="mockup-newsong-thumb">
+        {thumbSrc ? (
+          <img src={thumbSrc} alt={track.title} />
+        ) : (
+          <div className="mockup-newsong-thumb-placeholder">
+            <Music size={24} style={{ color: "rgba(160,107,255,.4)" }} />
           </div>
-          <div className="mockup-newsong-artist">{track.artist}</div>
-        </div>
-        <span className="mockup-newsong-plays">{(track.plays || 0).toLocaleString()} Plays</span>
-        <Heart size={14} className="mockup-newsong-heart" />
-        <GripVertical size={14} className="mockup-newsong-menu" />
+        )}
+        {isActive && (
+          <div className="mockup-newsong-playing">
+            <span style={{ color: "#fff", fontSize: 12 }}>{"\u275A\u275A"}</span>
+          </div>
+        )}
       </div>
-      {showVideoModal && track.fileUrl && (
-        <VideoModal track={track} onClose={() => { wantModalRef.current = false; setShowVideoModal(false); }} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
-      )}
-    </>
+      <div className="mockup-newsong-info">
+        <div className="mockup-newsong-title">
+          {track.title} - <span style={{ color: "rgba(108,240,255,.7)" }}>{track.artist}</span>
+        </div>
+        <div className="mockup-newsong-artist">{track.artist}</div>
+      </div>
+      <span className="mockup-newsong-plays">{(track.plays || 0).toLocaleString()} Plays</span>
+      <Heart size={14} className="mockup-newsong-heart" />
+      <GripVertical size={14} className="mockup-newsong-menu" />
+    </div>
   );
 }
 
 function TrendingRow({ track, index }: { track: TrackWithLikes; index: number }) {
-  const { currentTrackId, isPlaying, play } = useAudioPlayer();
+  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
   const isActive = currentTrackId === track.id && isPlaying;
-  const [showVideoModal, setShowVideoModal] = useState(false);
-  const wantModalRef = useRef(false);
-  const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
-    queryKey: ["/api/creators", track.creatorId],
-    enabled: !!track.creatorId,
-  });
-
-  useEffect(() => {
-    if (wantModalRef.current && isPlaying && currentTrackId === track.id) {
-      wantModalRef.current = false;
-      setShowVideoModal(true);
-    }
-  }, [isPlaying, currentTrackId, track.id]);
 
   const handleClick = useCallback(() => {
     if (!track.fileUrl) return;
-    wantModalRef.current = true;
-    if (currentTrackId !== track.id || !isPlaying) {
+    if (currentTrackId === track.id) {
+      toggle();
+    } else {
       play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
     }
-    setShowVideoModal(true);
-  }, [track, play, currentTrackId, isPlaying]);
+  }, [track, play, toggle, currentTrackId]);
 
   return (
-    <>
-      <div
-        onClick={handleClick}
-        className="mockup-trending-row"
-        style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined }}
-        data-testid={`trending-track-${track.id}`}
-      >
-        <span className="mockup-rank" style={{ color: "rgba(255,255,255,.45)" }}>{index + 1}.</span>
-        <div className="mockup-trending-info">
-          <span className="mockup-trending-title">{track.title}</span>
-          <span className="mockup-trending-sep"> - </span>
-          <span className="mockup-trending-artist">{track.artist}</span>
-        </div>
-        <Heart size={13} className="mockup-trending-heart" />
-        <GripVertical size={13} className="mockup-trending-menu" />
+    <div
+      onClick={handleClick}
+      className="mockup-trending-row"
+      style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined, cursor: "pointer" }}
+      data-testid={`trending-track-${track.id}`}
+    >
+      <span className="mockup-rank" style={{ color: "rgba(255,255,255,.45)" }}>{index + 1}.</span>
+      <div className="mockup-trending-info">
+        <span className="mockup-trending-title">{track.title}</span>
+        <span className="mockup-trending-sep"> - </span>
+        <span className="mockup-trending-artist">{track.artist}</span>
       </div>
-      {showVideoModal && track.fileUrl && (
-        <VideoModal track={track} onClose={() => { wantModalRef.current = false; setShowVideoModal(false); }} creatorAvatarUrl={creatorData?.creator?.avatarUrl} />
-      )}
-    </>
+      <Heart size={13} className="mockup-trending-heart" />
+      <GripVertical size={13} className="mockup-trending-menu" />
+    </div>
   );
 }
 
