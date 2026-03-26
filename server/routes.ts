@@ -1760,5 +1760,65 @@ ONLY output the spoken words. No quotes, no stage directions.`;
     }
   });
 
+  app.get("/api/tracks/:id/reel", async (req, res) => {
+    try {
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+
+      const track = await storage.getTrack(trackId);
+      if (!track) return res.status(404).json({ message: "Track not found" });
+
+      if (!track.djIntroUrl) return res.status(400).json({ message: "No DJ intro available for this track" });
+      if (!track.fileUrl) return res.status(400).json({ message: "No audio file for this track" });
+
+      const { execSync } = await import("child_process");
+
+      const logoPath = path.resolve("attached_assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png");
+      const tempDir = path.join(uploadsDir, "reels");
+      if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+      const introPath = path.join(tempDir, `intro-${trackId}-${Date.now()}.mp3`);
+      const songPath = path.join(tempDir, `song-${trackId}-${Date.now()}.mp3`);
+      const combinedAudioPath = path.join(tempDir, `combined-${trackId}-${Date.now()}.mp3`);
+      const outputPath = path.join(tempDir, `reel-${trackId}-${Date.now()}.mp4`);
+
+      const introRes = await fetch(track.djIntroUrl);
+      if (!introRes.ok) return res.status(500).json({ message: "Failed to fetch DJ intro" });
+      fs.writeFileSync(introPath, Buffer.from(await introRes.arrayBuffer()));
+
+      const songRes = await fetch(track.fileUrl);
+      if (!songRes.ok) return res.status(500).json({ message: "Failed to fetch song" });
+      fs.writeFileSync(songPath, Buffer.from(await songRes.arrayBuffer()));
+
+      const concatListPath = path.join(tempDir, `list-${trackId}-${Date.now()}.txt`);
+      fs.writeFileSync(concatListPath, `file '${introPath}'\nfile '${songPath}'`);
+      execSync(`ffmpeg -y -f concat -safe 0 -i "${concatListPath}" -t 60 -c:a libmp3lame -q:a 2 "${combinedAudioPath}"`, { timeout: 30000 });
+
+      execSync(`ffmpeg -y -loop 1 -i "${logoPath}" -i "${combinedAudioPath}" -c:v libx264 -tune stillimage -c:a aac -b:a 192k -pix_fmt yuv420p -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black" -shortest -movflags +faststart "${outputPath}"`, { timeout: 60000 });
+
+      let creatorName = track.artist;
+      if (track.creatorId) {
+        const creator = await storage.getCreatorById(track.creatorId);
+        if (creator) creatorName = creator.name;
+      }
+      const safeTitle = `${track.title} by ${creatorName} - Hit Wave Media`.replace(/[^a-zA-Z0-9 \-_]/g, "").replace(/\s+/g, "_");
+
+      res.setHeader("Content-Type", "video/mp4");
+      res.setHeader("Content-Disposition", `attachment; filename="${safeTitle}.mp4"`);
+      const stream = fs.createReadStream(outputPath);
+      stream.pipe(res);
+      stream.on("end", () => {
+        try { fs.unlinkSync(introPath); } catch {}
+        try { fs.unlinkSync(songPath); } catch {}
+        try { fs.unlinkSync(combinedAudioPath); } catch {}
+        try { fs.unlinkSync(concatListPath); } catch {}
+        try { fs.unlinkSync(outputPath); } catch {}
+      });
+    } catch (error: any) {
+      console.error("Reel generation error:", error);
+      res.status(500).json({ message: "Failed to generate reel video" });
+    }
+  });
+
   return httpServer;
 }

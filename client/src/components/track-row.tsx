@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import { type Track } from "@shared/schema";
-import { Trash2, Download, Library, Share2, Plus, Check } from "lucide-react";
+import { Trash2, Download, Library, Share2, Plus, Check, Film } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
 import { VideoModal } from "@/components/video-modal";
@@ -60,6 +60,8 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
     setShowVideoModal(false);
   }
 
+  const [generatingReel, setGeneratingReel] = useState(false);
+
   function handleShareClick() {
     const shareUrl = `${window.location.origin}/track/${track.id}`;
     const shareText = `Check out "${track.title}" by ${track.artist} on Hit Wave Media!`;
@@ -74,6 +76,28 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
     } else {
       prompt("Copy this link:", shareUrl);
     }
+  }
+
+  function handleReelDownload(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (generatingReel) return;
+    setGeneratingReel(true);
+    fetch(`/api/tracks/${track.id}/reel`)
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.message || "Failed to generate reel");
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${track.title} - Hit Wave Media.mp4`;
+        a.click();
+        URL.revokeObjectURL(url);
+      })
+      .catch((err) => alert(err.message || "Failed to generate reel"))
+      .finally(() => setGeneratingReel(false));
   }
 
   return (
@@ -242,6 +266,27 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
                 <Download size={16} />
               </button>
             )}
+            <button
+              onClick={handleReelDownload}
+              disabled={generatingReel}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 38,
+                height: 38,
+                borderRadius: 8,
+                background: generatingReel ? "rgba(255,79,216,.2)" : "rgba(255,79,216,.1)",
+                border: "1px solid rgba(255,79,216,.2)",
+                color: "#ff4fd8",
+                cursor: generatingReel ? "wait" : "pointer",
+                opacity: generatingReel ? 0.6 : 1,
+              }}
+              title={generatingReel ? "Generating Reel..." : "Download Reel"}
+              data-testid={`button-reel-${track.id}`}
+            >
+              <Film size={16} />
+            </button>
             <button
               onClick={handleShareClick}
               style={{
