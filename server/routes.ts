@@ -1814,9 +1814,16 @@ ONLY output the spoken words. No quotes, no stage directions.`;
       if (!songRes.ok) return res.status(500).json({ message: "Failed to fetch song" });
       fs.writeFileSync(songPath, Buffer.from(await songRes.arrayBuffer()));
 
-      execSync(`ffmpeg -y -i "${introPath}" -i "${songPath}" -filter_complex "[0:a][1:a]concat=n=2:v=0:a=1[outa]" -map "[outa]" -t 60 -c:a aac -b:a 192k "${combinedAudioPath}"`, { timeout: 30000 });
+      const introWav = path.join(tempDir, `intro-${trackId}-${ts}.wav`);
+      const songWav = path.join(tempDir, `song-${trackId}-${ts}.wav`);
+      execSync(`ffmpeg -y -i "${introPath}" -vn -acodec pcm_s16le -ar 44100 -ac 2 "${introWav}"`, { timeout: 15000 });
+      execSync(`ffmpeg -y -i "${songPath}" -vn -acodec pcm_s16le -ar 44100 -ac 2 "${songWav}"`, { timeout: 15000 });
 
-      execSync(`ffmpeg -y -loop 1 -i "${logoPath}" -i "${combinedAudioPath}" -c:v libx264 -tune stillimage -c:a copy -pix_fmt yuv420p -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black" -shortest -movflags +faststart "${outputPath}"`, { timeout: 60000 });
+      const concatList = path.join(tempDir, `list-${trackId}-${ts}.txt`);
+      fs.writeFileSync(concatList, `file '${introWav}'\nfile '${songWav}'`);
+      execSync(`ffmpeg -y -f concat -safe 0 -i "${concatList}" -t 60 -c:a aac -b:a 192k "${combinedAudioPath}"`, { timeout: 30000 });
+
+      execSync(`ffmpeg -y -loop 1 -i "${logoPath}" -i "${combinedAudioPath}" -c:v libx264 -tune stillimage -c:a copy -pix_fmt yuv420p -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:color=black" -shortest -movflags +faststart "${outputPath}"`, { timeout: 120000 });
 
       let creatorName = track.artist;
       if (track.creatorId) {
@@ -1832,6 +1839,9 @@ ONLY output the spoken words. No quotes, no stage directions.`;
       stream.on("end", () => {
         try { fs.unlinkSync(introPath); } catch {}
         try { fs.unlinkSync(songPath); } catch {}
+        try { fs.unlinkSync(introWav); } catch {}
+        try { fs.unlinkSync(songWav); } catch {}
+        try { fs.unlinkSync(concatList); } catch {}
         try { fs.unlinkSync(combinedAudioPath); } catch {}
         try { fs.unlinkSync(outputPath); } catch {}
       });
