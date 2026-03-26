@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useRef, useCallback, useEffect } from "react";
 import { queryClient } from "@/lib/queryClient";
+import defaultArtwork from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 
 type TrackMeta = {
   title?: string;
@@ -179,10 +180,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setIsPlaying(true);
 
     if (isNewTrack && "mediaSession" in navigator) {
-      const artwork: MediaImage[] = [];
-      if (meta?.coverUrl) {
-        artwork.push({ src: meta.coverUrl, sizes: "512x512", type: "image/jpeg" });
-      }
+      const artworkSrc = meta?.coverUrl || defaultArtwork;
+      const artwork: MediaImage[] = [
+        { src: artworkSrc, sizes: "512x512", type: "image/png" },
+      ];
       navigator.mediaSession.metadata = new MediaMetadata({
         title: meta?.title || "Unknown Track",
         artist: meta?.artist || "Unknown Artist",

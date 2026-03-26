@@ -1134,32 +1134,40 @@ export async function registerRoutes(
         if (creator) creatorName = creator.name;
       }
 
-      const ogImage = track.coverUrl || "";
-      const ogTitle = `${track.title} by ${creatorName} — Hit Wave Media`;
-      const ogDesc = `Listen to "${track.title}" by ${creatorName} on Hit Wave Media. The Home of AI Music.`;
-      const ogUrl = `${req.protocol}://${req.get("host")}/track/${id}`;
+      const host = req.get("host") || "hitwavemedia.com";
+      const protocol = req.protocol === "https" || host.includes("hitwavemedia.com") ? "https" : req.protocol;
+      const baseUrl = `${protocol}://${host}`;
+      const ogImage = track.coverUrl || `${baseUrl}/assets/ChatGPT_Image_Feb_25__2026__02_42_25_AM_1772012848904-CrhyMrYB.png`;
+      const ogTitle = `${track.title} by ${creatorName}`;
+      const ogDesc = `Listen to "${track.title}" by ${creatorName} on Hit Wave Media — The Home of AI Music. Tap to play.`;
+      const ogUrl = `${baseUrl}/track/${id}`;
 
       const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>${ogTitle}</title>
+  <title>${ogTitle} — Hit Wave Media</title>
   <meta name="description" content="${ogDesc}" />
   <meta property="og:title" content="${ogTitle}" />
   <meta property="og:description" content="${ogDesc}" />
   <meta property="og:url" content="${ogUrl}" />
   <meta property="og:type" content="music.song" />
   <meta property="og:site_name" content="Hit Wave Media" />
-  ${ogImage ? `<meta property="og:image" content="${ogImage}" />` : ""}
+  <meta property="og:image" content="${ogImage}" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  ${track.fileUrl ? `<meta property="og:audio" content="${track.fileUrl}" />
+  <meta property="og:audio:type" content="audio/mpeg" />` : ""}
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${ogTitle}" />
   <meta name="twitter:description" content="${ogDesc}" />
-  ${ogImage ? `<meta name="twitter:image" content="${ogImage}" />` : ""}
+  <meta name="twitter:image" content="${ogImage}" />
 </head>
 <body>
   <h1>${track.title}</h1>
   <p>by ${creatorName}</p>
   <p>${ogDesc}</p>
+  <a href="${ogUrl}">Listen on Hit Wave Media</a>
 </body>
 </html>`;
 
