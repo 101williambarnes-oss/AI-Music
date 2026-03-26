@@ -834,15 +834,19 @@
   .mockup-topbar-nav {
     width: 100%;
     justify-content: center;
-    overflow-x: auto;
-    gap: 2px;
+    flex-wrap: wrap;
+    gap: 4px;
   }
   .mockup-nav-row2 {
     justify-content: center;
+    flex-wrap: wrap;
   }
   .mockup-topbar-nav a {
     font-size: 11px;
     padding: 4px 7px;
+  }
+  .mockup-nav-divider {
+    display: none;
   }
   .mockup-brand-title {
     font-size: 13px;
