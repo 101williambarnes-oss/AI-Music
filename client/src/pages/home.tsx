@@ -243,8 +243,10 @@ export default function Home() {
             ) : (
               <>
                 <a href="/sign-in" className="mockup-nav-auth" data-testid="link-sign-in">Sign In</a>
-                <a href="/sign-up" className="mockup-nav-auth mockup-nav-signup" data-testid="link-sign-up">New Member</a>
-                <a href="/sign-in" className="mockup-nav-auth mockup-nav-creator" data-testid="link-creator-login">Creator Login</a>
+                <a href="/sign-up" className="mockup-nav-auth mockup-nav-signup" data-testid="link-sign-up">Sign Up</a>
+                <span className="mockup-nav-divider">|</span>
+                <a href="/sign-in" className="mockup-nav-auth mockup-nav-creator" data-testid="link-creator-login">Creator Sign In</a>
+                <a href="/sign-up" className="mockup-nav-auth mockup-nav-creator" data-testid="link-creator-signup">Creator Sign Up</a>
               </>
             )}
           </nav>
