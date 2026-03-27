@@ -1,6 +1,6 @@
 import { build as esbuild } from "esbuild";
 import { build as viteBuild } from "vite";
-import { rm } from "fs/promises";
+import { rm, rename } from "fs/promises";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -31,6 +31,12 @@ async function buildAll() {
       emptyOutDir: true,
     },
   });
+
+  console.log("moving index.html out of public dir to bypass CDN cache...");
+  await rename(
+    path.resolve(__dirname, "..", "dist/public/index.html"),
+    path.resolve(__dirname, "..", "dist/index.html")
+  );
 
   console.log("building server...");
   await esbuild({

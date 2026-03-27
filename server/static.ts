@@ -4,26 +4,18 @@ import path from "path";
 
 export function serveStatic(app: Express) {
   const distPath = path.resolve(__dirname, "public");
-  if (!fs.existsSync(distPath)) {
+  const indexPath = path.resolve(__dirname, "index.html");
+
+  if (!fs.existsSync(indexPath)) {
     throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+      `Could not find index.html: ${indexPath}, make sure to build the client first`,
     );
   }
 
-  app.use(express.static(distPath, {
-    setHeaders: (res, filePath) => {
-      if (filePath.endsWith(".html")) {
-        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.setHeader("Pragma", "no-cache");
-        res.setHeader("Expires", "0");
-      }
-    }
-  }));
+  app.use(express.static(distPath));
 
   app.use("/{*path}", (_req, res) => {
     res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-    res.sendFile(path.resolve(distPath, "index.html"));
+    res.sendFile(indexPath);
   });
 }
