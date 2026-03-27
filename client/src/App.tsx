@@ -25,9 +25,6 @@ import ResetPassword from "@/pages/reset-password";
 import Studios from "@/pages/studios";
 import About from "@/pages/about";
 import Jukebox from "@/pages/jukebox";
-import Albums from "@/pages/albums";
-import AlbumPage from "@/pages/album";
-import CreateAlbum from "@/pages/create-album";
 import NotFound from "@/pages/not-found";
 import { AudioPlayerProvider } from "@/lib/audioPlayer";
 import { PlaylistProvider } from "@/lib/playlistContext";
@@ -70,9 +67,6 @@ function Router() {
       <Route path="/studios" component={Studios} />
       <Route path="/about" component={About} />
       <Route path="/jukebox" component={Jukebox} />
-      <Route path="/albums" component={Albums} />
-      <Route path="/album/:id" component={AlbumPage} />
-      <Route path="/create-album" component={CreateAlbum} />
       <Route path="/downloads" component={Downloads} />
       <Route path="/mockup" component={Mockup} />
       <Route component={NotFound} />

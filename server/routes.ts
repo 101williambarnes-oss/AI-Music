@@ -27,31 +27,6 @@ function loadResend() {
 }
 loadResend();
 
-function toAudioUrl(url: string | null): string | null {
-  if (!url) return url;
-  try {
-    const parsed = new URL(url);
-    if (!parsed.hostname.endsWith('cloudinary.com')) return url;
-    if (!/\/video\/upload\//.test(parsed.pathname)) return url;
-    if (!/\.(mp4|m4v|mov|webm)$/i.test(parsed.pathname)) return url;
-    parsed.pathname = parsed.pathname
-      .replace(/\/video\/upload\//, '/video/upload/f_mp3/')
-      .replace(/\.(mp4|m4v|mov|webm)$/i, '.mp3');
-    return parsed.toString();
-  } catch {
-    return url;
-  }
-}
-
-function transformTrack(track: any) {
-  if (!track) return track;
-  return { ...track, fileUrl: toAudioUrl(track.fileUrl) };
-}
-
-function transformTracks(tracks: any[]) {
-  return tracks.map(transformTrack);
-}
-
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
 setInterval(() => {
@@ -522,10 +497,6 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-
-  app.get("/api/version", (_req, res) => {
-    res.json({ version: "2026.03.27.v2", hasAudioTransform: true });
-  });
 
   app.post("/api/auth/signup", rateLimit("signup", 5, 3600000), async (req, res) => {
     try {
@@ -1146,7 +1117,7 @@ export async function registerRoutes(
       if (track.creatorId) {
         creator = await storage.getCreatorById(track.creatorId);
       }
-      res.json({ track: transformTrack(track), creator });
+      res.json({ track, creator });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch track" });
     }
@@ -1155,7 +1126,7 @@ export async function registerRoutes(
   app.get("/api/tracks", async (_req, res) => {
     try {
       const allTracks = await storage.getAllTracks();
-      res.json(transformTracks(allTracks));
+      res.json(allTracks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch tracks" });
     }
@@ -1192,9 +1163,9 @@ export async function registerRoutes(
         return { ...album, trackCount: tracks.length, creatorName: creator?.name || "Unknown" };
       }));
       res.json({
-        top25: transformTracks(top25.slice(0, 8).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 }))),
-        trending: transformTracks(trendingTracks.slice(0, 8).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 }))),
-        newSongs: transformTracks(newTracks.slice(0, 6).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 }))),
+        top25: top25.slice(0, 8).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 })),
+        trending: trendingTracks.slice(0, 8).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 })),
+        newSongs: newTracks.slice(0, 6).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 })),
         newCreators: [...allCreators].sort((a, b) => b.id - a.id).slice(0, 6),
         albums: albumsWithInfo,
       });
@@ -1209,25 +1180,25 @@ export async function registerRoutes(
       const { category } = req.params;
       if (category === "all") {
         const allTracks = await storage.getAllTracks();
-        return res.json(transformTracks(allTracks));
+        return res.json(allTracks);
       }
       if (category === "top25") {
         res.set("Cache-Control", "no-store");
         await storage.checkAndCrownWeeklyWinner();
         const topTracks = await storage.getTop25ByLikes();
-        return res.json(transformTracks(topTracks));
+        return res.json(topTracks);
       }
       if (category === "trending") {
         res.set("Cache-Control", "no-store");
         const trendingTracks = await storage.getTrendingTracks();
-        return res.json(transformTracks(trendingTracks));
+        return res.json(trendingTracks);
       }
       if (category === "new") {
         const newTracks = await storage.getNewTracks();
-        return res.json(transformTracks(newTracks));
+        return res.json(newTracks);
       }
       const tracks = await storage.getTracks(category);
-      res.json(transformTracks(tracks));
+      res.json(tracks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch tracks" });
     }
@@ -1264,7 +1235,7 @@ export async function registerRoutes(
       }
       const tracks = await storage.getTracksByCreatorId(creator.id);
       const fallbackTracks = tracks.length > 0 ? tracks : await storage.getTracksByArtist(creator.name);
-      res.json({ creator, tracks: transformTracks(fallbackTracks) });
+      res.json({ creator, tracks: fallbackTracks });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch creator" });
     }
@@ -2072,7 +2043,7 @@ ONLY output the spoken words. No quotes, no stage directions.`;
     if (!album) return res.status(404).json({ message: "Album not found" });
     const creator = await storage.getCreatorById(album.creatorId);
     const trackList = await storage.getAlbumTracks(album.id);
-    res.json({ album, creator, tracks: transformTracks(trackList) });
+    res.json({ album, creator, tracks: trackList });
   });
 
   app.get("/api/creators/:id/albums", async (req: Request, res: Response) => {
