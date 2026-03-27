@@ -340,29 +340,31 @@ export default function AlbumPage() {
                 </span>
               )}
             </div>
-            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-              <button
-                onClick={playDjIntroThenAlbum}
-                disabled={djLoading || tracks.length === 0}
-                style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  padding: "14px 32px", background: "linear-gradient(135deg, #a06bff 0%, #ff4fd8 100%)",
-                  border: "none", borderRadius: 28, color: "#fff", fontWeight: 700, fontSize: 15,
-                  cursor: djLoading ? "wait" : "pointer",
-                  opacity: djLoading ? 0.7 : 1,
-                  boxShadow: "0 4px 24px rgba(160,107,255,.3)",
-                  transition: "all .2s",
-                }}
-                data-testid="button-play-album"
-              >
-                <Play size={18} fill="#fff" /> {djLoading ? "Loading DJ..." : "Play Album"}
-              </button>
-              {djPlaying && (
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#c9a0ff", fontWeight: 600 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#a06bff", animation: "pulse 1s infinite" }} />
-                  DJ William Allen introducing...
-                </div>
-              )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                <button
+                  onClick={playDjIntroThenAlbum}
+                  disabled={djLoading || tracks.length === 0}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "14px 32px", background: "linear-gradient(135deg, #a06bff 0%, #ff4fd8 100%)",
+                    border: "none", borderRadius: 28, color: "#fff", fontWeight: 700, fontSize: 15,
+                    cursor: djLoading ? "wait" : "pointer",
+                    opacity: djLoading ? 0.7 : 1,
+                    boxShadow: "0 4px 24px rgba(160,107,255,.3)",
+                    transition: "all .2s",
+                  }}
+                  data-testid="button-play-album"
+                >
+                  <Play size={18} fill="#fff" /> {djLoading ? "Loading DJ..." : "Play Album"}
+                </button>
+                {djPlaying && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#c9a0ff", fontWeight: 600 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#a06bff", animation: "pulse 1s infinite" }} />
+                    DJ William Allen introducing...
+                  </div>
+                )}
+              </div>
               {user && creator && user.creatorId === creator.id && (
                 <button
                   onClick={async () => {
@@ -388,6 +390,7 @@ export default function AlbumPage() {
                     borderRadius: 20, color: "#ff6b6b", fontWeight: 600, fontSize: 13,
                     cursor: deleting ? "wait" : "pointer",
                     transition: "all .2s",
+                    width: "fit-content",
                   }}
                   data-testid="button-delete-album"
                 >

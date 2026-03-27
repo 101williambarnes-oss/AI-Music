@@ -18,7 +18,7 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
   const isCurrentlyPlaying = currentTrackId === track.id && isPlaying;
   const hasAudio = !!track.fileUrl;
   const videoRef = useRef<HTMLVideoElement>(null);
-  const isVideo = !!track.fileUrl && /\.(mp4|webm|mov)$/i.test(track.fileUrl);
+  const isVideo = !!track.fileUrl && /\.(mp4|m4v|webm|mov)$/i.test(track.fileUrl);
   const isMedia = !!track.fileUrl;
   useEffect(() => {
     if (!videoRef.current || !isVideo) return;
