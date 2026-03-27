@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
+import { getTrackThumbnail } from "@/lib/utils";
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Heart, List, Monitor, Menu, Maximize2, Minimize2 } from "lucide-react";
 
 function formatTime(seconds: number): string {
@@ -161,16 +162,18 @@ export function PlayerBar() {
       <div className="player-bar-inner">
         <div className="player-bar-left-section">
           <div className="player-bar-art" data-testid="player-bar-track-info" onClick={() => isVideo && setVideoVisible(!videoVisible)} style={isVideo ? { cursor: "pointer" } : undefined}>
-            {isVideo && currentFileUrl ? (
-              <div className="player-bar-art-video-thumb">
-                <video src={currentFileUrl} muted playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                {!videoVisible && <div className="player-bar-art-video-badge"><Maximize2 size={12} /></div>}
-              </div>
-            ) : trackMeta.coverUrl ? (
-              <img src={trackMeta.coverUrl} alt={trackMeta.title} />
-            ) : (
-              <div className="player-bar-art-placeholder" />
-            )}
+            {(() => {
+              const thumb = getTrackThumbnail({ coverUrl: trackMeta.coverUrl, fileUrl: currentFileUrl });
+              if (thumb) {
+                return (
+                  <>
+                    <img src={thumb} alt={trackMeta.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    {isVideo && !videoVisible && <div className="player-bar-art-video-badge"><Maximize2 size={12} /></div>}
+                  </>
+                );
+              }
+              return <div className="player-bar-art-placeholder" />;
+            })()}
           </div>
           <div className="player-bar-info">
             <div className="player-bar-title" data-testid="player-bar-title">

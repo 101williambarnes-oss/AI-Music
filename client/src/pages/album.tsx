@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
 import { type Track, type Creator, type Album } from "@shared/schema";
 import { Disc3, Play, Pause, Music, User, Calendar, ChevronRight, Trash2, Share2, Heart } from "lucide-react";
+import { getTrackThumbnail } from "@/lib/utils";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -19,7 +20,7 @@ type AlbumWithCreator = Album & { creator: Creator | null; trackCount: number };
 function AlbumTrackRow({ track, index, isActive, isThisPlaying, onSelect, albumCover }: {
   track: Track; index: number; isActive: boolean; isThisPlaying: boolean; onSelect: () => void; albumCover: string | null;
 }) {
-  const coverSrc = track.coverUrl || albumCover;
+  const coverSrc = getTrackThumbnail(track) || albumCover;
   return (
     <button
       onClick={onSelect}
@@ -190,7 +191,7 @@ export default function AlbumPage() {
           play(nextTrack.id, nextTrack.fileUrl, {
             title: nextTrack.title,
             artist: nextTrack.artist,
-            coverUrl: nextTrack.coverUrl,
+            coverUrl: getTrackThumbnail(nextTrack),
           }, { skipIntro: true });
         }
       }
@@ -227,7 +228,7 @@ export default function AlbumPage() {
     if (!firstTrack.fileUrl) return;
 
     if (djPlayed) {
-      play(firstTrack.id, firstTrack.fileUrl, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: firstTrack.coverUrl });
+      play(firstTrack.id, firstTrack.fileUrl, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: getTrackThumbnail(firstTrack) });
       return;
     }
 
@@ -246,21 +247,21 @@ export default function AlbumPage() {
             setDjPlaying(false);
             setDjPlayed(true);
             djAudioRef.current = null;
-            play(firstTrack.id, firstTrack.fileUrl!, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: firstTrack.coverUrl });
+            play(firstTrack.id, firstTrack.fileUrl!, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: getTrackThumbnail(firstTrack) });
           };
 
           audio.onerror = () => {
             setDjPlaying(false);
             setDjPlayed(true);
             djAudioRef.current = null;
-            play(firstTrack.id, firstTrack.fileUrl!, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: firstTrack.coverUrl });
+            play(firstTrack.id, firstTrack.fileUrl!, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: getTrackThumbnail(firstTrack) });
           };
 
           await audio.play().catch(() => {
             setDjPlaying(false);
             setDjPlayed(true);
             djAudioRef.current = null;
-            play(firstTrack.id, firstTrack.fileUrl!, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: firstTrack.coverUrl });
+            play(firstTrack.id, firstTrack.fileUrl!, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: getTrackThumbnail(firstTrack) });
           });
 
           setDjLoading(false);
@@ -273,7 +274,7 @@ export default function AlbumPage() {
 
     setDjLoading(false);
     setDjPlayed(true);
-    play(firstTrack.id, firstTrack.fileUrl, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: firstTrack.coverUrl });
+    play(firstTrack.id, firstTrack.fileUrl, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: getTrackThumbnail(firstTrack) });
   }, [data, djPlayed, play]);
 
   const playTrack = useCallback((track: Track) => {
@@ -289,7 +290,7 @@ export default function AlbumPage() {
     if (isActive) {
       toggle();
     } else {
-      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: getTrackThumbnail(track) });
     }
   }, [currentTrackId, play, toggle]);
 

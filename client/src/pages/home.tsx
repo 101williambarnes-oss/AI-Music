@@ -5,6 +5,7 @@ import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, 
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { useLocation } from "wouter";
 import { useAudioPlayer } from "@/lib/audioPlayer";
+import { getTrackThumbnail } from "@/lib/utils";
 
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
@@ -30,7 +31,7 @@ function Top25Row({ track, index }: { track: TrackWithLikes; index: number }) {
     if (currentTrackId === track.id) {
       toggle();
     } else {
-      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
+      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: getTrackThumbnail(track), djIntroUrl: (track as any).djIntroUrl });
     }
   }, [track, play, toggle, currentTrackId]);
 
@@ -70,11 +71,11 @@ function NewSongRow({ track }: { track: TrackWithLikes }) {
     if (currentTrackId === track.id) {
       toggle();
     } else {
-      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
+      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: getTrackThumbnail(track), djIntroUrl: (track as any).djIntroUrl });
     }
   }, [track, play, toggle, currentTrackId]);
 
-  const thumbSrc = track.coverUrl || creatorData?.creator?.avatarUrl || null;
+  const thumbSrc = getTrackThumbnail(track) || creatorData?.creator?.avatarUrl || null;
 
   return (
     <div
@@ -119,7 +120,7 @@ function TrendingRow({ track, index }: { track: TrackWithLikes; index: number })
     if (currentTrackId === track.id) {
       toggle();
     } else {
-      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
+      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: getTrackThumbnail(track), djIntroUrl: (track as any).djIntroUrl });
     }
   }, [track, play, toggle, currentTrackId]);
 

@@ -3,6 +3,7 @@ import { type Track } from "@shared/schema";
 import { Trash2, Download, Library, Share2, Plus, Check, Film } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { TrackActions } from "@/components/track-actions";
+import { getTrackThumbnail } from "@/lib/utils";
 
 import { useQuery } from "@tanstack/react-query";
 import { usePlaylist } from "@/lib/playlistContext";
@@ -84,38 +85,30 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
       <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
         <div className="row" onClick={handleRowClick} style={{ cursor: hasAudio ? "pointer" : "default", flex: 1, minWidth: 0, marginBottom: 0 }} data-testid={`button-play-${track.id}`}>
           <div className="thumb" style={{ position: "relative", overflow: "hidden", flexShrink: 0 }}>
-            {track.coverUrl && !showRank ? (
-              <img
-                src={track.coverUrl}
-                alt={track.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-                data-testid={`img-cover-thumb-${track.id}`}
-              />
-            ) : isVideo && !showRank ? (
-              <video
-                ref={videoRef}
-                src={track.fileUrl!}
-                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-                muted
-                loop
-                playsInline
-                data-testid={`video-thumb-${track.id}`}
-              />
-            ) : track.fileUrl && !showRank && /\.(jpg|jpeg|png|gif|webp)$/i.test(track.fileUrl) ? (
-              <img
-                src={track.fileUrl}
-                alt={track.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-                data-testid={`img-thumb-${track.id}`}
-              />
-            ) : !showRank && creatorData?.creator?.avatarUrl ? (
-              <img
-                src={creatorData.creator.avatarUrl}
-                alt={track.artist}
-                style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
-                data-testid={`img-avatar-thumb-${track.id}`}
-              />
-            ) : null}
+            {(() => {
+              const thumb = getTrackThumbnail(track);
+              if (thumb && !showRank) {
+                return (
+                  <img
+                    src={thumb}
+                    alt={track.title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+                    data-testid={`img-thumb-${track.id}`}
+                  />
+                );
+              }
+              if (!showRank && creatorData?.creator?.avatarUrl) {
+                return (
+                  <img
+                    src={creatorData.creator.avatarUrl}
+                    alt={track.artist}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+                    data-testid={`img-avatar-thumb-${track.id}`}
+                  />
+                );
+              }
+              return null;
+            })()}
             {showRank && track.rank ? (
               <div
                 style={{

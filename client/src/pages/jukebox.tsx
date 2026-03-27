@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAudioPlayer } from "@/lib/audioPlayer";
+import { getTrackThumbnail } from "@/lib/utils";
 import { Play, Pause } from "lucide-react";
 import { useState } from "react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
@@ -55,14 +56,14 @@ function JukeboxTile({ track, isActive, isThisPlaying, onToggle }: {
           aspectRatio: "1",
           position: "relative",
           overflow: "hidden",
-          background: track.coverUrl
+          background: getTrackThumbnail(track)
             ? "none"
             : `linear-gradient(135deg, hsl(${(track.id * 47) % 360}, 60%, 25%), hsl(${(track.id * 47 + 60) % 360}, 50%, 20%))`,
         }}
       >
-        {track.coverUrl ? (
+        {getTrackThumbnail(track) ? (
           <img
-            src={track.coverUrl}
+            src={getTrackThumbnail(track)!}
             alt={track.title}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
@@ -161,7 +162,7 @@ export default function Jukebox() {
       const res = await fetch("/api/tracks/all");
       if (!res.ok) throw new Error("Failed to load");
       const data: Track[] = await res.json();
-      return data.filter(t => t.coverUrl).sort((a, b) => a.id - b.id);
+      return data.filter(t => t.fileUrl).sort((a, b) => a.id - b.id);
     },
     refetchOnWindowFocus: false,
     refetchInterval: false,
