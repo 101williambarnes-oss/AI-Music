@@ -1,11 +1,32 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { type Track } from "@shared/schema";
-import { Disc3, Upload, Music, X } from "lucide-react";
+import { Disc3, Upload, Music, X, Plus, Loader2 } from "lucide-react";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
+
+type UploadedNewTrack = {
+  tempId: string;
+  title: string;
+  file: File;
+  genre: string;
+  uploading: boolean;
+  uploaded: boolean;
+  trackId: number | null;
+  error: string | null;
+};
+
+type AlbumTrackItem = {
+  type: "existing";
+  trackId: number;
+  title: string;
+} | {
+  type: "new";
+  tempId: string;
+  title: string;
+};
 
 export default function CreateAlbum() {
   const [, navigate] = useLocation();
@@ -14,8 +35,14 @@ export default function CreateAlbum() {
   const [description, setDescription] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [selectedTrackIds, setSelectedTrackIds] = useState<number[]>([]);
+  const [albumItems, setAlbumItems] = useState<AlbumTrackItem[]>([]);
+  const [newUploads, setNewUploads] = useState<UploadedNewTrack[]>([]);
   const [creating, setCreating] = useState(false);
+  const [activeTab, setActiveTab] = useState<"platform" | "upload">("platform");
+  const [uploadTitle, setUploadTitle] = useState("");
+  const [uploadGenre, setUploadGenre] = useState("Other");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     try {
@@ -32,7 +59,8 @@ export default function CreateAlbum() {
 
   const tracks: Track[] = (myTracks as any)?.tracks || [];
 
-  const selectedTracks = selectedTrackIds.map(id => tracks.find(t => t.id === id)).filter(Boolean) as Track[];
+  const selectedExistingIds = albumItems.filter(i => i.type === "existing").map(i => (i as any).trackId);
+  const selectedNewTempIds = albumItems.filter(i => i.type === "new").map(i => (i as any).tempId);
 
   const handleCoverChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,21 +72,84 @@ export default function CreateAlbum() {
     }
   }, []);
 
-  const toggleTrack = useCallback((trackId: number) => {
-    setSelectedTrackIds(prev =>
-      prev.includes(trackId) ? prev.filter(id => id !== trackId) : [...prev, trackId]
-    );
+  const toggleExistingTrack = useCallback((track: Track) => {
+    setAlbumItems(prev => {
+      const exists = prev.some(i => i.type === "existing" && i.trackId === track.id);
+      if (exists) return prev.filter(i => !(i.type === "existing" && i.trackId === track.id));
+      return [...prev, { type: "existing", trackId: track.id, title: track.title }];
+    });
   }, []);
 
-  const removeTrack = useCallback((trackId: number) => {
-    setSelectedTrackIds(prev => prev.filter(id => id !== trackId));
+  const removeItem = useCallback((index: number) => {
+    setAlbumItems(prev => {
+      const removed = prev[index];
+      if (removed?.type === "new") {
+        setNewUploads(u => u.filter(nu => nu.tempId !== removed.tempId));
+      }
+      return prev.filter((_, i) => i !== index);
+    });
   }, []);
+
+  const handleAddUpload = useCallback(async () => {
+    if (!uploadFile || !uploadTitle.trim()) return;
+
+    const tempId = `new-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const newTrack: UploadedNewTrack = {
+      tempId,
+      title: uploadTitle.trim(),
+      file: uploadFile,
+      genre: uploadGenre,
+      uploading: false,
+      uploaded: false,
+      trackId: null,
+      error: null,
+    };
+
+    setNewUploads(prev => [...prev, newTrack]);
+    setAlbumItems(prev => [...prev, { type: "new", tempId, title: uploadTitle.trim() }]);
+    setUploadTitle("");
+    setUploadFile(null);
+    setUploadGenre("Other");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, [uploadFile, uploadTitle, uploadGenre]);
 
   const handleCreate = useCallback(async () => {
-    if (!title.trim() || selectedTrackIds.length === 0) return;
+    if (!title.trim() || albumItems.length === 0) return;
     setCreating(true);
 
     try {
+      const uploadedTrackIds: Record<string, number> = {};
+      const activeNewTempIds = albumItems.filter(i => i.type === "new").map(i => (i as any).tempId);
+      const uploadsToProcess = newUploads.filter(nu => activeNewTempIds.includes(nu.tempId));
+      for (const nu of uploadsToProcess) {
+        if (nu.uploaded && nu.trackId) {
+          uploadedTrackIds[nu.tempId] = nu.trackId;
+          continue;
+        }
+
+        setNewUploads(prev => prev.map(u => u.tempId === nu.tempId ? { ...u, uploading: true, error: null } : u));
+
+        const formData = new FormData();
+        formData.append("title", nu.title);
+        formData.append("genre", nu.genre);
+        formData.append("file", nu.file);
+        formData.append("aiTools", JSON.stringify([]));
+        formData.append("explicit", "false");
+        if (user?.id) formData.append("userId", String(user.id));
+
+        try {
+          const res = await fetch("/api/tracks/upload", { method: "POST", body: formData, credentials: "include" });
+          if (!res.ok) throw new Error("Upload failed");
+          const result = await res.json();
+          uploadedTrackIds[nu.tempId] = result.track.id;
+          setNewUploads(prev => prev.map(u => u.tempId === nu.tempId ? { ...u, uploading: false, uploaded: true, trackId: result.track.id } : u));
+        } catch (err: any) {
+          setNewUploads(prev => prev.map(u => u.tempId === nu.tempId ? { ...u, uploading: false, error: err.message } : u));
+          setCreating(false);
+          return;
+        }
+      }
+
       const formData = new FormData();
       formData.append("title", title.trim());
       if (description.trim()) formData.append("description", description.trim());
@@ -68,19 +159,31 @@ export default function CreateAlbum() {
       if (!res.ok) throw new Error("Failed to create album");
       const album = await res.json();
 
-      for (let i = 0; i < selectedTrackIds.length; i++) {
-        await apiRequest("POST", `/api/albums/${album.id}/tracks`, { trackId: selectedTrackIds[i], trackOrder: i });
+      for (let i = 0; i < albumItems.length; i++) {
+        const item = albumItems[i];
+        let trackId: number;
+        if (item.type === "existing") trackId = item.trackId;
+        else trackId = uploadedTrackIds[item.tempId];
+
+        if (trackId) {
+          await apiRequest("POST", `/api/albums/${album.id}/tracks`, { trackId, trackOrder: i });
+        }
       }
 
       queryClient.invalidateQueries({ queryKey: ["/api/albums"] });
       queryClient.invalidateQueries({ queryKey: ["/api/creators", user?.creatorId, "albums"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/creators", user?.creatorId] });
       navigate(`/album/${album.id}`);
     } catch (err) {
       console.error("Failed to create album:", err);
     } finally {
       setCreating(false);
     }
-  }, [title, description, coverFile, selectedTrackIds, user, navigate]);
+  }, [title, description, coverFile, albumItems, newUploads, user, navigate]);
+
+  const totalSongs = albumItems.length;
+
+  const GENRES = ["Hip Hop", "R&B", "Pop", "Rock", "Country", "Jazz", "Blues", "Electronic", "Classical", "Reggae", "Latin", "Gospel", "Indie", "Alternative", "Metal", "Folk", "Soul", "Funk", "Punk", "Lo-fi", "Other"];
 
   if (!user || !user.creatorId) {
     return (
@@ -114,7 +217,6 @@ export default function CreateAlbum() {
                 style={{ width: "100%", padding: "10px 14px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(108,240,255,.15)", borderRadius: 8, color: "#eaf0ff", fontSize: 14, marginBottom: 14, outline: "none", boxSizing: "border-box" }}
                 data-testid="input-album-title"
               />
-
               <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#aab6e8", marginBottom: 6 }}>Description</label>
               <textarea
                 value={description}
@@ -126,58 +228,145 @@ export default function CreateAlbum() {
               />
             </div>
 
-            <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(108,240,255,.12)", borderRadius: 12, padding: 20 }}>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#aab6e8", marginBottom: 10 }}>
-                Pick Your Songs
-              </label>
-              <p style={{ fontSize: 11, color: "rgba(170,182,232,.4)", marginBottom: 12 }}>
-                Tap a song to add it to your album. Each song gets numbered in order.
-              </p>
-              {tracks.length === 0 && (
-                <p style={{ color: "rgba(170,182,232,.4)", fontSize: 13, textAlign: "center", padding: "16px 0" }}>You don't have any tracks yet. Upload some songs first!</p>
+            <div style={{ display: "flex", borderRadius: "10px 10px 0 0", overflow: "hidden", marginBottom: 0 }}>
+              <button
+                onClick={() => setActiveTab("platform")}
+                style={{
+                  flex: 1, padding: "10px 0", border: "none", cursor: "pointer",
+                  background: activeTab === "platform" ? "rgba(160,107,255,.15)" : "rgba(255,255,255,.04)",
+                  color: activeTab === "platform" ? "#c9a0ff" : "rgba(170,182,232,.5)",
+                  fontWeight: 700, fontSize: 13, borderBottom: activeTab === "platform" ? "2px solid #a06bff" : "2px solid transparent",
+                }}
+                data-testid="tab-platform-songs"
+              >
+                <Music size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+                My Songs on Platform
+              </button>
+              <button
+                onClick={() => setActiveTab("upload")}
+                style={{
+                  flex: 1, padding: "10px 0", border: "none", cursor: "pointer",
+                  background: activeTab === "upload" ? "rgba(108,240,255,.1)" : "rgba(255,255,255,.04)",
+                  color: activeTab === "upload" ? "#6cf0ff" : "rgba(170,182,232,.5)",
+                  fontWeight: 700, fontSize: 13, borderBottom: activeTab === "upload" ? "2px solid #6cf0ff" : "2px solid transparent",
+                }}
+                data-testid="tab-upload-songs"
+              >
+                <Upload size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
+                Upload from Computer
+              </button>
+            </div>
+
+            <div style={{ background: "rgba(255,255,255,.04)", border: "1px solid rgba(108,240,255,.12)", borderRadius: "0 0 12px 12px", padding: 20 }}>
+              {activeTab === "platform" && (
+                <>
+                  <p style={{ fontSize: 11, color: "rgba(170,182,232,.4)", marginBottom: 12 }}>
+                    Tap a song to add it to your album. Each song gets numbered in order.
+                  </p>
+                  {tracks.length === 0 && (
+                    <p style={{ color: "rgba(170,182,232,.4)", fontSize: 13, textAlign: "center", padding: "16px 0" }}>You don't have any tracks yet. Upload some songs first!</p>
+                  )}
+                  <div style={{ maxHeight: 300, overflowY: "auto" }}>
+                    {tracks.map((track) => {
+                      const isSelected = selectedExistingIds.includes(track.id);
+                      const itemIndex = albumItems.findIndex(i => i.type === "existing" && i.trackId === track.id);
+                      const albumPosition = itemIndex !== -1 ? albumItems.slice(0, itemIndex + 1).indexOf(albumItems[itemIndex]) + 1 : -1;
+                      const overallIndex = itemIndex !== -1 ? itemIndex + 1 : -1;
+                      return (
+                        <div
+                          key={track.id}
+                          onClick={() => toggleExistingTrack(track)}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 10,
+                            padding: "10px 12px", borderRadius: 8, marginBottom: 4, cursor: "pointer",
+                            background: isSelected ? "rgba(160,107,255,.15)" : "rgba(255,255,255,.02)",
+                            border: isSelected ? "1px solid rgba(160,107,255,.35)" : "1px solid transparent",
+                            transition: "all .2s",
+                          }}
+                          data-testid={`select-track-${track.id}`}
+                        >
+                          <div style={{
+                            width: 26, height: 26, borderRadius: "50%",
+                            background: isSelected ? "#a06bff" : "rgba(255,255,255,.06)",
+                            border: isSelected ? "none" : "1px solid rgba(108,240,255,.15)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 12, color: "#fff", fontWeight: 800, flexShrink: 0,
+                          }}>
+                            {isSelected ? `#${overallIndex}` : <Music size={12} style={{ color: "rgba(170,182,232,.3)" }} />}
+                          </div>
+                          <div style={{ flex: 1, overflow: "hidden" }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: isSelected ? "#c9a0ff" : "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.title}</div>
+                            <div style={{ fontSize: 10, color: "rgba(170,182,232,.4)" }}>{track.genre}</div>
+                          </div>
+                          {isSelected && <div style={{ fontSize: 10, color: "#a06bff", fontWeight: 700 }}>Added</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               )}
-              <div style={{ maxHeight: 340, overflowY: "auto" }}>
-                {tracks.map((track) => {
-                  const selectedIndex = selectedTrackIds.indexOf(track.id);
-                  const isSelected = selectedIndex !== -1;
-                  return (
-                    <div
-                      key={track.id}
-                      onClick={() => toggleTrack(track.id)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: "10px 12px",
-                        borderRadius: 8,
-                        marginBottom: 4,
-                        cursor: "pointer",
-                        background: isSelected ? "rgba(160,107,255,.15)" : "rgba(255,255,255,.02)",
-                        border: isSelected ? "1px solid rgba(160,107,255,.35)" : "1px solid transparent",
-                        transition: "all .2s",
-                      }}
-                      data-testid={`select-track-${track.id}`}
+
+              {activeTab === "upload" && (
+                <>
+                  <p style={{ fontSize: 11, color: "rgba(170,182,232,.4)", marginBottom: 12 }}>
+                    Upload a new song from your computer and add it directly to this album.
+                  </p>
+
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#aab6e8", marginBottom: 4 }}>Song Title *</label>
+                    <input
+                      type="text"
+                      value={uploadTitle}
+                      onChange={(e) => setUploadTitle(e.target.value)}
+                      placeholder="Song title..."
+                      style={{ width: "100%", padding: "8px 12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(108,240,255,.15)", borderRadius: 8, color: "#eaf0ff", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                      data-testid="input-upload-title"
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#aab6e8", marginBottom: 4 }}>Genre</label>
+                    <select
+                      value={uploadGenre}
+                      onChange={(e) => setUploadGenre(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(108,240,255,.15)", borderRadius: 8, color: "#eaf0ff", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                      data-testid="select-upload-genre"
                     >
-                      <div style={{
-                        width: 26, height: 26, borderRadius: "50%",
-                        background: isSelected ? "#a06bff" : "rgba(255,255,255,.06)",
-                        border: isSelected ? "none" : "1px solid rgba(108,240,255,.15)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 12, color: "#fff", fontWeight: 800, flexShrink: 0,
-                      }}>
-                        {isSelected ? `#${selectedIndex + 1}` : <Music size={12} style={{ color: "rgba(170,182,232,.3)" }} />}
-                      </div>
-                      <div style={{ flex: 1, overflow: "hidden" }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: isSelected ? "#c9a0ff" : "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.title}</div>
-                        <div style={{ fontSize: 10, color: "rgba(170,182,232,.4)" }}>{track.genre}</div>
-                      </div>
-                      {isSelected && (
-                        <div style={{ fontSize: 10, color: "#a06bff", fontWeight: 700 }}>Added</div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                      {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#aab6e8", marginBottom: 4 }}>Audio File *</label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".mp3,.wav,.ogg,.flac,.m4a,.aac,.mp4,.webm"
+                      onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                      style={{ width: "100%", padding: "8px 0", color: "rgba(170,182,232,.5)", fontSize: 12 }}
+                      data-testid="input-upload-file"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleAddUpload}
+                    disabled={!uploadFile || !uploadTitle.trim()}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      width: "100%", padding: "10px 0",
+                      background: uploadFile && uploadTitle.trim() ? "rgba(108,240,255,.12)" : "rgba(255,255,255,.04)",
+                      border: uploadFile && uploadTitle.trim() ? "1px solid rgba(108,240,255,.25)" : "1px solid rgba(108,240,255,.1)",
+                      borderRadius: 8,
+                      color: uploadFile && uploadTitle.trim() ? "#6cf0ff" : "rgba(170,182,232,.3)",
+                      fontWeight: 700, fontSize: 13,
+                      cursor: uploadFile && uploadTitle.trim() ? "pointer" : "not-allowed",
+                    }}
+                    data-testid="button-add-upload"
+                  >
+                    <Plus size={14} /> Add Song to Album
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -214,61 +403,76 @@ export default function CreateAlbum() {
                   {title || "Untitled Album"}
                 </div>
                 <div style={{ fontSize: 12, color: "rgba(170,182,232,.5)", marginBottom: 12 }}>
-                  {user?.name || "You"} · {selectedTracks.length} song{selectedTracks.length !== 1 ? "s" : ""}
+                  {user?.name || "You"} · {totalSongs} song{totalSongs !== 1 ? "s" : ""}
                 </div>
               </div>
 
               <div style={{ borderTop: "1px solid rgba(108,240,255,.08)", maxHeight: 260, overflowY: "auto" }}>
-                {selectedTracks.length === 0 ? (
+                {albumItems.length === 0 ? (
                   <div style={{ padding: "24px 18px", textAlign: "center", color: "rgba(170,182,232,.3)", fontSize: 13 }}>
-                    Pick songs from the left to build your album
+                    Pick songs or upload new ones to build your album
                   </div>
                 ) : (
-                  selectedTracks.map((track, i) => (
-                    <div key={track.id} style={{
-                      display: "flex", alignItems: "center", gap: 10,
-                      padding: "10px 18px",
-                      borderBottom: i < selectedTracks.length - 1 ? "1px solid rgba(108,240,255,.05)" : undefined,
-                    }} data-testid={`album-preview-track-${track.id}`}>
-                      <div style={{
-                        width: 22, height: 22, borderRadius: "50%",
-                        background: "rgba(160,107,255,.2)", display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 11, fontWeight: 800, color: "#a06bff", flexShrink: 0,
-                      }}>
-                        {i + 1}
+                  albumItems.map((item, i) => {
+                    const isNew = item.type === "new";
+                    const nu = isNew ? newUploads.find(u => u.tempId === item.tempId) : null;
+                    return (
+                      <div key={isNew ? item.tempId : `e-${item.trackId}`} style={{
+                        display: "flex", alignItems: "center", gap: 10,
+                        padding: "10px 18px",
+                        borderBottom: i < albumItems.length - 1 ? "1px solid rgba(108,240,255,.05)" : undefined,
+                      }} data-testid={`album-preview-item-${i}`}>
+                        <div style={{
+                          width: 22, height: 22, borderRadius: "50%",
+                          background: "rgba(160,107,255,.2)", display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 11, fontWeight: 800, color: "#a06bff", flexShrink: 0,
+                        }}>
+                          {i + 1}
+                        </div>
+                        <div style={{ flex: 1, overflow: "hidden" }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {item.title}
+                          </div>
+                          {isNew && (
+                            <div style={{ fontSize: 10, color: nu?.uploading ? "#6cf0ff" : nu?.uploaded ? "#4ade80" : "#ff4fd8" }}>
+                              {nu?.uploading ? "Uploading..." : nu?.uploaded ? "Uploaded" : nu?.error ? `Error: ${nu.error}` : "New upload"}
+                            </div>
+                          )}
+                        </div>
+                        {nu?.uploading ? (
+                          <Loader2 size={14} style={{ color: "#6cf0ff", animation: "spin 1s linear infinite" }} />
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeItem(i); }}
+                            style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex" }}
+                            data-testid={`remove-item-${i}`}
+                          >
+                            <X size={14} style={{ color: "rgba(170,182,232,.4)" }} />
+                          </button>
+                        )}
                       </div>
-                      <div style={{ flex: 1, overflow: "hidden" }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.title}</div>
-                      </div>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); removeTrack(track.id); }}
-                        style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex" }}
-                        data-testid={`remove-track-${track.id}`}
-                      >
-                        <X size={14} style={{ color: "rgba(170,182,232,.4)" }} />
-                      </button>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
               <div style={{ padding: "12px 18px 16px" }}>
                 <button
                   onClick={handleCreate}
-                  disabled={!title.trim() || selectedTrackIds.length === 0 || creating}
+                  disabled={!title.trim() || albumItems.length === 0 || creating}
                   style={{
                     width: "100%", padding: "12px 0",
-                    background: title.trim() && selectedTrackIds.length > 0 && !creating
+                    background: title.trim() && albumItems.length > 0 && !creating
                       ? "linear-gradient(135deg, #a06bff 0%, #ff4fd8 100%)"
                       : "rgba(170,182,232,.12)",
                     border: "none", borderRadius: 24,
-                    color: title.trim() && selectedTrackIds.length > 0 && !creating ? "#fff" : "rgba(170,182,232,.3)",
+                    color: title.trim() && albumItems.length > 0 && !creating ? "#fff" : "rgba(170,182,232,.3)",
                     fontWeight: 700, fontSize: 15,
-                    cursor: title.trim() && selectedTrackIds.length > 0 && !creating ? "pointer" : "not-allowed",
+                    cursor: title.trim() && albumItems.length > 0 && !creating ? "pointer" : "not-allowed",
                   }}
                   data-testid="button-create-album"
                 >
-                  {creating ? "Creating..." : `Create Album (${selectedTrackIds.length} song${selectedTrackIds.length !== 1 ? "s" : ""})`}
+                  {creating ? "Creating Album..." : `Create Album (${totalSongs} song${totalSongs !== 1 ? "s" : ""})`}
                 </button>
               </div>
             </div>
@@ -281,6 +485,10 @@ export default function CreateAlbum() {
           .create-album-grid {
             grid-template-columns: 1fr !important;
           }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </div>
