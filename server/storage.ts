@@ -1,7 +1,7 @@
 import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser, type Like, type InsertLike, type Comment, type InsertComment, type Follow, type InsertFollow, type WeeklyWinner, type InsertWeeklyWinner, type Album, type InsertAlbum, type AlbumTrack, type InsertAlbumTrack } from "@shared/schema";
 import { tracks, creators, genres, users, likes, comments, visitorLikes, trackPlays, follows, visitorFollows, weeklyWinners, albums, albumTracks } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, sql, gte } from "drizzle-orm";
+import { eq, and, desc, asc, sql, gte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   getTrack(id: number): Promise<Track | undefined>;
@@ -438,7 +438,7 @@ export class DatabaseStorage implements IStorage {
     const entries = await db.select().from(albumTracks).where(eq(albumTracks.albumId, albumId)).orderBy(asc(albumTracks.trackOrder));
     if (entries.length === 0) return [];
     const trackIds = entries.map(e => e.trackId);
-    const allTracks = await db.select().from(tracks).where(sql`${tracks.id} = ANY(${trackIds})`);
+    const allTracks = await db.select().from(tracks).where(inArray(tracks.id, trackIds));
     const trackMap = new Map(allTracks.map(t => [t.id, t]));
     return entries.map(e => trackMap.get(e.trackId)).filter((t): t is Track => !!t);
   }
