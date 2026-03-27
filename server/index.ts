@@ -4,7 +4,6 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import createMemoryStore from "memorystore";
 import { storage } from "./storage";
 import pg from "pg";
 
@@ -79,17 +78,14 @@ app.use((req, res, next) => {
     console.log("Database ready");
 
     const isProduction = process.env.NODE_ENV === "production";
-    let sessionStore;
     if (isProduction) {
-      const MemoryStore = createMemoryStore(session);
-      sessionStore = new MemoryStore({ checkPeriod: 86400000 });
-    } else {
-      const PgStore = connectPgSimple(session);
-      sessionStore = new PgStore({
-        conString: process.env.DATABASE_URL,
-        createTableIfMissing: true,
-      });
+      app.set("trust proxy", 1);
     }
+    const PgStore = connectPgSimple(session);
+    const sessionStore = new PgStore({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+    });
     app.use(
       session({
         store: sessionStore,
@@ -99,12 +95,12 @@ app.use((req, res, next) => {
         cookie: {
           maxAge: 30 * 24 * 60 * 60 * 1000,
           httpOnly: true,
-          secure: false,
+          secure: isProduction,
           sameSite: "lax",
         },
       }),
     );
-    console.log("Session store ready");
+    console.log("Session store ready (PostgreSQL-backed)");
 
     const ensurePool = new pg.Pool({
       connectionString: process.env.DATABASE_URL,
