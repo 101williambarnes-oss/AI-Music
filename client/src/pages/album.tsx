@@ -101,11 +101,12 @@ export default function AlbumPage() {
   const [, params] = useRoute("/album/:id");
   const [, navigate] = useLocation();
   const albumId = params?.id;
-  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
+  const { currentTrackId, isPlaying, play, toggle, setOnEnded } = useAudioPlayer();
   const [djPlaying, setDjPlaying] = useState(false);
   const [djLoading, setDjLoading] = useState(false);
   const [djPlayed, setDjPlayed] = useState(false);
   const djAudioRef = useRef<HTMLAudioElement | null>(null);
+  const albumTracksRef = useRef<Track[]>([]);
 
   const { data, isLoading } = useQuery<AlbumData>({
     queryKey: ["/api/albums", albumId],
@@ -117,6 +118,34 @@ export default function AlbumPage() {
   });
 
   const moreAlbums = allAlbums.filter(a => String(a.id) !== albumId);
+
+  useEffect(() => {
+    if (data?.tracks) {
+      albumTracksRef.current = data.tracks;
+    }
+  }, [data?.tracks]);
+
+  useEffect(() => {
+    const handleEnded = (endedTrackId: number) => {
+      const tracks = albumTracksRef.current;
+      const currentIndex = tracks.findIndex(t => t.id === endedTrackId);
+      if (currentIndex === -1) return;
+      const nextIndex = currentIndex + 1;
+      if (nextIndex < tracks.length) {
+        const nextTrack = tracks[nextIndex];
+        if (nextTrack.fileUrl) {
+          play(nextTrack.id, nextTrack.fileUrl, {
+            title: nextTrack.title,
+            artist: nextTrack.artist,
+            coverUrl: nextTrack.coverUrl,
+          }, { skipIntro: true });
+        }
+      }
+    };
+
+    setOnEnded(handleEnded);
+    return () => setOnEnded(null);
+  }, [play, setOnEnded]);
 
   useEffect(() => {
     return () => {
