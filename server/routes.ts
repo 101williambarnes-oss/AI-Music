@@ -480,7 +480,7 @@ const upload = multer({
       cb(null, uniqueName);
     },
   }),
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limits: { fileSize: 200 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const mimeOk = ALLOWED_MIMES.includes(file.mimetype);
@@ -846,7 +846,7 @@ export async function registerRoutes(
     ])(req, res, (err) => {
       if (err instanceof multer.MulterError) {
         if (err.code === "LIMIT_FILE_SIZE") {
-          return res.status(400).json({ message: "File is too large. Maximum size is 50MB." });
+          return res.status(400).json({ message: "File is too large. Maximum size is 200MB." });
         }
         return res.status(400).json({ message: err.message });
       }
@@ -961,7 +961,7 @@ export async function registerRoutes(
     upload.single("avatar")(req, res, (err) => {
       if (err instanceof multer.MulterError) {
         if (err.code === "LIMIT_FILE_SIZE") {
-          return res.status(400).json({ message: "File is too large. Maximum size is 50MB." });
+          return res.status(400).json({ message: "File is too large. Maximum size is 200MB." });
         }
         return res.status(400).json({ message: err.message });
       }
