@@ -488,7 +488,7 @@ const upload = multer({
     if (extOk && mimeOk) {
       cb(null, true);
     } else {
-      cb(new Error("Unsupported file type. Only audio (MP3, WAV, OGG, FLAC, M4A, AAC), video (MP4, WEBM, MOV), and image (JPG, PNG, GIF, WEBP) files are allowed."));
+      cb(new Error("Unsupported file type. Only audio (MP3, WAV, OGG, FLAC, M4A, AAC), video (MP4, M4V, WEBM, MOV), and image (JPG, PNG, GIF, WEBP) files are allowed."));
     }
   },
 });

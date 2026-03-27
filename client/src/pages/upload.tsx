@@ -79,7 +79,7 @@ export default function Upload() {
   }
 
   const AUDIO_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
-  const VIDEO_EXTS = [".mp4", ".webm", ".mov"];
+  const VIDEO_EXTS = [".mp4", ".webm", ".mov", ".m4v"];
   const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -103,8 +103,8 @@ export default function Upload() {
         setError("Unsupported file: " + f.name);
         return;
       }
-      if (f.size > 50 * 1024 * 1024) {
-        setError("File too large: " + f.name + " (max 50MB)");
+      if (f.size > 200 * 1024 * 1024) {
+        setError("File too large: " + f.name + " (max 200MB)");
         return;
       }
       if (AUDIO_EXTS.includes(ext)) audioFile = f;
