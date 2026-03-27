@@ -105,7 +105,7 @@ export default function AlbumPage() {
   const [, params] = useRoute("/album/:id");
   const [, navigate] = useLocation();
   const albumId = params?.id;
-  const { currentTrackId, isPlaying, play, toggle, setOnEnded } = useAudioPlayer();
+  const { currentTrackId, isPlaying, play, pause, resume, toggle, setOnEnded } = useAudioPlayer();
   const [djPlaying, setDjPlaying] = useState(false);
   const [djLoading, setDjLoading] = useState(false);
   const [djPlayed, setDjPlayed] = useState(false);
@@ -220,9 +220,23 @@ export default function AlbumPage() {
     }
   }, [albumId]);
 
+  const albumTrackIds = data?.tracks?.map(t => t.id) ?? [];
+  const isAlbumPlaying = currentTrackId !== null && albumTrackIds.includes(currentTrackId) && isPlaying;
+  const isAlbumActive = currentTrackId !== null && albumTrackIds.includes(currentTrackId);
+
   const playDjIntroThenAlbum = useCallback(async () => {
     if (!data?.tracks || data.tracks.length === 0) return;
     if (!data.album) return;
+
+    const trackIds = data.tracks.map(t => t.id);
+    if (currentTrackId !== null && trackIds.includes(currentTrackId)) {
+      if (isPlaying) {
+        pause();
+      } else {
+        resume();
+      }
+      return;
+    }
 
     const firstTrack = data.tracks[0];
     if (!firstTrack.fileUrl) return;
@@ -275,7 +289,7 @@ export default function AlbumPage() {
     setDjLoading(false);
     setDjPlayed(true);
     play(firstTrack.id, firstTrack.fileUrl, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: getTrackThumbnail(firstTrack) });
-  }, [data, djPlayed, play]);
+  }, [data, djPlayed, play, pause, resume, currentTrackId, isPlaying]);
 
   const playTrack = useCallback((track: Track) => {
     if (!track.fileUrl) return;
@@ -398,7 +412,7 @@ export default function AlbumPage() {
                   }}
                   data-testid="button-play-album"
                 >
-                  <Play size={18} fill="#fff" /> {djLoading ? "Loading DJ..." : "Play Album"}
+                  {isAlbumPlaying ? <Pause size={18} fill="#fff" /> : <Play size={18} fill="#fff" />} {djLoading ? "Loading DJ..." : isAlbumPlaying ? "Pause" : isAlbumActive ? "Resume" : "Play Album"}
                 </button>
                 <button
                   onClick={handleAlbumLike}
