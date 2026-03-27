@@ -162,7 +162,7 @@ export default function Jukebox() {
       const res = await fetch("/api/tracks/all");
       if (!res.ok) throw new Error("Failed to load");
       const data: Track[] = await res.json();
-      return data.filter(t => t.fileUrl).sort((a, b) => a.id - b.id);
+      return data.filter(t => t.fileUrl && t.coverUrl).sort((a, b) => a.id - b.id);
     },
     refetchOnWindowFocus: false,
     refetchInterval: false,

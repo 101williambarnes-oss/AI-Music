@@ -434,11 +434,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const getCurrentTime = useCallback(() => {
-    return audioRef.current?.currentTime ?? 0;
+    const t = audioRef.current?.currentTime;
+    return (t && isFinite(t)) ? t : 0;
   }, []);
 
   const getDuration = useCallback(() => {
-    return audioRef.current?.duration ?? 0;
+    const d = audioRef.current?.duration;
+    return (d && isFinite(d)) ? d : 0;
   }, []);
 
   const resume = useCallback(() => {

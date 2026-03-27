@@ -2,7 +2,7 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays, passwordResetTokens, siteVisits, studioClicks, albums, albumTracks } from "@shared/schema";
+import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays, passwordResetTokens, siteVisits, studioClicks, albums, albumTracks, creators } from "@shared/schema";
 import { sql, desc, eq, and, gt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import multer from "multer";
@@ -136,13 +136,22 @@ async function generateDjIntro(trackId: number): Promise<string | null> {
         const top25Tracks = await db.select().from(tracks).orderBy(desc(tracks.plays));
         const artistTop25 = top25Tracks.slice(0, 25).filter(t => t.creatorId === creator.id);
 
+        const creatorAlbums = await db.select().from(albums).where(eq(albums.creatorId, creator.id));
+        const totalLikes = await Promise.all(creatorTracks.map(async t => {
+          const trackLikes = await db.select().from(likes).where(eq(likes.trackId, t.id));
+          return trackLikes.length;
+        })).then(counts => counts.reduce((sum, c) => sum + c, 0));
+
         const statsLines: string[] = [];
+        if (creator.bio) statsLines.push(`Artist bio: ${creator.bio}`);
         statsLines.push(`This artist has ${trackCount} song${trackCount !== 1 ? "s" : ""} on Hit Wave Media.`);
         if (totalPlays > 0) statsLines.push(`Their music has been played ${totalPlays} total times.`);
+        if (totalLikes > 0) statsLines.push(`Their songs have received ${totalLikes} total like${totalLikes !== 1 ? "s" : ""}.`);
         if (followerCount > 0) statsLines.push(`They have ${followerCount} follower${followerCount !== 1 ? "s" : ""}.`);
         if (daysSinceJoin > 30) statsLines.push(`They've been on the platform for ${Math.floor(daysSinceJoin / 30)} month${Math.floor(daysSinceJoin / 30) !== 1 ? "s" : ""}.`);
         else if (daysSinceJoin > 0) statsLines.push(`They joined ${daysSinceJoin} day${daysSinceJoin !== 1 ? "s" : ""} ago.`);
         if (otherSongs.length > 0) statsLines.push(`Their other songs include: ${otherSongs.slice(0, 5).map(s => `"${s}"`).join(", ")}.`);
+        if (creatorAlbums.length > 0) statsLines.push(`They have ${creatorAlbums.length} album${creatorAlbums.length !== 1 ? "s" : ""}: ${creatorAlbums.map(a => `"${a.title}"`).join(", ")}.`);
         if (artistTop25.length > 0) statsLines.push(`They currently have ${artistTop25.length} song${artistTop25.length !== 1 ? "s" : ""} in the Top 25.`);
         if (trackCount === 1) statsLines.push(`This is their very first song on Hit Wave — they're brand new!`);
 
@@ -1037,6 +1046,24 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Location update error:", error);
       res.status(500).json({ message: "Failed to update location" });
+    }
+  });
+
+  app.patch("/api/creators/:id/bio", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      const creatorId = parseInt(req.params.id);
+      const creator = await storage.getCreatorById(creatorId);
+      if (!creator) return res.status(404).json({ message: "Creator not found" });
+      const user = await storage.getUser(userId);
+      if (!user || creator.userId !== userId) return res.status(403).json({ message: "Not your profile" });
+      const { bio } = req.body;
+      await db.update(creators).set({ bio: bio || "" }).where(eq(creators.id, creatorId));
+      res.json({ message: "Bio updated" });
+    } catch (error) {
+      console.error("Bio update error:", error);
+      res.status(500).json({ message: "Failed to update bio" });
     }
   });
 

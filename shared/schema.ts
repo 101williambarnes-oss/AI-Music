@@ -45,6 +45,7 @@ export const creators = pgTable("creators", {
   city: text("city"),
   state: text("state"),
   djName: text("dj_name"),
+  bio: text("bio"),
 });
 
 export const likes = pgTable("likes", {
