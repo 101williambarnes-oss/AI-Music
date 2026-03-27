@@ -1003,6 +1003,24 @@ export async function registerRoutes(
     }
   });
 
+  app.patch("/api/creators/:id/location", async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      const creatorId = parseInt(req.params.id);
+      const creator = await storage.getCreatorById(creatorId);
+      if (!creator) return res.status(404).json({ message: "Creator not found" });
+      const user = await storage.getUser(userId);
+      if (!user || creator.userId !== userId) return res.status(403).json({ message: "Not your profile" });
+      const { city, state } = req.body;
+      await storage.updateCreatorLocation(creatorId, city || "", state || "");
+      res.json({ message: "Location updated", city, state });
+    } catch (error) {
+      console.error("Location update error:", error);
+      res.status(500).json({ message: "Failed to update location" });
+    }
+  });
+
   app.delete("/api/tracks/:id", async (req, res) => {
     const userId = req.session.userId || parseInt(req.headers["x-user-id"] as string);
     if (!userId) {

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
-import { Headphones, Heart, Users, Flame, Trophy, TrendingUp, Clock, Disc3, Plus, Download } from "lucide-react";
+import { Headphones, Heart, Users, Flame, Trophy, TrendingUp, Clock, Disc3, Plus, Download, MapPin, Check } from "lucide-react";
 import { type Album } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
@@ -31,11 +32,27 @@ export default function CreatorDashboard() {
   });
 
   const isOwner = user?.creatorId === Number(creatorId);
+  const [locCity, setLocCity] = useState("");
+  const [locState, setLocState] = useState("");
+  const [locSaving, setLocSaving] = useState(false);
+  const [locSaved, setLocSaved] = useState(false);
 
   const { data, isLoading, isError } = useQuery<DashboardData>({
     queryKey: ["/api/creators", creatorId, "dashboard"],
     enabled: !!creatorId && isOwner,
   });
+
+  const { data: creatorData } = useQuery<{ creator: any }>({
+    queryKey: ["/api/creators", creatorId],
+    enabled: !!creatorId,
+  });
+
+  useEffect(() => {
+    if (creatorData?.creator) {
+      setLocCity(creatorData.creator.city || "");
+      setLocState(creatorData.creator.state || "");
+    }
+  }, [creatorData]);
 
   const { data: myAlbums = [] } = useQuery<AlbumWithCount[]>({
     queryKey: ["/api/creators", creatorId, "albums"],
@@ -176,6 +193,57 @@ export default function CreatorDashboard() {
         <p style={{ textAlign: "center", fontSize: 13, color: "rgba(170,182,232,.5)", marginBottom: 8 }}>{user?.name}</p>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <a href={`/creator/${creatorId}`} style={{ display: "inline-block", padding: "8px 20px", background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.2)", borderRadius: 6, color: "#6cf0ff", fontWeight: 600, fontSize: 13, textDecoration: "none" }} data-testid="link-back-to-profile">Back to Profile</a>
+        </div>
+
+        <div style={{ ...statBoxStyle, marginBottom: 20, padding: "16px 18px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+            <MapPin size={14} style={{ color: "#6cf0ff" }} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#aab6e8" }}>My Location</span>
+            <span style={{ fontSize: 10, color: "rgba(170,182,232,.35)", marginLeft: 4 }}>DJ William Allen uses this when introducing your songs</span>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <input
+              type="text"
+              value={locCity}
+              onChange={(e) => { setLocCity(e.target.value); setLocSaved(false); }}
+              placeholder="City (e.g. Saint George)"
+              style={{ flex: 1, minWidth: 120, padding: "8px 12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(108,240,255,.15)", borderRadius: 8, color: "#eaf0ff", fontSize: 13, outline: "none" }}
+              data-testid="input-location-city"
+            />
+            <input
+              type="text"
+              value={locState}
+              onChange={(e) => { setLocState(e.target.value); setLocSaved(false); }}
+              placeholder="State (e.g. UT)"
+              style={{ width: 80, padding: "8px 12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(108,240,255,.15)", borderRadius: 8, color: "#eaf0ff", fontSize: 13, outline: "none" }}
+              data-testid="input-location-state"
+            />
+            <button
+              onClick={async () => {
+                setLocSaving(true);
+                try {
+                  await apiRequest("PATCH", `/api/creators/${creatorId}/location`, { city: locCity.trim(), state: locState.trim() });
+                  queryClient.invalidateQueries({ queryKey: ["/api/creators", creatorId] });
+                  setLocSaved(true);
+                  setTimeout(() => setLocSaved(false), 3000);
+                } catch (err) {
+                  console.error("Failed to save location:", err);
+                } finally {
+                  setLocSaving(false);
+                }
+              }}
+              disabled={locSaving}
+              style={{
+                padding: "8px 16px", background: locSaved ? "rgba(74,222,128,.15)" : "rgba(108,240,255,.1)",
+                border: locSaved ? "1px solid rgba(74,222,128,.3)" : "1px solid rgba(108,240,255,.2)",
+                borderRadius: 8, color: locSaved ? "#4ade80" : "#6cf0ff", fontWeight: 700, fontSize: 12,
+                cursor: locSaving ? "wait" : "pointer", whiteSpace: "nowrap" as const,
+              }}
+              data-testid="button-save-location"
+            >
+              {locSaving ? "Saving..." : locSaved ? <><Check size={12} /> Saved</> : "Save"}
+            </button>
+          </div>
         </div>
 
         <div style={sectionTitleStyle}>This Week:</div>
