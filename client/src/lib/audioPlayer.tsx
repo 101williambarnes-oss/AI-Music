@@ -88,19 +88,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }).catch(() => {});
   }, []);
 
-  const toAudioUrl = useCallback((url: string): string => {
-    try {
-      const parsed = new URL(url);
-      if (!parsed.hostname.endsWith('cloudinary.com')) return url;
-      if (!/\/video\/upload\//.test(parsed.pathname)) return url;
-      if (!/\.(mp4|m4v|mov|webm)$/i.test(parsed.pathname)) return url;
-      parsed.pathname = parsed.pathname.replace(/\/video\/upload\//, '/video/upload/f_mp3/').replace(/\.(mp4|m4v|mov|webm)$/i, '.mp3');
-      return parsed.toString();
-    } catch {
-      return url;
-    }
-  }, []);
-
   const loadAndPlay = useCallback((audio: HTMLAudioElement, url: string) => {
     audio.oncanplay = null;
     audio.onerror = null;
@@ -114,8 +101,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       return;
     }
 
-    const audioUrl = toAudioUrl(url);
-    audio.src = audioUrl;
+    audio.src = url;
     audio.load();
 
     let settled = false;
@@ -178,16 +164,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     const audio = document.createElement("audio");
     audio.preload = "auto";
-    audio.setAttribute("playsinline", "");
-    audio.setAttribute("webkit-playsinline", "");
-    audio.setAttribute("x-webkit-airplay", "allow");
-    audio.style.display = "none";
-    audio.style.width = "0";
-    audio.style.height = "0";
-    audio.style.position = "absolute";
-    audio.style.opacity = "0";
-    audio.style.pointerEvents = "none";
-    document.body.appendChild(audio);
     audioRef.current = audio;
 
     audio.addEventListener("ended", () => {
@@ -220,7 +196,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setIsPlaying(true);
     });
 
-    return () => { audio.pause(); try { document.body.removeChild(audio); } catch {} };
+    return () => { audio.pause(); };
   }, [loadAndPlay]);
 
   const countPlay = useCallback((trackId: number) => {
