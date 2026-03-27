@@ -82,8 +82,12 @@ app.use((req, res, next) => {
       app.set("trust proxy", 1);
     }
     const PgStore = connectPgSimple(session);
+    const sessionPool = new pg.Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: isProduction ? { rejectUnauthorized: false } : false,
+    });
     const sessionStore = new PgStore({
-      conString: process.env.DATABASE_URL,
+      pool: sessionPool,
       createTableIfMissing: true,
     });
     app.use(
