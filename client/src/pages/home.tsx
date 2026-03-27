@@ -222,7 +222,6 @@ export default function Home() {
             {user && user.creatorId && (
               <a href={`/creator/${user.creatorId}`} data-testid="link-mobile-my-library">My Library</a>
             )}
-            <a href="/albums" data-testid="link-quick-albums">Creator Albums</a>
             <a href="/jukebox" data-testid="link-quick-jukebox">Jukebox</a>
             <a href="/about" data-testid="link-quick-about">About Us</a>
           </nav>

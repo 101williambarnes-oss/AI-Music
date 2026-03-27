@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator, type Album } from "@shared/schema";
-import { Disc3, Play, Pause, Music, Download, User, Calendar } from "lucide-react";
+import { Disc3, Play, Pause, Music, User, Calendar } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 type AlbumData = {
   album: Album;
@@ -11,66 +11,82 @@ type AlbumData = {
   tracks: Track[];
 };
 
-function AlbumTrackRow({ track, index }: { track: Track; index: number }) {
-  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
-  const isActive = currentTrackId === track.id;
-  const isThisPlaying = isActive && isPlaying;
-
-  const handleClick = useCallback(() => {
-    if (!track.fileUrl) return;
-    if (isActive) {
-      toggle();
-    } else {
-      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl, djIntroUrl: (track as any).djIntroUrl });
-    }
-  }, [track, isActive, play, toggle]);
-
+function AlbumTrackTab({ track, index, isActive, isThisPlaying, onSelect }: {
+  track: Track; index: number; isActive: boolean; isThisPlaying: boolean; onSelect: () => void;
+}) {
   return (
-    <div
-      onClick={handleClick}
+    <button
+      onClick={onSelect}
       style={{
-        display: "grid",
-        gridTemplateColumns: "36px 1fr 70px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        width: "100%",
         padding: "12px 16px",
         borderTop: index > 0 ? "1px solid rgba(108,240,255,.06)" : undefined,
-        alignItems: "center",
+        background: isActive ? "rgba(160,107,255,.12)" : "transparent",
+        border: "none",
+        borderLeft: isActive ? "3px solid #a06bff" : "3px solid transparent",
         cursor: track.fileUrl ? "pointer" : "default",
-        background: isThisPlaying ? "rgba(160,107,255,.1)" : undefined,
-        transition: "background .2s",
+        transition: "all .2s",
+        textAlign: "left",
+        color: "inherit",
       }}
       data-testid={`album-track-${track.id}`}
     >
-      <div style={{ fontSize: 14, fontWeight: 600, color: isThisPlaying ? "#a06bff" : "rgba(170,182,232,.5)", textAlign: "center" }}>
-        {isThisPlaying ? <Pause size={16} /> : isActive ? <Play size={16} /> : index + 1}
+      <div style={{
+        width: 28, height: 28, borderRadius: "50%",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: isActive ? "rgba(160,107,255,.2)" : "rgba(255,255,255,.04)",
+        fontSize: 13, fontWeight: 700,
+        color: isThisPlaying ? "#a06bff" : isActive ? "#6cf0ff" : "rgba(170,182,232,.5)",
+        flexShrink: 0,
+      }}>
+        {isThisPlaying ? <Pause size={14} /> : index + 1}
       </div>
-      <div>
-        <div style={{ fontSize: 14, fontWeight: 600, color: isThisPlaying ? "#a06bff" : "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <div style={{ flex: 1, overflow: "hidden" }}>
+        <div style={{
+          fontSize: 14, fontWeight: 600,
+          color: isActive ? "#a06bff" : "#eaf0ff",
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+        }}>
           {track.title}
         </div>
-        <div style={{ fontSize: 11, color: "rgba(170,182,232,.4)" }}>{track.artist}</div>
       </div>
-      <div style={{ textAlign: "right", fontSize: 12, color: "rgba(170,182,232,.4)" }}>
-        {(track.plays || 0).toLocaleString()} plays
-      </div>
-    </div>
+      {isThisPlaying && (
+        <div style={{ fontSize: 10, color: "#a06bff", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1 }}>
+          Playing
+        </div>
+      )}
+    </button>
   );
 }
 
 export default function AlbumPage() {
   const [, params] = useRoute("/album/:id");
   const albumId = params?.id;
-  const { play } = useAudioPlayer();
+  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
 
   const { data, isLoading } = useQuery<AlbumData>({
     queryKey: ["/api/albums", albumId],
     enabled: !!albumId,
   });
 
+  const playTrack = useCallback((track: Track) => {
+    if (!track.fileUrl) return;
+    const isActive = currentTrackId === track.id;
+    if (isActive) {
+      toggle();
+    } else {
+      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
+    }
+  }, [currentTrackId, play, toggle]);
+
   const handlePlayAll = useCallback(() => {
     if (data?.tracks && data.tracks.length > 0) {
       const first = data.tracks[0];
       if (first.fileUrl) {
-        play(first.id, first.fileUrl, { title: first.title, artist: first.artist, coverUrl: first.coverUrl, djIntroUrl: (first as any).djIntroUrl });
+        play(first.id, first.fileUrl, { title: first.title, artist: first.artist, coverUrl: first.coverUrl });
       }
     }
   }, [data, play]);
@@ -148,13 +164,18 @@ export default function AlbumPage() {
         </div>
 
         <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(108,240,255,.1)", borderRadius: 10, overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "36px 1fr 70px", padding: "10px 16px", background: "rgba(108,240,255,.05)", fontSize: 11, fontWeight: 700, color: "rgba(170,182,232,.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>
-            <span style={{ textAlign: "center" }}>#</span>
-            <span>Title</span>
-            <span style={{ textAlign: "right" }}>Plays</span>
+          <div style={{ padding: "10px 16px", background: "rgba(108,240,255,.05)", fontSize: 11, fontWeight: 700, color: "rgba(170,182,232,.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Songs
           </div>
           {tracks.map((track, i) => (
-            <AlbumTrackRow key={track.id} track={track} index={i} />
+            <AlbumTrackTab
+              key={track.id}
+              track={track}
+              index={i}
+              isActive={currentTrackId === track.id}
+              isThisPlaying={currentTrackId === track.id && isPlaying}
+              onSelect={() => playTrack(track)}
+            />
           ))}
           {tracks.length === 0 && (
             <div style={{ padding: 30, textAlign: "center", color: "rgba(170,182,232,.4)", fontSize: 14 }}>No tracks in this album yet</div>

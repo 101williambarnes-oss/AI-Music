@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
-import { Upload, Camera, UserPlus, UserCheck, BarChart3 } from "lucide-react";
+import { Upload, Camera, UserPlus, UserCheck, BarChart3, Disc3 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { TrackRow } from "@/components/track-row";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
@@ -294,6 +294,29 @@ export default function CreatorProfile() {
                   >
                     <Upload style={{ width: 20, height: 20 }} />
                     Upload Your Music Now
+                  </a>
+                  <a
+                    href="/create-album"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 10,
+                      width: "100%",
+                      padding: "14px 0",
+                      background: "linear-gradient(135deg, #a06bff 0%, #ff4fd8 100%)",
+                      border: "none",
+                      borderRadius: 8,
+                      color: "#fff",
+                      fontSize: 16,
+                      fontWeight: 800,
+                      textDecoration: "none",
+                      letterSpacing: 0.5,
+                    }}
+                    data-testid="button-create-album"
+                  >
+                    <Disc3 style={{ width: 20, height: 20 }} />
+                    Create Your Album Now
                   </a>
                   <a
                     href={`/creator/${creatorId}/dashboard`}
