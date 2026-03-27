@@ -129,6 +129,15 @@ export default function AlbumPage() {
     setAlbumLiked(likedAlbums.includes(Number(albumId)));
   }, [albumId]);
 
+  const { data, isLoading } = useQuery<AlbumData>({
+    queryKey: ["/api/albums", albumId],
+    enabled: !!albumId,
+  });
+
+  const { data: allAlbums = [] } = useQuery<AlbumWithCreator[]>({
+    queryKey: ["/api/albums"],
+  });
+
   useEffect(() => {
     if (!data?.tracks) return;
     let total = 0;
@@ -161,15 +170,6 @@ export default function AlbumPage() {
       prompt("Copy this link:", shareUrl);
     }
   }
-
-  const { data, isLoading } = useQuery<AlbumData>({
-    queryKey: ["/api/albums", albumId],
-    enabled: !!albumId,
-  });
-
-  const { data: allAlbums = [] } = useQuery<AlbumWithCreator[]>({
-    queryKey: ["/api/albums"],
-  });
 
   const moreAlbums = allAlbums.filter(a => String(a.id) !== albumId);
 
