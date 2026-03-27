@@ -1,0 +1,24 @@
+{
+  "name": "Hit Wave Media",
+  "short_name": "Hit Wave",
+  "description": "The Home of AI Music - Discover trending AI-generated tracks, explore genres, and connect with creators.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070a14",
+  "theme_color": "#070a14",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
