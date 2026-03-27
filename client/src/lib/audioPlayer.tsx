@@ -124,12 +124,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setIsPlaying(false);
     };
 
-    if (audio.readyState >= 2) {
-      doPlay();
-    } else {
-      audio.oncanplay = doPlay;
-      audio.onerror = onError;
-    }
+    audio.oncanplay = doPlay;
+    audio.onerror = onError;
   }, []);
 
   useEffect(() => {
