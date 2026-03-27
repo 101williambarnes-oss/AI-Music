@@ -131,6 +131,7 @@ export const albums = pgTable("albums", {
   description: text("description"),
   coverUrl: text("cover_url"),
   creatorId: integer("creator_id").notNull(),
+  djIntroUrl: text("dj_intro_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

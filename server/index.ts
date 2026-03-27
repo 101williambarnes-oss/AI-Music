@@ -162,6 +162,7 @@ app.use((req, res, next) => {
         description TEXT,
         cover_url TEXT,
         creator_id INTEGER NOT NULL,
+        dj_intro_url TEXT,
         created_at TIMESTAMP NOT NULL DEFAULT NOW()
       )
     `);
@@ -173,6 +174,7 @@ app.use((req, res, next) => {
         track_order INTEGER NOT NULL DEFAULT 0
       )
     `);
+    await ensurePool.query(`ALTER TABLE albums ADD COLUMN IF NOT EXISTS dj_intro_url TEXT`);
     await ensurePool.end();
     console.log("weekly_winners table, explicit column, password_reset_tokens, site_visits, studio_clicks, DJ columns, and albums tables ensured");
 

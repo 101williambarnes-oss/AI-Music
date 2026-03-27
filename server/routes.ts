@@ -327,6 +327,137 @@ ONLY output the spoken words. Nothing else. No quotes, no stage directions, no p
   }
 }
 
+async function generateAlbumDjIntro(albumId: number): Promise<string | null> {
+  const album = await storage.getAlbum(albumId);
+  if (!album) throw new Error("Album not found: " + albumId);
+  if (album.djIntroUrl) return album.djIntroUrl;
+
+  const creator = await storage.getCreatorById(album.creatorId);
+  const albumTracks = await storage.getAlbumTracks(albumId);
+
+  const openaiKey = process.env.OPENAI_API_KEY;
+  const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
+  const voiceId = process.env.ELEVENLABS_VOICE_ID || "nF3LfwDKm2NpoSYUrBwg";
+
+  if (!openaiKey || !elevenLabsKey) {
+    throw new Error("Missing API keys for DJ intro generation");
+  }
+
+  try {
+    const creatorName = creator?.djName || creator?.name || "Unknown Artist";
+    const creatorCity = creator?.city || "";
+    const creatorState = creator?.state || "";
+    const locationStr = creatorCity && creatorState ? `from ${creatorCity}, ${creatorState}` : creatorCity ? `from ${creatorCity}` : creatorState ? `from ${creatorState}` : "";
+
+    const trackListStr = albumTracks.map((t, i) => `${i + 1}. "${t.title}"`).join(", ");
+    const trackCount = albumTracks.length;
+
+    let creatorStats = "";
+    if (creator) {
+      try {
+        const creatorAllTracks = await db.select().from(tracks).where(eq(tracks.creatorId, creator.id));
+        const totalPlays = creatorAllTracks.reduce((sum, t) => sum + (t.plays || 0), 0);
+        const followerCount = await storage.getFollowerCount(creator.id);
+        const statsLines: string[] = [];
+        if (totalPlays > 0) statsLines.push(`Their music has been played ${totalPlays} total times.`);
+        if (followerCount > 0) statsLines.push(`They have ${followerCount} follower${followerCount !== 1 ? "s" : ""}.`);
+        if (creatorAllTracks.length > 0) statsLines.push(`They have ${creatorAllTracks.length} total songs on Hit Wave Media.`);
+        creatorStats = statsLines.length > 0 ? "\n\nARTIST STATS:\n" + statsLines.join("\n") : "";
+      } catch (e) {
+        console.error("Album DJ intro: Error getting creator stats:", e);
+      }
+    }
+
+    const prompt = `You ARE William Allen, veteran radio DJ from Memphis, Tennessee. You're introducing an ALBUM, not a single song.
+
+WHO YOU ARE:
+William Allen, 58 years old from Memphis. You've been in radio for 30+ years. You came out of retirement to be the DJ at Hit Wave Media — the world's first AI music platform. You love music and you love these creators.
+
+YOUR TASK:
+Introduce this album to the listener. Be warm, excited, and personal. Make the listener want to sit down and listen to the whole album.
+
+ALBUM INFO:
+- Album title: "${album.title}"
+- Creator: ${creatorName} ${locationStr}
+- Number of songs: ${trackCount}
+- Songs on this album: ${trackListStr}
+${album.description ? `- Album description: "${album.description}"` : ""}
+${creatorStats}
+
+RULES:
+- This is an ALBUM intro, not a song intro. You're setting the stage for a full listening experience.
+- Mention the album name and the creator's name.
+- If you know songs on the album, you can tease one or two but don't list them all.
+- Keep it around 15-20 seconds when spoken aloud (about 3-4 sentences).
+- End with something like "this is [album name]" or "let's get into it" — make the listener excited to hear what's next.
+- Sound natural. You're William Allen, not a robot.
+- Do NOT use quotation marks around your response.`;
+
+    const chatRes = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${openaiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 300,
+        temperature: 0.9,
+      }),
+    });
+    if (!chatRes.ok) {
+      console.error("Album DJ intro: OpenAI chat failed:", await chatRes.text());
+      return null;
+    }
+    const chatData = await chatRes.json() as any;
+    let introScript = chatData.choices?.[0]?.message?.content?.trim();
+    if (!introScript) {
+      console.error("Album DJ intro: No script generated");
+      return null;
+    }
+    introScript = introScript.replace(/^["']|["']$/g, "").trim();
+    if (introScript.length > 1200) introScript = introScript.substring(0, 1200);
+
+    console.log("Album DJ intro script for album", albumId, ":", introScript);
+
+    let audioBuffer: Buffer | null = null;
+
+    const ttsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: "POST",
+      headers: { "xi-api-key": elevenLabsKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: introScript + ".",
+        model_id: "eleven_monolingual_v1",
+        voice_settings: { stability: 0.82, similarity_boost: 0.85 },
+      }),
+    });
+
+    if (ttsRes.ok) {
+      audioBuffer = Buffer.from(await ttsRes.arrayBuffer());
+    } else {
+      console.warn("Album DJ intro: ElevenLabs failed, trying OpenAI TTS");
+      const openaiTtsRes = await fetch("https://api.openai.com/v1/audio/speech", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${openaiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "tts-1", voice: "onyx", input: introScript + "." }),
+      });
+      if (!openaiTtsRes.ok) throw new Error("Both TTS services failed");
+      audioBuffer = Buffer.from(await openaiTtsRes.arrayBuffer());
+    }
+
+    const tempPath = path.join(uploadsDir, `album-dj-intro-${albumId}-${Date.now()}.mp3`);
+    fs.writeFileSync(tempPath, audioBuffer);
+    const djIntroUrl = await uploadToCloudinary(tempPath, "video");
+    await storage.updateAlbumDjIntroUrl(albumId, djIntroUrl);
+
+    try { fs.unlinkSync(tempPath); } catch {}
+
+    console.log("Album DJ intro generated for album", albumId, ":", djIntroUrl);
+    return djIntroUrl;
+  } catch (err: any) {
+    console.error("Album DJ intro generation error:", err?.message || err);
+    throw err;
+  }
+}
+
 const uploadsDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -1989,6 +2120,34 @@ ONLY output the spoken words. No quotes, no stage directions.`;
     const coverUrl = await uploadToCloudinary(req.file.path, "image");
     await storage.updateAlbumCover(albumId, coverUrl);
     res.json({ coverUrl });
+  });
+
+  app.post("/api/albums/:id/dj-intro", async (req: Request, res: Response) => {
+    try {
+      const albumId = parseInt(req.params.id);
+      if (isNaN(albumId)) return res.status(400).json({ message: "Invalid album ID" });
+
+      const album = await storage.getAlbum(albumId);
+      if (!album) return res.status(404).json({ message: "Album not found" });
+
+      if (album.djIntroUrl) {
+        return res.json({ djIntroUrl: album.djIntroUrl });
+      }
+
+      const djIntroUrl = await generateAlbumDjIntro(albumId).catch((err: any) => {
+        console.error("Album DJ intro generation failed:", err?.message || err);
+        return null;
+      });
+
+      if (!djIntroUrl) {
+        return res.status(500).json({ message: "Failed to generate album DJ intro" });
+      }
+
+      res.json({ djIntroUrl });
+    } catch (err: any) {
+      console.error("Album DJ intro endpoint error:", err);
+      res.status(500).json({ message: "Internal error" });
+    }
   });
 
   return httpServer;

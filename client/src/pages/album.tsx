@@ -3,7 +3,7 @@ import { useRoute } from "wouter";
 import { type Track, type Creator, type Album } from "@shared/schema";
 import { Disc3, Play, Pause, Music, User, Calendar } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 
 type AlbumData = {
   album: Album;
@@ -66,14 +66,91 @@ export default function AlbumPage() {
   const [, params] = useRoute("/album/:id");
   const albumId = params?.id;
   const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
+  const [djPlaying, setDjPlaying] = useState(false);
+  const [djLoading, setDjLoading] = useState(false);
+  const [djPlayed, setDjPlayed] = useState(false);
+  const djAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const { data, isLoading } = useQuery<AlbumData>({
     queryKey: ["/api/albums", albumId],
     enabled: !!albumId,
   });
 
+  useEffect(() => {
+    return () => {
+      if (djAudioRef.current) {
+        djAudioRef.current.pause();
+        djAudioRef.current = null;
+      }
+    };
+  }, []);
+
+  const playDjIntroThenAlbum = useCallback(async () => {
+    if (!data?.tracks || data.tracks.length === 0) return;
+    if (!data.album) return;
+
+    const firstTrack = data.tracks[0];
+    if (!firstTrack.fileUrl) return;
+
+    if (djPlayed) {
+      play(firstTrack.id, firstTrack.fileUrl, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: firstTrack.coverUrl });
+      return;
+    }
+
+    setDjLoading(true);
+
+    try {
+      const res = await fetch(`/api/albums/${data.album.id}/dj-intro`, { method: "POST" });
+      if (res.ok) {
+        const { djIntroUrl } = await res.json();
+        if (djIntroUrl) {
+          const audio = new Audio(djIntroUrl);
+          djAudioRef.current = audio;
+          setDjPlaying(true);
+
+          audio.onended = () => {
+            setDjPlaying(false);
+            setDjPlayed(true);
+            djAudioRef.current = null;
+            play(firstTrack.id, firstTrack.fileUrl!, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: firstTrack.coverUrl });
+          };
+
+          audio.onerror = () => {
+            setDjPlaying(false);
+            setDjPlayed(true);
+            djAudioRef.current = null;
+            play(firstTrack.id, firstTrack.fileUrl!, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: firstTrack.coverUrl });
+          };
+
+          await audio.play().catch(() => {
+            setDjPlaying(false);
+            setDjPlayed(true);
+            djAudioRef.current = null;
+            play(firstTrack.id, firstTrack.fileUrl!, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: firstTrack.coverUrl });
+          });
+
+          setDjLoading(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("DJ intro fetch failed:", err);
+    }
+
+    setDjLoading(false);
+    setDjPlayed(true);
+    play(firstTrack.id, firstTrack.fileUrl, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: firstTrack.coverUrl });
+  }, [data, djPlayed, play]);
+
   const playTrack = useCallback((track: Track) => {
     if (!track.fileUrl) return;
+
+    if (djAudioRef.current) {
+      djAudioRef.current.pause();
+      djAudioRef.current = null;
+      setDjPlaying(false);
+    }
+
     const isActive = currentTrackId === track.id;
     if (isActive) {
       toggle();
@@ -81,15 +158,6 @@ export default function AlbumPage() {
       play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: track.coverUrl });
     }
   }, [currentTrackId, play, toggle]);
-
-  const handlePlayAll = useCallback(() => {
-    if (data?.tracks && data.tracks.length > 0) {
-      const first = data.tracks[0];
-      if (first.fileUrl) {
-        play(first.id, first.fileUrl, { title: first.title, artist: first.artist, coverUrl: first.coverUrl });
-      }
-    }
-  }, [data, play]);
 
   if (isLoading) {
     return (
@@ -147,18 +215,27 @@ export default function AlbumPage() {
                 </span>
               )}
             </div>
-            <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
+            <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center" }}>
               <button
-                onClick={handlePlayAll}
+                onClick={playDjIntroThenAlbum}
+                disabled={djLoading}
                 style={{
                   display: "flex", alignItems: "center", gap: 6,
                   padding: "10px 24px", background: "linear-gradient(135deg, #a06bff 0%, #ff4fd8 100%)",
-                  border: "none", borderRadius: 24, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
+                  border: "none", borderRadius: 24, color: "#fff", fontWeight: 700, fontSize: 14,
+                  cursor: djLoading ? "wait" : "pointer",
+                  opacity: djLoading ? 0.7 : 1,
                 }}
                 data-testid="button-play-album"
               >
-                <Play size={16} /> Play Album
+                <Play size={16} /> {djLoading ? "Loading DJ..." : "Play Album"}
               </button>
+              {djPlaying && (
+                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#a06bff", fontWeight: 600 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#a06bff", animation: "pulse 1s infinite" }} />
+                  DJ William Allen introducing...
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -182,6 +259,13 @@ export default function AlbumPage() {
           )}
         </div>
       </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
+        }
+      `}</style>
     </div>
   );
 }
