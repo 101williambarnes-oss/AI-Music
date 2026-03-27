@@ -453,6 +453,22 @@ export default function Home() {
               </div>
             )}
           </section>
+
+          <section className="mockup-panel" data-testid="section-jukebox-promo">
+            <div className="mockup-panel-header">
+              <span className="mockup-panel-title">Jukebox</span>
+              <a href="/jukebox" className="mockup-see-all" data-testid="link-jukebox-see-all">Open Jukebox <ChevronRight size={13} /></a>
+            </div>
+            <a href="/jukebox" style={{ display: "block", padding: "16px", textDecoration: "none", textAlign: "center" }} data-testid="link-jukebox-promo">
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "18px 20px", borderRadius: 12, background: "linear-gradient(135deg, rgba(160,107,255,.1), rgba(255,79,216,.06))", border: "1px solid rgba(160,107,255,.2)" }}>
+                <Music size={22} style={{ color: "#a06bff" }} />
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#eaf0ff" }}>Browse the Jukebox</div>
+                  <div style={{ fontSize: 11, color: "rgba(170,182,232,.5)", marginTop: 2 }}>Visual grid of tracks with cover art</div>
+                </div>
+              </div>
+            </a>
+          </section>
         </div>
       </div>
 

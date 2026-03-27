@@ -221,12 +221,20 @@ export default function AlbumPage() {
   }, [albumId]);
 
   const albumTrackIds = data?.tracks?.map(t => t.id) ?? [];
-  const isAlbumPlaying = currentTrackId !== null && albumTrackIds.includes(currentTrackId) && isPlaying;
-  const isAlbumActive = currentTrackId !== null && albumTrackIds.includes(currentTrackId);
+  const isAlbumPlaying = djPlaying || (currentTrackId !== null && albumTrackIds.includes(currentTrackId) && isPlaying);
+  const isAlbumActive = djPlaying || (currentTrackId !== null && albumTrackIds.includes(currentTrackId));
 
-  const playDjIntroThenAlbum = useCallback(async () => {
+  const handleAlbumPlayToggle = useCallback(async () => {
     if (!data?.tracks || data.tracks.length === 0) return;
     if (!data.album) return;
+
+    if (djAudioRef.current) {
+      djAudioRef.current.pause();
+      djAudioRef.current = null;
+      setDjPlaying(false);
+      setDjLoading(false);
+      return;
+    }
 
     const trackIds = data.tracks.map(t => t.id);
     if (currentTrackId !== null && trackIds.includes(currentTrackId)) {
@@ -256,6 +264,7 @@ export default function AlbumPage() {
           const audio = new Audio(djIntroUrl);
           djAudioRef.current = audio;
           setDjPlaying(true);
+          setDjLoading(false);
 
           audio.onended = () => {
             setDjPlaying(false);
@@ -277,8 +286,6 @@ export default function AlbumPage() {
             djAudioRef.current = null;
             play(firstTrack.id, firstTrack.fileUrl!, { title: firstTrack.title, artist: firstTrack.artist, coverUrl: getTrackThumbnail(firstTrack) });
           });
-
-          setDjLoading(false);
           return;
         }
       }
@@ -399,7 +406,7 @@ export default function AlbumPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                 <button
-                  onClick={playDjIntroThenAlbum}
+                  onClick={handleAlbumPlayToggle}
                   disabled={djLoading || tracks.length === 0}
                   style={{
                     display: "flex", alignItems: "center", gap: 8,
