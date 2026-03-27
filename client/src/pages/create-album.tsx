@@ -43,6 +43,9 @@ export default function CreateAlbum() {
   const [uploadTitle, setUploadTitle] = useState("");
   const [uploadGenre, setUploadGenre] = useState("Other");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [needsLocation, setNeedsLocation] = useState(false);
   const bulkFileInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -62,6 +65,14 @@ export default function CreateAlbum() {
                 if (data.user) {
                   localStorage.setItem("hwm_user", JSON.stringify(data.user));
                   setUser(data.user);
+                  if (data.user.creatorId) {
+                    fetch(`/api/creators/${data.user.creatorId}`)
+                      .then(cr => cr.json())
+                      .then(cd => {
+                        if (!cd.creator?.city || !cd.creator?.state) setNeedsLocation(true);
+                      })
+                      .catch(() => {});
+                  }
                 } else {
                   localStorage.removeItem("hwm_user");
                   setUser(null);
@@ -159,6 +170,8 @@ export default function CreateAlbum() {
         formData.append("aiTools", JSON.stringify([]));
         formData.append("explicit", "false");
         if (user?.id) formData.append("userId", String(user.id));
+        if (city.trim()) formData.append("city", city.trim());
+        if (state.trim()) formData.append("state", state.trim());
 
         try {
           const res = await fetch("/api/tracks/upload", { method: "POST", body: formData, credentials: "include" });
@@ -407,6 +420,33 @@ export default function CreateAlbum() {
                       {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
                     </select>
                   </div>
+
+                  {needsLocation && (
+                    <div style={{ marginBottom: 12, display: "flex", gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#aab6e8", marginBottom: 4 }}>City</label>
+                        <input
+                          type="text"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          placeholder="Your city"
+                          style={{ width: "100%", padding: "8px 12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(108,240,255,.15)", borderRadius: 8, color: "#eaf0ff", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                          data-testid="input-album-city"
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#aab6e8", marginBottom: 4 }}>State</label>
+                        <input
+                          type="text"
+                          value={state}
+                          onChange={(e) => setState(e.target.value)}
+                          placeholder="Your state"
+                          style={{ width: "100%", padding: "8px 12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(108,240,255,.15)", borderRadius: 8, color: "#eaf0ff", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                          data-testid="input-album-state"
+                        />
+                      </div>
+                    </div>
+                  )}
 
                   <div style={{ borderTop: "1px solid rgba(108,240,255,.08)", paddingTop: 12, marginTop: 4 }}>
                     <p style={{ fontSize: 11, color: "rgba(170,182,232,.35)", marginBottom: 8 }}>Or add one song at a time:</p>
