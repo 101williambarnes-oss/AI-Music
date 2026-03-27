@@ -58,7 +58,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [currentFileUrl, setCurrentFileUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPlayingIntro, setIsPlayingIntro] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRef = useRef<HTMLVideoElement | null>(null);
   const currentTrackIdRef = useRef<number | null>(null);
   const countedPlaysRef = useRef<Set<number>>(new Set());
   const playedIntrosRef = useRef<Set<number>>(new Set());
@@ -77,7 +77,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
 
-  const primeAudio = useCallback((audio: HTMLAudioElement) => {
+  const primeAudio = useCallback((audio: HTMLVideoElement) => {
     if (primedRef.current) return;
     primedRef.current = true;
     audio.src = SILENCE_DATA_URI;
@@ -88,7 +88,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }).catch(() => {});
   }, []);
 
-  const loadAndPlay = useCallback((audio: HTMLAudioElement, url: string) => {
+  const loadAndPlay = useCallback((audio: HTMLVideoElement, url: string) => {
     audio.oncanplay = null;
     audio.onerror = null;
     loadingRef.current = true;
@@ -147,9 +147,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   useEffect(() => {
-    const audio = new Audio();
+    const audio = document.createElement("video");
     audio.setAttribute("playsinline", "true");
     audio.preload = "auto";
+    audio.style.display = "none";
+    document.body.appendChild(audio);
     audioRef.current = audio;
 
     audio.addEventListener("ended", () => {
@@ -182,7 +184,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setIsPlaying(true);
     });
 
-    return () => { audio.pause(); };
+    return () => { audio.pause(); audio.remove(); };
   }, [loadAndPlay]);
 
   const countPlay = useCallback((trackId: number) => {

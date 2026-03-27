@@ -11,7 +11,7 @@ function formatTime(seconds: number): string {
 
 function isVideoUrl(url: string | null): boolean {
   if (!url) return false;
-  return /\.(mp4|webm|mov)$/i.test(url);
+  return /\.(mp4|m4v|webm|mov)$/i.test(url) || /\/video\/upload\//i.test(url);
 }
 
 export function PlayerBar() {
