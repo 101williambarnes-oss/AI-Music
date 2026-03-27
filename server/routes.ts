@@ -977,22 +977,29 @@ export async function registerRoutes(
 
   app.get("/api/home-data", async (_req, res) => {
     try {
-      const [top25, trendingTracks, newTracks, allCreators] = await Promise.all([
+      const [top25, trendingTracks, newTracks, allCreators, allAlbums] = await Promise.all([
         storage.getTop25ByLikes(),
         storage.getTrendingTracks(),
         storage.getNewTracks(),
         storage.getCreators(),
+        storage.getAllAlbums(),
       ]);
       const trackIds = [...new Set([...top25, ...trendingTracks, ...newTracks].map(t => t.id))];
       const likeCounts: Record<number, number> = {};
       await Promise.all(trackIds.map(async (id) => {
         likeCounts[id] = await storage.getLikeCount(id);
       }));
+      const albumsWithInfo = await Promise.all(allAlbums.slice(0, 6).map(async (album) => {
+        const tracks = await storage.getAlbumTracks(album.id);
+        const creator = await storage.getCreatorById(album.creatorId);
+        return { ...album, trackCount: tracks.length, creatorName: creator?.name || "Unknown" };
+      }));
       res.json({
         top25: top25.slice(0, 8).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 })),
         trending: trendingTracks.slice(0, 8).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 })),
         newSongs: newTracks.slice(0, 6).map(t => ({ ...t, likeCount: likeCounts[t.id] || 0 })),
         newCreators: [...allCreators].sort((a, b) => b.id - a.id).slice(0, 6),
+        albums: albumsWithInfo,
       });
     } catch (error) {
       console.error("Failed to fetch home data:", error);

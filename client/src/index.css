@@ -3005,3 +3005,7 @@
     height: 36px;
   }
 }
+
+.mockup-album-row:hover {
+  background: rgba(160,107,255,.08);
+}

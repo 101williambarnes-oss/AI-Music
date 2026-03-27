@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { type Track, type Creator } from "@shared/schema";
+import { type Track, type Creator, type Album } from "@shared/schema";
 import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, Info, Disc3, GripVertical, LogOut } from "lucide-react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { useLocation } from "wouter";
@@ -11,11 +11,14 @@ type AuthUser = { id: number; name: string; email: string; creatorId: number | n
 
 type TrackWithLikes = Track & { likeCount?: number };
 
+type AlbumWithInfo = Album & { trackCount: number; creatorName: string };
+
 type HomeData = {
   top25: TrackWithLikes[];
   trending: TrackWithLikes[];
   newSongs: TrackWithLikes[];
   newCreators: Creator[];
+  albums: AlbumWithInfo[];
 };
 
 function Top25Row({ track, index }: { track: TrackWithLikes; index: number }) {
@@ -205,6 +208,7 @@ export default function Home() {
   const trending = cleanFilter(homeData?.trending || []);
   const newSongs = cleanFilter(homeData?.newSongs || []);
   const newCreators = homeData?.newCreators || [];
+  const albums = homeData?.albums || [];
 
   return (
     <div className="hwm-app mockup-bg">
@@ -369,6 +373,55 @@ export default function Home() {
                       )}
                     </div>
                     <span className="mockup-creator-name">{creator.name}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="mockup-panel" data-testid="section-albums">
+            <div className="mockup-panel-header">
+              <span className="mockup-panel-title">New Albums</span>
+              <a href="/albums" className="mockup-see-all" data-testid="link-albums-see-all">See All <ChevronRight size={13} /></a>
+            </div>
+            {isLoading ? (
+              <div className="mockup-loading">Loading...</div>
+            ) : albums.length === 0 ? (
+              <div style={{ padding: "20px 16px", textAlign: "center", color: "rgba(170,182,232,.4)", fontSize: 13 }}>No albums yet</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "8px 0" }}>
+                {albums.map((album) => (
+                  <a
+                    key={album.id}
+                    href={`/album/${album.id}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "8px 14px",
+                      textDecoration: "none",
+                      borderRadius: 8,
+                      transition: "background .2s",
+                    }}
+                    className="mockup-album-row"
+                    data-testid={`album-card-${album.id}`}
+                  >
+                    <div style={{
+                      width: 48, height: 48, borderRadius: 8, overflow: "hidden",
+                      background: "rgba(160,107,255,.08)", flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      border: "1px solid rgba(108,240,255,.1)",
+                    }}>
+                      {album.coverUrl ? (
+                        <img src={album.coverUrl} alt={album.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <Disc3 size={22} style={{ color: "rgba(160,107,255,.3)" }} />
+                      )}
+                    </div>
+                    <div style={{ flex: 1, overflow: "hidden" }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{album.title}</div>
+                      <div style={{ fontSize: 11, color: "rgba(170,182,232,.5)" }}>{album.creatorName} · {album.trackCount} track{album.trackCount !== 1 ? "s" : ""}</div>
+                    </div>
                   </a>
                 ))}
               </div>
