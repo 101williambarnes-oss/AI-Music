@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator, type Album } from "@shared/schema";
-import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, Info, Disc3, GripVertical, LogOut } from "lucide-react";
+import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, Info, Disc3, GripVertical, LogOut, Shield } from "lucide-react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { useLocation } from "wouter";
 import { useAudioPlayer } from "@/lib/audioPlayer";
@@ -230,6 +230,9 @@ export default function Home() {
             )}
             <a href="/jukebox" data-testid="link-quick-jukebox">Jukebox</a>
             <a href="/about" data-testid="link-quick-about">About Us</a>
+            {user && user.id === 2 && (
+              <a href="/admin" data-testid="link-mobile-admin">Admin</a>
+            )}
           </nav>
         </div>
         <div className="mockup-topbar-row2">
@@ -295,6 +298,11 @@ export default function Home() {
                 <a href={user.creatorId ? `/creator/${user.creatorId}` : "/upload"} className="mockup-nav-user" data-testid="link-user-profile">
                   <User size={14} /> {user.name}
                 </a>
+                {user.id === 2 && (
+                  <a href="/admin" className="mockup-nav-auth-btn mockup-nav-creator" data-testid="link-admin" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <Shield size={13} /> Admin
+                  </a>
+                )}
                 <button
                   className="mockup-nav-auth-btn mockup-nav-logout"
                   onClick={() => {
