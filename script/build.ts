@@ -9,6 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function buildAll() {
+  console.log("cleaning old build artifacts...");
   await rm("dist", { recursive: true, force: true });
 
   process.env.NODE_ENV = "production";
@@ -27,7 +28,7 @@ async function buildAll() {
     },
     root: path.resolve(__dirname, "..", "client"),
     build: {
-      outDir: path.resolve(__dirname, "..", "dist/client"),
+      outDir: path.resolve(__dirname, "..", "dist/public"),
       emptyOutDir: true,
     },
   });
