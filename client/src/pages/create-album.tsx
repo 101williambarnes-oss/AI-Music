@@ -38,6 +38,7 @@ export default function CreateAlbum() {
   const [albumItems, setAlbumItems] = useState<AlbumTrackItem[]>([]);
   const [newUploads, setNewUploads] = useState<UploadedNewTrack[]>([]);
   const [creating, setCreating] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"platform" | "upload">("platform");
   const [uploadTitle, setUploadTitle] = useState("");
   const [uploadGenre, setUploadGenre] = useState("Other");
@@ -175,8 +176,9 @@ export default function CreateAlbum() {
       queryClient.invalidateQueries({ queryKey: ["/api/creators", user?.creatorId, "albums"] });
       queryClient.invalidateQueries({ queryKey: ["/api/creators", user?.creatorId] });
       navigate(`/album/${album.id}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to create album:", err);
+      setPublishError(err?.message || "Something went wrong. Please try again.");
     } finally {
       setCreating(false);
     }
@@ -511,37 +513,70 @@ export default function CreateAlbum() {
                 )}
               </div>
 
-              <div style={{ padding: "14px 18px 18px" }}>
-                {!coverFile && albumItems.length > 0 && title.trim() && (
-                  <div style={{ fontSize: 11, color: "#ff4fd8", textAlign: "center", marginBottom: 8, fontWeight: 600 }}>
-                    Upload a cover image to finish
+              <div style={{ padding: "16px 18px 20px" }}>
+                {publishError && (
+                  <div style={{
+                    background: "rgba(255,79,79,.12)", border: "1px solid rgba(255,79,79,.3)", borderRadius: 10,
+                    padding: "10px 14px", marginBottom: 12, fontSize: 12, color: "#ff6b6b", fontWeight: 600, textAlign: "center",
+                  }} data-testid="publish-error">
+                    {publishError}
                   </div>
                 )}
-                {coverFile && albumItems.length === 0 && title.trim() && (
-                  <div style={{ fontSize: 11, color: "#ff4fd8", textAlign: "center", marginBottom: 8, fontWeight: 600 }}>
-                    Add at least one song to finish
+
+                {!title.trim() && (
+                  <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)", textAlign: "center", marginBottom: 8 }}>
+                    Enter an album title to get started
                   </div>
                 )}
+                {title.trim() && !coverFile && (
+                  <div style={{ fontSize: 12, color: "#ff4fd8", textAlign: "center", marginBottom: 8, fontWeight: 600 }}>
+                    Tap the cover area above to add album art
+                  </div>
+                )}
+                {title.trim() && coverFile && albumItems.length === 0 && (
+                  <div style={{ fontSize: 12, color: "#ff4fd8", textAlign: "center", marginBottom: 8, fontWeight: 600 }}>
+                    Add at least one song to your album
+                  </div>
+                )}
+
                 <button
-                  onClick={handleCreate}
+                  onClick={() => { setPublishError(null); handleCreate(); }}
                   disabled={!title.trim() || albumItems.length === 0 || !coverFile || creating}
                   style={{
-                    width: "100%", padding: "16px 0",
+                    width: "100%", padding: "20px 0",
                     background: title.trim() && albumItems.length > 0 && coverFile && !creating
                       ? "linear-gradient(135deg, #a06bff 0%, #ff4fd8 100%)"
-                      : "rgba(170,182,232,.12)",
-                    border: "none", borderRadius: 28,
-                    color: title.trim() && albumItems.length > 0 && coverFile && !creating ? "#fff" : "rgba(170,182,232,.3)",
-                    fontWeight: 800, fontSize: 17,
+                      : "rgba(170,182,232,.08)",
+                    border: title.trim() && albumItems.length > 0 && coverFile && !creating
+                      ? "2px solid rgba(255,79,216,.4)"
+                      : "2px solid rgba(170,182,232,.1)",
+                    borderRadius: 30,
+                    color: title.trim() && albumItems.length > 0 && coverFile && !creating ? "#fff" : "rgba(170,182,232,.25)",
+                    fontWeight: 900, fontSize: 20, textTransform: "uppercase" as const,
                     cursor: title.trim() && albumItems.length > 0 && coverFile && !creating ? "pointer" : "not-allowed",
-                    boxShadow: title.trim() && albumItems.length > 0 && coverFile && !creating ? "0 4px 20px rgba(160,107,255,.3)" : "none",
-                    transition: "all .2s",
-                    letterSpacing: 0.5,
+                    boxShadow: title.trim() && albumItems.length > 0 && coverFile && !creating
+                      ? "0 6px 30px rgba(160,107,255,.4), 0 0 60px rgba(255,79,216,.15)"
+                      : "none",
+                    transition: "all .3s",
+                    letterSpacing: 1.5,
                   }}
                   data-testid="button-create-album"
                 >
-                  {creating ? "Publishing Album..." : title.trim() && albumItems.length > 0 && coverFile ? `Finish & Publish Album` : `Finish & Publish Album`}
+                  {creating ? (
+                    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+                      <Loader2 size={20} style={{ animation: "spin 1s linear infinite" }} />
+                      Publishing...
+                    </span>
+                  ) : (
+                    `PUBLISH ALBUM`
+                  )}
                 </button>
+
+                {title.trim() && albumItems.length > 0 && coverFile && !creating && (
+                  <p style={{ fontSize: 10, color: "rgba(170,182,232,.35)", textAlign: "center", marginTop: 8 }}>
+                    Your album will appear in the Albums section immediately
+                  </p>
+                )}
               </div>
             </div>
           </div>
