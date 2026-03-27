@@ -839,8 +839,8 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/cloudinary/sign", async (req, res) => {
-    const userId = req.session.userId;
+  app.post("/api/cloudinary/sign", express.json(), async (req, res) => {
+    const userId = req.session.userId || req.body?.userId;
     if (!userId) {
       return res.status(401).json({ message: "You must be signed in to upload" });
     }
