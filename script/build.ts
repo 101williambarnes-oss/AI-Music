@@ -3,6 +3,10 @@ import { build as viteBuild } from "vite";
 import { rm } from "fs/promises";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function buildAll() {
   await rm("dist", { recursive: true, force: true });
@@ -16,14 +20,14 @@ async function buildAll() {
     plugins: [react()],
     resolve: {
       alias: {
-        "@": path.resolve(import.meta.dirname, "..", "client", "src"),
-        "@shared": path.resolve(import.meta.dirname, "..", "shared"),
-        "@assets": path.resolve(import.meta.dirname, "..", "attached_assets"),
+        "@": path.resolve(__dirname, "..", "client", "src"),
+        "@shared": path.resolve(__dirname, "..", "shared"),
+        "@assets": path.resolve(__dirname, "..", "attached_assets"),
       },
     },
-    root: path.resolve(import.meta.dirname, "..", "client"),
+    root: path.resolve(__dirname, "..", "client"),
     build: {
-      outDir: path.resolve(import.meta.dirname, "..", "dist/public"),
+      outDir: path.resolve(__dirname, "..", "dist/public"),
       emptyOutDir: true,
     },
   });
