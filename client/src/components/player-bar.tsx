@@ -1,18 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { getTrackThumbnail } from "@/lib/utils";
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Heart, List, Monitor, Menu, Maximize2, Minimize2 } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Heart, List, Monitor, Menu } from "lucide-react";
 
 function formatTime(seconds: number): string {
   if (!seconds || !isFinite(seconds)) return "0:00";
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function isVideoUrl(url: string | null): boolean {
-  if (!url) return false;
-  return /\.(mp4|m4v|webm|mov)$/i.test(url);
 }
 
 export function PlayerBar() {
@@ -26,14 +21,10 @@ export function PlayerBar() {
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
   const [trackMeta, setTrackMeta] = useState<{ title: string; artist: string; coverUrl: string | null } | null>(null);
-  const [videoVisible, setVideoVisible] = useState(false);
-  const [videoExpanded, setVideoExpanded] = useState(false);
   const progressRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const animRef = useRef<number>(0);
   const lastTrackIdRef = useRef<number | null>(null);
   const prevVolumeRef = useRef(1);
-  const isVideo = isVideoUrl(currentFileUrl);
 
   useEffect(() => {
     if (currentTrackId && currentTrackId !== lastTrackIdRef.current) {
@@ -58,35 +49,11 @@ export function PlayerBar() {
       const curTime = getCurrentTime();
       setProgress(curTime);
       setDuration(getDuration());
-      if (videoRef.current && isVideo && !isPlayingIntro) {
-        const diff = Math.abs(videoRef.current.currentTime - curTime);
-        if (diff > 0.3) {
-          videoRef.current.currentTime = curTime;
-        }
-      }
       animRef.current = requestAnimationFrame(tick);
     };
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
-  }, [getCurrentTime, getDuration, isVideo, isPlayingIntro]);
-
-  useEffect(() => {
-    if (!videoRef.current || !isVideo) return;
-    if (isPlaying && !isPlayingIntro) {
-      videoRef.current.play().catch(() => {});
-    } else {
-      videoRef.current.pause();
-    }
-  }, [isPlaying, isVideo, isPlayingIntro]);
-
-  useEffect(() => {
-    if (isVideo) {
-      setVideoExpanded(false);
-    } else {
-      setVideoVisible(false);
-      setVideoExpanded(false);
-    }
-  }, [currentTrackId, isVideo]);
+  }, [getCurrentTime, getDuration]);
 
   const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!progressRef.current || !duration) return;
@@ -96,27 +63,18 @@ export function PlayerBar() {
     setProgress(pct * duration);
   }, [duration, seek]);
 
-  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = parseFloat(e.target.value);
-    setVolume(v);
-    setMuted(v === 0);
-    setAudioVolume(v);
-    if (v > 0) prevVolumeRef.current = v;
-  }, [setAudioVolume]);
-
   const toggleMute = useCallback(() => {
     if (muted) {
-      const restored = prevVolumeRef.current || 1;
+      setAudioVolume(prevVolumeRef.current);
+      setVolume(prevVolumeRef.current);
       setMuted(false);
-      setVolume(restored);
-      setAudioVolume(restored);
     } else {
-      prevVolumeRef.current = volume;
-      setMuted(true);
-      setVolume(0);
+      prevVolumeRef.current = getVolume();
       setAudioVolume(0);
+      setVolume(0);
+      setMuted(true);
     }
-  }, [muted, volume, setAudioVolume]);
+  }, [muted, setAudioVolume, getVolume]);
 
   const handlePlayPause = useCallback(() => {
     if (isPlaying) pause();
@@ -131,46 +89,13 @@ export function PlayerBar() {
 
   return (
     <div className="player-bar" data-testid="player-bar">
-      {isVideo && videoVisible && currentFileUrl && (
-        <div className={`player-bar-video-container${videoExpanded ? " video-expanded" : ""}`} data-testid="player-bar-video">
-          <video
-            ref={videoRef}
-            src={currentFileUrl}
-            muted
-            playsInline
-            className="player-bar-video"
-          />
-          <div className="player-bar-video-controls">
-            <button
-              className="player-bar-video-toggle"
-              onClick={() => setVideoExpanded(!videoExpanded)}
-              data-testid="button-video-expand"
-            >
-              {videoExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </button>
-            <button
-              className="player-bar-video-toggle"
-              onClick={() => setVideoVisible(false)}
-              data-testid="button-video-close"
-              style={{ marginTop: 4 }}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
       <div className="player-bar-inner">
         <div className="player-bar-left-section">
-          <div className="player-bar-art" data-testid="player-bar-track-info" onClick={() => isVideo && setVideoVisible(!videoVisible)} style={isVideo ? { cursor: "pointer" } : undefined}>
+          <div className="player-bar-art" data-testid="player-bar-track-info">
             {(() => {
               const thumb = getTrackThumbnail({ coverUrl: trackMeta.coverUrl, fileUrl: currentFileUrl });
               if (thumb) {
-                return (
-                  <>
-                    <img src={thumb} alt={trackMeta.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    {isVideo && !videoVisible && <div className="player-bar-art-video-badge"><Maximize2 size={12} /></div>}
-                  </>
-                );
+                return <img src={thumb} alt={trackMeta.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />;
               }
               return <div className="player-bar-art-placeholder" />;
             })()}
