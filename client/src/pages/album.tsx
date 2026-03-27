@@ -443,7 +443,7 @@ export default function AlbumPage() {
                     if (!confirm("Are you sure you want to delete this album? This cannot be undone.")) return;
                     setDeleting(true);
                     try {
-                      await apiRequest("DELETE", `/api/albums/${album.id}`);
+                      await apiRequest("DELETE", `/api/albums/${album.id}`, { userId: user.id });
                       queryClient.invalidateQueries({ queryKey: ["/api/albums"] });
                       navigate("/albums");
                     } catch (err) {

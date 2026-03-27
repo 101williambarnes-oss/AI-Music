@@ -2135,7 +2135,7 @@ ONLY output the spoken words. No quotes, no stage directions.`;
   });
 
   app.delete("/api/albums/:id", async (req: Request, res: Response) => {
-    const userId = req.session.userId;
+    const userId = req.session.userId || (req.body?.userId ? parseInt(req.body.userId) : undefined);
     if (!userId) return res.status(401).json({ message: "Not authenticated" });
 
     const albumId = parseInt(req.params.id);
