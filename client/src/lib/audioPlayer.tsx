@@ -91,9 +91,11 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const loadAndPlay = useCallback((audio: HTMLVideoElement, url: string) => {
     audio.oncanplay = null;
     audio.onerror = null;
+    audio.onloadeddata = null;
     loadingRef.current = true;
 
-    if (!url || url === "undefined") {
+    if (!url || url === "undefined" || url === "null") {
+      console.warn("[HWM Player] No valid URL to play:", url);
       loadingRef.current = false;
       setIsPlaying(false);
       return;
@@ -109,8 +111,10 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       settled = true;
       audio.oncanplay = null;
       audio.onerror = null;
+      audio.onloadeddata = null;
       loadingRef.current = false;
-      audio.play().catch(() => {
+      audio.play().catch((err) => {
+        console.warn("[HWM Player] play() rejected:", err?.message);
         setIsPlaying(false);
         loadingRef.current = false;
       });
@@ -121,7 +125,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       settled = true;
       audio.oncanplay = null;
       audio.onerror = null;
+      audio.onloadeddata = null;
       loadingRef.current = false;
+      console.warn("[HWM Player] Error loading:", url);
       if (playingIntroRef.current) {
         playingIntroRef.current = false;
         setIsPlayingIntro(false);
@@ -138,11 +144,20 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
     setTimeout(() => {
       if (!settled) {
-        onError();
+        console.warn("[HWM Player] Timeout loading, attempting play anyway:", url);
+        settled = true;
+        audio.oncanplay = null;
+        audio.onerror = null;
+        audio.onloadeddata = null;
+        loadingRef.current = false;
+        audio.play().catch(() => {
+          setIsPlaying(false);
+        });
       }
-    }, 15000);
+    }, 30000);
 
     audio.oncanplay = doPlay;
+    audio.onloadeddata = doPlay;
     audio.onerror = onError;
   }, []);
 
