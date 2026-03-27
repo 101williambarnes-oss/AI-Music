@@ -24,7 +24,7 @@ type AudioPlayerState = {
   pause: () => void;
   resume: () => void;
   stop: () => void;
-  toggle: (trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => void;
+  toggle: (trackId?: number, fileUrl?: string, meta?: TrackMeta, options?: PlayOptions) => void;
   seek: (time: number) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
@@ -93,10 +93,20 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     audio.onerror = null;
     loadingRef.current = true;
 
+    if (!url || url === "undefined") {
+      loadingRef.current = false;
+      setIsPlaying(false);
+      return;
+    }
+
     audio.src = url;
     audio.load();
 
+    let settled = false;
+
     const doPlay = () => {
+      if (settled) return;
+      settled = true;
       audio.oncanplay = null;
       audio.onerror = null;
       loadingRef.current = false;
@@ -107,6 +117,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     };
 
     const onError = () => {
+      if (settled) return;
+      settled = true;
       audio.oncanplay = null;
       audio.onerror = null;
       loadingRef.current = false;
@@ -123,6 +135,12 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       }
       setIsPlaying(false);
     };
+
+    setTimeout(() => {
+      if (!settled) {
+        onError();
+      }
+    }, 15000);
 
     audio.oncanplay = doPlay;
     audio.onerror = onError;
@@ -358,8 +376,22 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     loadingRef.current = false;
   }, [cancelPendingFetch]);
 
-  const toggle = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => {
+  const toggle = useCallback((trackId?: number, fileUrl?: string, meta?: TrackMeta, options?: PlayOptions) => {
     const audio = audioRef.current;
+
+    if (trackId === undefined || fileUrl === undefined) {
+      if (isPlayingRef.current) {
+        if (loadingRef.current) {
+          stop();
+        } else {
+          pause();
+        }
+      } else if (audio && audio.src && !audio.src.startsWith("data:")) {
+        setIsPlaying(true);
+        audio.play().catch(() => setIsPlaying(false));
+      }
+      return;
+    }
 
     if (currentTrackIdRef.current === trackId && isPlayingRef.current) {
       if (loadingRef.current) {
