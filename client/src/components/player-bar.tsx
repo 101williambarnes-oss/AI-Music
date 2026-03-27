@@ -80,7 +80,6 @@ export function PlayerBar() {
 
   useEffect(() => {
     if (isVideo) {
-      setVideoVisible(true);
       setVideoExpanded(false);
     } else {
       setVideoVisible(false);
