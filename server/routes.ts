@@ -2059,8 +2059,8 @@ ONLY output the spoken words. No quotes, no stage directions.`;
 
   app.post("/api/albums", upload.single("cover"), async (req: Request, res: Response) => {
     try {
-      console.log("Album creation request - session userId:", req.session.userId, "file:", req.file?.originalname, "title:", req.body?.title);
-      const userId = req.session.userId;
+      const userId = req.session.userId || (req.body?.userId ? parseInt(req.body.userId) : undefined);
+      console.log("Album creation request - session userId:", req.session.userId, "body userId:", req.body?.userId, "resolved:", userId, "file:", req.file?.originalname, "title:", req.body?.title);
       if (!userId) return res.status(401).json({ message: "Not authenticated" });
       const creator = await storage.getCreatorByUserId(userId);
       if (!creator) return res.status(403).json({ message: "You must be a creator to make albums" });
@@ -2089,7 +2089,7 @@ ONLY output the spoken words. No quotes, no stage directions.`;
   });
 
   app.post("/api/albums/:id/tracks", async (req: Request, res: Response) => {
-    const userId = req.session.userId;
+    const userId = req.session.userId || (req.body?.userId ? parseInt(req.body.userId) : undefined);
     if (!userId) return res.status(401).json({ message: "Not authenticated" });
 
     const albumId = parseInt(req.params.id);

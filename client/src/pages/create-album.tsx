@@ -187,6 +187,7 @@ export default function CreateAlbum() {
       formData.append("title", title.trim());
       if (description.trim()) formData.append("description", description.trim());
       if (coverFile) formData.append("cover", coverFile);
+      if (user?.id) formData.append("userId", String(user.id));
 
       const res = await fetch("/api/albums", { method: "POST", body: formData, credentials: "include" });
       if (!res.ok) {
@@ -202,7 +203,7 @@ export default function CreateAlbum() {
         else trackId = uploadedTrackIds[item.tempId];
 
         if (trackId) {
-          await apiRequest("POST", `/api/albums/${album.id}/tracks`, { trackId, trackOrder: i });
+          await apiRequest("POST", `/api/albums/${album.id}/tracks`, { trackId, trackOrder: i, userId: user?.id });
         }
       }
 
