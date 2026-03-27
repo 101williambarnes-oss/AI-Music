@@ -1,6 +1,6 @@
 import { build as esbuild } from "esbuild";
 import { build as viteBuild } from "vite";
-import { rm, rename, writeFile, readdir } from "fs/promises";
+import { rm, mkdir } from "fs/promises";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -32,24 +32,7 @@ async function buildAll() {
     },
   });
 
-  console.log("moving index.html out of public dir to bypass CDN cache...");
-  await rename(
-    path.resolve(__dirname, "..", "dist/public/index.html"),
-    path.resolve(__dirname, "..", "dist/index.html")
-  );
-
-  console.log("creating CDN cache shim for old bundle name...");
-  const assetsDir = path.resolve(__dirname, "..", "dist/public/assets");
-  const files = await readdir(assetsDir);
-  const realJsFile = files.find(f => f.startsWith("index-") && f.endsWith(".js"));
-  if (realJsFile) {
-    const oldCachedName = "index-CYNsIIY0.js";
-    if (realJsFile !== oldCachedName) {
-      const shimCode = `import("/assets/${realJsFile}");`;
-      await writeFile(path.resolve(assetsDir, oldCachedName), shimCode);
-      console.log(`Created shim: ${oldCachedName} -> ${realJsFile}`);
-    }
-  }
+  await mkdir(path.resolve(__dirname, "..", "dist/empty"), { recursive: true });
 
   console.log("building server...");
   await esbuild({
