@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
 import { type Track, type Creator, type Album } from "@shared/schema";
-import { Disc3, Play, Pause, Music, User, Calendar, ChevronRight, Trash2 } from "lucide-react";
+import { Disc3, Play, Pause, Music, User, Calendar, ChevronRight, Trash2, Share2, Heart } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -110,6 +110,8 @@ export default function AlbumPage() {
   const [djPlayed, setDjPlayed] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [albumLiked, setAlbumLiked] = useState(false);
+  const [albumLikeCount, setAlbumLikeCount] = useState(0);
   const djAudioRef = useRef<HTMLAudioElement | null>(null);
   const albumTracksRef = useRef<Track[]>([]);
 
@@ -119,6 +121,45 @@ export default function AlbumPage() {
       if (stored) setUser(JSON.parse(stored));
     } catch {}
   }, []);
+
+  useEffect(() => {
+    if (!albumId) return;
+    const likedAlbums = JSON.parse(localStorage.getItem("hwm_liked_albums") || "[]");
+    setAlbumLiked(likedAlbums.includes(Number(albumId)));
+  }, [albumId]);
+
+  useEffect(() => {
+    if (!data?.tracks) return;
+    let total = 0;
+    Promise.all(data.tracks.map(t =>
+      fetch(`/api/tracks/${t.id}/likes`).then(r => r.json()).then(d => { total += d.count || 0; }).catch(() => {})
+    )).then(() => setAlbumLikeCount(total));
+  }, [data?.tracks]);
+
+  function handleAlbumLike() {
+    const likedAlbums = JSON.parse(localStorage.getItem("hwm_liked_albums") || "[]");
+    if (albumLiked) {
+      const updated = likedAlbums.filter((id: number) => id !== Number(albumId));
+      localStorage.setItem("hwm_liked_albums", JSON.stringify(updated));
+      setAlbumLiked(false);
+    } else {
+      likedAlbums.push(Number(albumId));
+      localStorage.setItem("hwm_liked_albums", JSON.stringify(likedAlbums));
+      setAlbumLiked(true);
+    }
+  }
+
+  function handleAlbumShare() {
+    const shareUrl = `${window.location.origin}/album/${albumId}`;
+    const shareText = data ? `Check out "${data.album.title}" on Hit Wave Media!` : "Check out this album on Hit Wave Media!";
+    if (typeof navigator !== "undefined" && navigator.share) {
+      navigator.share({ title: data ? `${data.album.title} — Hit Wave Media` : "Hit Wave Media", text: shareText, url: shareUrl }).catch(() => {});
+    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).then(() => alert("Album link copied!")).catch(() => prompt("Copy this link:", shareUrl));
+    } else {
+      prompt("Copy this link:", shareUrl);
+    }
+  }
 
   const { data, isLoading } = useQuery<AlbumData>({
     queryKey: ["/api/albums", albumId],
@@ -357,6 +398,36 @@ export default function AlbumPage() {
                   data-testid="button-play-album"
                 >
                   <Play size={18} fill="#fff" /> {djLoading ? "Loading DJ..." : "Play Album"}
+                </button>
+                <button
+                  onClick={handleAlbumLike}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "12px 20px",
+                    background: albumLiked ? "rgba(255,79,216,.15)" : "rgba(255,255,255,.06)",
+                    border: `1px solid ${albumLiked ? "rgba(255,79,216,.4)" : "rgba(108,240,255,.15)"}`,
+                    borderRadius: 24, color: albumLiked ? "#ff4fd8" : "#aab6e8", fontWeight: 600, fontSize: 14,
+                    cursor: "pointer",
+                    transition: "all .2s",
+                  }}
+                  data-testid="button-like-album"
+                >
+                  <Heart size={16} fill={albumLiked ? "#ff4fd8" : "none"} /> {albumLikeCount > 0 ? albumLikeCount : ""}
+                </button>
+                <button
+                  onClick={handleAlbumShare}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "12px 20px",
+                    background: "rgba(255,255,255,.06)",
+                    border: "1px solid rgba(108,240,255,.15)",
+                    borderRadius: 24, color: "#aab6e8", fontWeight: 600, fontSize: 14,
+                    cursor: "pointer",
+                    transition: "all .2s",
+                  }}
+                  data-testid="button-share-album"
+                >
+                  <Share2 size={16} /> Share
                 </button>
                 {djPlaying && (
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#c9a0ff", fontWeight: 600 }}>
