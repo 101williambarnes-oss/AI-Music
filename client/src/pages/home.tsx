@@ -222,6 +222,7 @@ export default function Home() {
             <a href="/trending" data-testid="link-quick-trending">Trending</a>
             <a href="/new-songs" data-testid="link-quick-new-songs">New Songs</a>
             <a href="/new-creators" data-testid="link-quick-new-creators">New Creators</a>
+            <a href="/albums" data-testid="link-quick-albums">Albums</a>
             <a href="/playlist" data-testid="link-quick-playlist">My Playlist</a>
             {user && user.creatorId && (
               <a href={`/creator/${user.creatorId}`} data-testid="link-mobile-my-library">My Library</a>
