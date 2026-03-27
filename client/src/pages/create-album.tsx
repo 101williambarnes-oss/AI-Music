@@ -42,6 +42,7 @@ export default function CreateAlbum() {
   const [uploadTitle, setUploadTitle] = useState("");
   const [uploadGenre, setUploadGenre] = useState("Other");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const bulkFileInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -309,23 +310,65 @@ export default function CreateAlbum() {
               {activeTab === "upload" && (
                 <>
                   <p style={{ fontSize: 11, color: "rgba(170,182,232,.4)", marginBottom: 12 }}>
-                    Upload a new song from your computer and add it directly to this album.
+                    Select multiple audio files at once — they'll all be added to your album automatically.
                   </p>
 
-                  <div style={{ marginBottom: 12 }}>
-                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#aab6e8", marginBottom: 4 }}>Song Title *</label>
+                  <div style={{ marginBottom: 16 }}>
+                    <button
+                      onClick={() => bulkFileInputRef.current?.click()}
+                      style={{
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        width: "100%", padding: "16px 0",
+                        background: "rgba(108,240,255,.08)",
+                        border: "2px dashed rgba(108,240,255,.25)",
+                        borderRadius: 12,
+                        color: "#6cf0ff",
+                        fontWeight: 700, fontSize: 14,
+                        cursor: "pointer",
+                        transition: "all .2s",
+                      }}
+                      data-testid="button-bulk-upload"
+                    >
+                      <Upload size={18} /> Choose Audio Files
+                    </button>
                     <input
-                      type="text"
-                      value={uploadTitle}
-                      onChange={(e) => setUploadTitle(e.target.value)}
-                      placeholder="Song title..."
-                      style={{ width: "100%", padding: "8px 12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(108,240,255,.15)", borderRadius: 8, color: "#eaf0ff", fontSize: 13, outline: "none", boxSizing: "border-box" }}
-                      data-testid="input-upload-title"
+                      ref={bulkFileInputRef}
+                      type="file"
+                      accept=".mp3,.wav,.ogg,.flac,.m4a,.aac,.mp4,.webm"
+                      multiple
+                      onChange={(e) => {
+                        const files = e.target.files;
+                        if (!files || files.length === 0) return;
+                        for (let i = 0; i < files.length; i++) {
+                          const file = files[i];
+                          const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ").replace(/\s+/g, " ").trim();
+                          const songTitle = nameWithoutExt.charAt(0).toUpperCase() + nameWithoutExt.slice(1);
+                          const tempId = `new-${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`;
+                          const newTrack: UploadedNewTrack = {
+                            tempId,
+                            title: songTitle,
+                            file,
+                            genre: uploadGenre,
+                            uploading: false,
+                            uploaded: false,
+                            trackId: null,
+                            error: null,
+                          };
+                          setNewUploads(prev => [...prev, newTrack]);
+                          setAlbumItems(prev => [...prev, { type: "new", tempId, title: songTitle }]);
+                        }
+                        if (bulkFileInputRef.current) bulkFileInputRef.current.value = "";
+                      }}
+                      style={{ display: "none" }}
+                      data-testid="input-bulk-files"
                     />
+                    <p style={{ fontSize: 10, color: "rgba(170,182,232,.3)", textAlign: "center", marginTop: 6 }}>
+                      MP3, WAV, OGG, FLAC, M4A, AAC supported — select as many as you want
+                    </p>
                   </div>
 
                   <div style={{ marginBottom: 12 }}>
-                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#aab6e8", marginBottom: 4 }}>Genre</label>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#aab6e8", marginBottom: 4 }}>Default Genre for uploads</label>
                     <select
                       value={uploadGenre}
                       onChange={(e) => setUploadGenre(e.target.value)}
@@ -336,35 +379,46 @@ export default function CreateAlbum() {
                     </select>
                   </div>
 
-                  <div style={{ marginBottom: 12 }}>
-                    <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#aab6e8", marginBottom: 4 }}>Audio File *</label>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".mp3,.wav,.ogg,.flac,.m4a,.aac,.mp4,.webm"
-                      onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                      style={{ width: "100%", padding: "8px 0", color: "rgba(170,182,232,.5)", fontSize: 12 }}
-                      data-testid="input-upload-file"
-                    />
+                  <div style={{ borderTop: "1px solid rgba(108,240,255,.08)", paddingTop: 12, marginTop: 4 }}>
+                    <p style={{ fontSize: 11, color: "rgba(170,182,232,.35)", marginBottom: 8 }}>Or add one song at a time:</p>
+                    <div style={{ marginBottom: 8 }}>
+                      <input
+                        type="text"
+                        value={uploadTitle}
+                        onChange={(e) => setUploadTitle(e.target.value)}
+                        placeholder="Song title..."
+                        style={{ width: "100%", padding: "8px 12px", background: "rgba(255,255,255,.06)", border: "1px solid rgba(108,240,255,.15)", borderRadius: 8, color: "#eaf0ff", fontSize: 13, outline: "none", boxSizing: "border-box" }}
+                        data-testid="input-upload-title"
+                      />
+                    </div>
+                    <div style={{ marginBottom: 8 }}>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".mp3,.wav,.ogg,.flac,.m4a,.aac,.mp4,.webm"
+                        onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                        style={{ width: "100%", padding: "6px 0", color: "rgba(170,182,232,.5)", fontSize: 11 }}
+                        data-testid="input-upload-file"
+                      />
+                    </div>
+                    <button
+                      onClick={handleAddUpload}
+                      disabled={!uploadFile || !uploadTitle.trim()}
+                      style={{
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        width: "100%", padding: "8px 0",
+                        background: uploadFile && uploadTitle.trim() ? "rgba(108,240,255,.12)" : "rgba(255,255,255,.04)",
+                        border: uploadFile && uploadTitle.trim() ? "1px solid rgba(108,240,255,.25)" : "1px solid rgba(108,240,255,.1)",
+                        borderRadius: 8,
+                        color: uploadFile && uploadTitle.trim() ? "#6cf0ff" : "rgba(170,182,232,.3)",
+                        fontWeight: 700, fontSize: 12,
+                        cursor: uploadFile && uploadTitle.trim() ? "pointer" : "not-allowed",
+                      }}
+                      data-testid="button-add-upload"
+                    >
+                      <Plus size={14} /> Add Single Song
+                    </button>
                   </div>
-
-                  <button
-                    onClick={handleAddUpload}
-                    disabled={!uploadFile || !uploadTitle.trim()}
-                    style={{
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                      width: "100%", padding: "10px 0",
-                      background: uploadFile && uploadTitle.trim() ? "rgba(108,240,255,.12)" : "rgba(255,255,255,.04)",
-                      border: uploadFile && uploadTitle.trim() ? "1px solid rgba(108,240,255,.25)" : "1px solid rgba(108,240,255,.1)",
-                      borderRadius: 8,
-                      color: uploadFile && uploadTitle.trim() ? "#6cf0ff" : "rgba(170,182,232,.3)",
-                      fontWeight: 700, fontSize: 13,
-                      cursor: uploadFile && uploadTitle.trim() ? "pointer" : "not-allowed",
-                    }}
-                    data-testid="button-add-upload"
-                  >
-                    <Plus size={14} /> Add Song to Album
-                  </button>
                 </>
               )}
             </div>
