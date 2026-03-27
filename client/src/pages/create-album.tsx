@@ -55,27 +55,21 @@ export default function CreateAlbum() {
       if (stored) {
         const parsed = JSON.parse(stored);
         setUser(parsed);
+        if (parsed.creatorId) {
+          fetch(`/api/creators/${parsed.creatorId}`)
+            .then(cr => cr.json())
+            .then(cd => {
+              if (!cd.creator?.city || !cd.creator?.state) setNeedsLocation(true);
+            })
+            .catch(() => {});
+        }
         fetch("/api/auth/me", { credentials: "include" })
           .then(r => {
-            if (!r.ok) {
-              localStorage.removeItem("hwm_user");
-              setUser(null);
-            } else {
+            if (r.ok) {
               return r.json().then(data => {
                 if (data.user) {
                   localStorage.setItem("hwm_user", JSON.stringify(data.user));
                   setUser(data.user);
-                  if (data.user.creatorId) {
-                    fetch(`/api/creators/${data.user.creatorId}`)
-                      .then(cr => cr.json())
-                      .then(cd => {
-                        if (!cd.creator?.city || !cd.creator?.state) setNeedsLocation(true);
-                      })
-                      .catch(() => {});
-                  }
-                } else {
-                  localStorage.removeItem("hwm_user");
-                  setUser(null);
                 }
               });
             }
