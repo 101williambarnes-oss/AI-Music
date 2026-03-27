@@ -88,6 +88,19 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }).catch(() => {});
   }, []);
 
+  const toAudioUrl = useCallback((url: string): string => {
+    try {
+      const parsed = new URL(url);
+      if (!parsed.hostname.endsWith('cloudinary.com')) return url;
+      if (!/\/video\/upload\//.test(parsed.pathname)) return url;
+      if (!/\.(mp4|m4v|mov|webm)$/i.test(parsed.pathname)) return url;
+      parsed.pathname = parsed.pathname.replace(/\/video\/upload\//, '/video/upload/f_mp3/').replace(/\.(mp4|m4v|mov|webm)$/i, '.mp3');
+      return parsed.toString();
+    } catch {
+      return url;
+    }
+  }, []);
+
   const loadAndPlay = useCallback((audio: HTMLAudioElement, url: string) => {
     audio.oncanplay = null;
     audio.onerror = null;
@@ -101,7 +114,8 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       return;
     }
 
-    audio.src = url;
+    const audioUrl = toAudioUrl(url);
+    audio.src = audioUrl;
     audio.load();
 
     let settled = false;
