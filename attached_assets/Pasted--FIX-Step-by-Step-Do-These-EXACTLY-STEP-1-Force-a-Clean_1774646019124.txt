@@ -1,0 +1,129 @@
+🔧 FIX — Step-by-Step (Do These EXACTLY)
+✅ STEP 1 — Force a Clean Build (CRITICAL)
+
+Inside your Repl shell:
+
+rm -rf dist build .cache node_modules
+npm install
+npm run build
+
+👉 This guarantees:
+
+No old JS files survive
+Only the new bundle exists
+✅ STEP 2 — VERIFY Build Output
+
+After building, check:
+
+ls dist/assets
+
+You should ONLY see:
+
+index-CmTF50CH.js
+
+🚨 If you still see index-CYNsIIY0.js, your build is dirty.
+
+✅ STEP 3 — Confirm index.html Points to NEW File
+
+Open:
+
+dist/index.html
+
+Make sure it references:
+
+<script src="/assets/index-CmTF50CH.js"></script>
+
+❗ If it still says CYNsIIY0, your build config is wrong.
+
+✅ STEP 4 — Check Your Replit Deployment Config
+
+In your .replit or deployment settings:
+
+Look for something like:
+
+[deployment]
+publicDir = "dist"
+
+👉 Make sure it's pointing to the SAME folder you just built.
+
+✅ STEP 5 — FORCE Replit to Forget Old Deployment
+
+This is the part most people miss.
+
+🔥 Do this:
+Go to Replit Deployments
+Delete the deployment completely
+Recreate it from scratch
+Redeploy
+
+👉 This clears the autoscale container cache
+
+✅ STEP 6 — Disable Browser + CDN Cache (TEST)
+
+Open your site with:
+
+https://hitwavemedia.com/?v=2
+
+or hard refresh:
+
+Ctrl + Shift + R
+✅ STEP 7 — Add Cache Busting Headers (VERY IMPORTANT)
+
+In your backend (Express or server), add:
+
+app.use((req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  next();
+});
+
+👉 This prevents Replit/CDN from serving stale files.
+
+✅ STEP 8 — (BEST LONG-TERM FIX)
+
+If you're using something like Vite:
+
+Add this to vite.config.js:
+
+build: {
+  emptyOutDir: true
+}
+
+👉 This ensures old bundles are deleted automatically.
+
+💥 Most Likely Your Exact Issue
+
+Based on everything you said:
+
+🔴 Replit Autoscale is serving an OLD deployment container with stale static files
+
+Even though:
+
+Backend redeploys ✔
+Frontend build runs ✔
+BUT static assets are cached in the container ❌
+
+👉 Deleting and recreating deployment usually fixes this instantly.
+
+🧪 Quick Test (Confirms the Problem)
+
+Open your live site → View source
+
+If you still see:
+
+index-CYNsIIY0.js
+
+👉 That proves 100%:
+
+Your deployed container is not using your latest build
+
+🚀 If You Want a Bulletproof Setup
+
+For your HitWave Media platform, I’d strongly recommend:
+
+Option A (Best)
+Frontend → deploy on Vercel
+Backend → keep on Replit
+Option B
+Serve frontend via CDN (Cloudflare)
+
+👉 This completely eliminates this class of problem.
