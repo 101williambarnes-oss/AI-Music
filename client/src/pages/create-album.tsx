@@ -457,23 +457,36 @@ export default function CreateAlbum() {
                 )}
               </div>
 
-              <div style={{ padding: "12px 18px 16px" }}>
+              <div style={{ padding: "14px 18px 18px" }}>
+                {!coverFile && albumItems.length > 0 && title.trim() && (
+                  <div style={{ fontSize: 11, color: "#ff4fd8", textAlign: "center", marginBottom: 8, fontWeight: 600 }}>
+                    Upload a cover image to finish
+                  </div>
+                )}
+                {coverFile && albumItems.length === 0 && title.trim() && (
+                  <div style={{ fontSize: 11, color: "#ff4fd8", textAlign: "center", marginBottom: 8, fontWeight: 600 }}>
+                    Add at least one song to finish
+                  </div>
+                )}
                 <button
                   onClick={handleCreate}
                   disabled={!title.trim() || albumItems.length === 0 || !coverFile || creating}
                   style={{
-                    width: "100%", padding: "12px 0",
+                    width: "100%", padding: "16px 0",
                     background: title.trim() && albumItems.length > 0 && coverFile && !creating
                       ? "linear-gradient(135deg, #a06bff 0%, #ff4fd8 100%)"
                       : "rgba(170,182,232,.12)",
-                    border: "none", borderRadius: 24,
+                    border: "none", borderRadius: 28,
                     color: title.trim() && albumItems.length > 0 && coverFile && !creating ? "#fff" : "rgba(170,182,232,.3)",
-                    fontWeight: 700, fontSize: 15,
+                    fontWeight: 800, fontSize: 17,
                     cursor: title.trim() && albumItems.length > 0 && coverFile && !creating ? "pointer" : "not-allowed",
+                    boxShadow: title.trim() && albumItems.length > 0 && coverFile && !creating ? "0 4px 20px rgba(160,107,255,.3)" : "none",
+                    transition: "all .2s",
+                    letterSpacing: 0.5,
                   }}
                   data-testid="button-create-album"
                 >
-                  {creating ? "Creating Album..." : `Create Album (${totalSongs} song${totalSongs !== 1 ? "s" : ""})`}
+                  {creating ? "Publishing Album..." : title.trim() && albumItems.length > 0 && coverFile ? `Finish & Publish Album` : `Finish & Publish Album`}
                 </button>
               </div>
             </div>
