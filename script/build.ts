@@ -27,7 +27,7 @@ async function buildAll() {
     },
     root: path.resolve(__dirname, "..", "client"),
     build: {
-      outDir: path.resolve(__dirname, "..", "dist/public"),
+      outDir: path.resolve(__dirname, "..", "dist/app"),
       emptyOutDir: true,
     },
   });
