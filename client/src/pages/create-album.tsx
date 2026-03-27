@@ -141,7 +141,10 @@ export default function CreateAlbum() {
 
         try {
           const res = await fetch("/api/tracks/upload", { method: "POST", body: formData, credentials: "include" });
-          if (!res.ok) throw new Error("Upload failed");
+          if (!res.ok) {
+            const errData = await res.json().catch(() => null);
+            throw new Error(errData?.message || `Upload failed (${res.status})`);
+          }
           const result = await res.json();
           uploadedTrackIds[nu.tempId] = result.track.id;
           setNewUploads(prev => prev.map(u => u.tempId === nu.tempId ? { ...u, uploading: false, uploaded: true, trackId: result.track.id } : u));
@@ -158,7 +161,10 @@ export default function CreateAlbum() {
       if (coverFile) formData.append("cover", coverFile);
 
       const res = await fetch("/api/albums", { method: "POST", body: formData, credentials: "include" });
-      if (!res.ok) throw new Error("Failed to create album");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.message || `Failed to create album (${res.status})`);
+      }
       const album = await res.json();
 
       for (let i = 0; i < albumItems.length; i++) {
