@@ -114,7 +114,7 @@ export default function CreateAlbum() {
   }, [uploadFile, uploadTitle, uploadGenre]);
 
   const handleCreate = useCallback(async () => {
-    if (!title.trim() || albumItems.length === 0) return;
+    if (!title.trim() || albumItems.length === 0 || !coverFile) return;
     setCreating(true);
 
     try {
@@ -389,6 +389,7 @@ export default function CreateAlbum() {
                   <div style={{ textAlign: "center" }}>
                     <Upload size={32} style={{ color: "rgba(160,107,255,.4)" }} />
                     <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)", marginTop: 6 }}>Tap to upload cover art</div>
+                    <div style={{ fontSize: 10, color: "#ff4fd8", marginTop: 4, fontWeight: 600 }}>Required *</div>
                   </div>
                 )}
                 {coverPreview && (
@@ -459,16 +460,16 @@ export default function CreateAlbum() {
               <div style={{ padding: "12px 18px 16px" }}>
                 <button
                   onClick={handleCreate}
-                  disabled={!title.trim() || albumItems.length === 0 || creating}
+                  disabled={!title.trim() || albumItems.length === 0 || !coverFile || creating}
                   style={{
                     width: "100%", padding: "12px 0",
-                    background: title.trim() && albumItems.length > 0 && !creating
+                    background: title.trim() && albumItems.length > 0 && coverFile && !creating
                       ? "linear-gradient(135deg, #a06bff 0%, #ff4fd8 100%)"
                       : "rgba(170,182,232,.12)",
                     border: "none", borderRadius: 24,
-                    color: title.trim() && albumItems.length > 0 && !creating ? "#fff" : "rgba(170,182,232,.3)",
+                    color: title.trim() && albumItems.length > 0 && coverFile && !creating ? "#fff" : "rgba(170,182,232,.3)",
                     fontWeight: 700, fontSize: 15,
-                    cursor: title.trim() && albumItems.length > 0 && !creating ? "pointer" : "not-allowed",
+                    cursor: title.trim() && albumItems.length > 0 && coverFile && !creating ? "pointer" : "not-allowed",
                   }}
                   data-testid="button-create-album"
                 >

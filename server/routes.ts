@@ -2028,11 +2028,9 @@ ONLY output the spoken words. No quotes, no stage directions.`;
 
     const { title, description } = req.body;
     if (!title) return res.status(400).json({ message: "Album title is required" });
+    if (!req.file) return res.status(400).json({ message: "Album cover image is required" });
 
-    let coverUrl: string | null = null;
-    if (req.file) {
-      coverUrl = await uploadToCloudinary(req.file.path, "image");
-    }
+    const coverUrl = await uploadToCloudinary(req.file.path, "image");
 
     const album = await storage.createAlbum({
       title,
