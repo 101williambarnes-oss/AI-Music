@@ -1962,7 +1962,7 @@ ONLY output the spoken words. No quotes, no stage directions.`;
 
       let logoPath = path.resolve("attached_assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png");
       if (!fs.existsSync(logoPath)) {
-        logoPath = path.resolve("dist/public/images/og-preview.png");
+        logoPath = path.resolve("dist/client/images/og-preview.png");
       }
       if (!fs.existsSync(logoPath)) {
         logoPath = path.resolve("client/public/images/og-preview.png");
