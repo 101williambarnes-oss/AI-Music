@@ -49,7 +49,28 @@ export default function CreateAlbum() {
   useEffect(() => {
     try {
       const stored = localStorage.getItem("hwm_user");
-      if (stored) setUser(JSON.parse(stored));
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setUser(parsed);
+        fetch("/api/auth/me", { credentials: "include" })
+          .then(r => {
+            if (!r.ok) {
+              localStorage.removeItem("hwm_user");
+              setUser(null);
+            } else {
+              return r.json().then(data => {
+                if (data.user) {
+                  localStorage.setItem("hwm_user", JSON.stringify(data.user));
+                  setUser(data.user);
+                } else {
+                  localStorage.removeItem("hwm_user");
+                  setUser(null);
+                }
+              });
+            }
+          })
+          .catch(() => {});
+      }
     } catch {}
   }, []);
 
