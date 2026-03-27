@@ -136,13 +136,7 @@ export default function Upload() {
   }
 
   async function uploadToCloudinaryDirect(f: File, resourceType: string): Promise<string> {
-    const stored = localStorage.getItem("hwm_user");
-    const userData = stored ? JSON.parse(stored) : null;
-    const signRes = await fetch("/api/cloudinary/sign", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: userData?.id }),
-    });
+    const signRes = await fetch("/api/cloudinary/sign", { method: "POST" });
     if (!signRes.ok) throw new Error("Failed to get upload signature");
     const { signature, timestamp, folder, cloudName, apiKey } = await signRes.json();
 
