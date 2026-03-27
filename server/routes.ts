@@ -2,7 +2,7 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays, passwordResetTokens, siteVisits, studioClicks } from "@shared/schema";
+import { signupSchema, signinSchema, users, tracks, likes, visitorLikes, comments, follows, visitorFollows, trackPlays, passwordResetTokens, siteVisits, studioClicks, albums, albumTracks } from "@shared/schema";
 import { sql, desc, eq, and, gt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import multer from "multer";
@@ -1849,6 +1849,139 @@ ONLY output the spoken words. No quotes, no stage directions.`;
       console.error("Reel generation error:", error);
       res.status(500).json({ message: "Failed to generate reel video" });
     }
+  });
+
+  app.get("/api/albums", async (_req: Request, res: Response) => {
+    const allAlbums = await storage.getAllAlbums();
+    const result = await Promise.all(allAlbums.map(async (album) => {
+      const creator = await storage.getCreatorById(album.creatorId);
+      const trackList = await storage.getAlbumTracks(album.id);
+      return { ...album, creator, trackCount: trackList.length };
+    }));
+    res.json(result);
+  });
+
+  app.get("/api/albums/:id", async (req: Request, res: Response) => {
+    const albumId = parseInt(req.params.id);
+    if (isNaN(albumId)) return res.status(400).json({ message: "Invalid album ID" });
+    const album = await storage.getAlbum(albumId);
+    if (!album) return res.status(404).json({ message: "Album not found" });
+    const creator = await storage.getCreatorById(album.creatorId);
+    const trackList = await storage.getAlbumTracks(album.id);
+    res.json({ album, creator, tracks: trackList });
+  });
+
+  app.get("/api/creators/:id/albums", async (req: Request, res: Response) => {
+    const creatorId = parseInt(req.params.id);
+    if (isNaN(creatorId)) return res.status(400).json({ message: "Invalid creator ID" });
+    const creatorAlbums = await storage.getAlbumsByCreator(creatorId);
+    const result = await Promise.all(creatorAlbums.map(async (album) => {
+      const trackList = await storage.getAlbumTracks(album.id);
+      return { ...album, trackCount: trackList.length };
+    }));
+    res.json(result);
+  });
+
+  app.post("/api/albums", upload.single("cover"), async (req: Request, res: Response) => {
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+    const creator = await storage.getCreatorByUserId(userId);
+    if (!creator) return res.status(403).json({ message: "You must be a creator to make albums" });
+
+    const { title, description } = req.body;
+    if (!title) return res.status(400).json({ message: "Album title is required" });
+
+    let coverUrl: string | null = null;
+    if (req.file) {
+      coverUrl = await uploadToCloudinary(req.file.path, "image");
+    }
+
+    const album = await storage.createAlbum({
+      title,
+      description: description || null,
+      coverUrl,
+      creatorId: creator.id,
+    });
+
+    res.json(album);
+  });
+
+  app.post("/api/albums/:id/tracks", async (req: Request, res: Response) => {
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+
+    const albumId = parseInt(req.params.id);
+    if (isNaN(albumId)) return res.status(400).json({ message: "Invalid album ID" });
+
+    const album = await storage.getAlbum(albumId);
+    if (!album) return res.status(404).json({ message: "Album not found" });
+
+    const creator = await storage.getCreatorByUserId(userId);
+    if (!creator || creator.id !== album.creatorId) return res.status(403).json({ message: "Not your album" });
+
+    const { trackId, trackOrder } = req.body;
+    if (!trackId) return res.status(400).json({ message: "Track ID required" });
+
+    const track = await storage.getTrack(trackId);
+    if (!track || track.creatorId !== creator.id) return res.status(403).json({ message: "You can only add your own tracks" });
+
+    const existing = await storage.getAlbumTrackEntries(albumId);
+    if (existing.some(e => e.trackId === trackId)) {
+      return res.status(400).json({ message: "Track already in album" });
+    }
+
+    const order = trackOrder ?? existing.length;
+    const entry = await storage.addTrackToAlbum(albumId, trackId, order);
+    res.json(entry);
+  });
+
+  app.delete("/api/albums/:albumId/tracks/:trackId", async (req: Request, res: Response) => {
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+
+    const albumId = parseInt(req.params.albumId);
+    const trackId = parseInt(req.params.trackId);
+
+    const album = await storage.getAlbum(albumId);
+    if (!album) return res.status(404).json({ message: "Album not found" });
+
+    const creator = await storage.getCreatorByUserId(userId);
+    if (!creator || creator.id !== album.creatorId) return res.status(403).json({ message: "Not your album" });
+
+    await storage.removeTrackFromAlbum(albumId, trackId);
+    res.json({ message: "Track removed from album" });
+  });
+
+  app.delete("/api/albums/:id", async (req: Request, res: Response) => {
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+
+    const albumId = parseInt(req.params.id);
+    const album = await storage.getAlbum(albumId);
+    if (!album) return res.status(404).json({ message: "Album not found" });
+
+    const creator = await storage.getCreatorByUserId(userId);
+    if (!creator || creator.id !== album.creatorId) return res.status(403).json({ message: "Not your album" });
+
+    await storage.deleteAlbum(albumId);
+    res.json({ message: "Album deleted" });
+  });
+
+  app.patch("/api/albums/:id/cover", upload.single("cover"), async (req: Request, res: Response) => {
+    const userId = req.session.userId;
+    if (!userId) return res.status(401).json({ message: "Not authenticated" });
+
+    const albumId = parseInt(req.params.id);
+    const album = await storage.getAlbum(albumId);
+    if (!album) return res.status(404).json({ message: "Album not found" });
+
+    const creator = await storage.getCreatorByUserId(userId);
+    if (!creator || creator.id !== album.creatorId) return res.status(403).json({ message: "Not your album" });
+
+    if (!req.file) return res.status(400).json({ message: "Cover image required" });
+    const coverUrl = await uploadToCloudinary(req.file.path, "image");
+    await storage.updateAlbumCover(albumId, coverUrl);
+    res.json({ coverUrl });
   });
 
   return httpServer;

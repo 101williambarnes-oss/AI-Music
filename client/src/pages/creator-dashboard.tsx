@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useRoute } from "wouter";
-import { Headphones, Heart, Users, Flame, Trophy, TrendingUp, Clock } from "lucide-react";
+import { useRoute, useLocation } from "wouter";
+import { Headphones, Heart, Users, Flame, Trophy, TrendingUp, Clock, Disc3, Plus, Download } from "lucide-react";
+import { type Album } from "@shared/schema";
 
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
@@ -14,8 +15,11 @@ type DashboardData = {
   nextReset: { days: number; hours: number; minutes: number };
 };
 
+type AlbumWithCount = Album & { trackCount: number };
+
 export default function CreatorDashboard() {
   const [, params] = useRoute("/creator/:id/dashboard");
+  const [, navigate] = useLocation();
   const creatorId = params?.id;
   const [user] = useState<AuthUser | null>(() => {
     try {
@@ -30,6 +34,11 @@ export default function CreatorDashboard() {
 
   const { data, isLoading, isError } = useQuery<DashboardData>({
     queryKey: ["/api/creators", creatorId, "dashboard"],
+    enabled: !!creatorId && isOwner,
+  });
+
+  const { data: myAlbums = [] } = useQuery<AlbumWithCount[]>({
+    queryKey: ["/api/creators", creatorId, "albums"],
     enabled: !!creatorId && isOwner,
   });
 
@@ -229,6 +238,52 @@ export default function CreatorDashboard() {
           {data.tracks.length === 0 && (
             <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)", fontSize: 14 }}>No tracks uploaded yet</div>
           )}
+        </div>
+
+        <div style={sectionTitleStyle}>
+          <Disc3 size={16} style={{ display: "inline", verticalAlign: "middle", marginRight: 6 }} />
+          Your Albums
+        </div>
+        <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(108,240,255,.1)", borderRadius: 8, padding: "16px 20px", marginBottom: 8 }}>
+          {myAlbums.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "12px 0" }}>
+              <p style={{ color: "rgba(170,182,232,.4)", fontSize: 14, marginBottom: 12 }}>No albums yet</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {myAlbums.map((album) => (
+                <div key={album.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 10px", borderRadius: 8, background: "rgba(255,255,255,.02)" }} data-testid={`dashboard-album-${album.id}`}>
+                  <div style={{ width: 48, height: 48, borderRadius: 6, overflow: "hidden", background: "rgba(160,107,255,.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {album.coverUrl ? (
+                      <img src={album.coverUrl} alt={album.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <Disc3 size={20} style={{ color: "rgba(160,107,255,.3)" }} />
+                    )}
+                  </div>
+                  <div style={{ flex: 1, overflow: "hidden" }}>
+                    <a href={`/album/${album.id}`} style={{ fontSize: 14, fontWeight: 600, color: "#eaf0ff", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{album.title}</a>
+                    <div style={{ fontSize: 11, color: "rgba(170,182,232,.4)" }}>{album.trackCount} track{album.trackCount !== 1 ? "s" : ""}</div>
+                  </div>
+                  <a
+                    href={`/album/${album.id}`}
+                    style={{ padding: "6px 14px", background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.2)", borderRadius: 6, color: "#6cf0ff", fontWeight: 600, fontSize: 12, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}
+                    data-testid={`button-view-album-${album.id}`}
+                  >
+                    <Download size={12} /> Download Album
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={{ textAlign: "center", marginTop: 12 }}>
+            <a
+              href="/create-album"
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 20px", background: "linear-gradient(135deg, #a06bff 0%, #ff4fd8 100%)", borderRadius: 20, color: "#fff", fontWeight: 700, fontSize: 13, textDecoration: "none" }}
+              data-testid="button-create-album"
+            >
+              <Plus size={14} /> Create New Album
+            </a>
+          </div>
         </div>
 
         <div style={{ marginTop: 24, background: "rgba(255,255,255,.03)", border: "1px solid rgba(108,240,255,.1)", borderRadius: 8, padding: "16px 20px" }} data-testid="section-motivation">

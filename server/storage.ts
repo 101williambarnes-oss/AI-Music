@@ -1,5 +1,5 @@
-import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser, type Like, type InsertLike, type Comment, type InsertComment, type Follow, type InsertFollow, type WeeklyWinner, type InsertWeeklyWinner } from "@shared/schema";
-import { tracks, creators, genres, users, likes, comments, visitorLikes, trackPlays, follows, visitorFollows, weeklyWinners } from "@shared/schema";
+import { type Track, type InsertTrack, type Creator, type InsertCreator, type Genre, type InsertGenre, type User, type InsertUser, type Like, type InsertLike, type Comment, type InsertComment, type Follow, type InsertFollow, type WeeklyWinner, type InsertWeeklyWinner, type Album, type InsertAlbum, type AlbumTrack, type InsertAlbumTrack } from "@shared/schema";
+import { tracks, creators, genres, users, likes, comments, visitorLikes, trackPlays, follows, visitorFollows, weeklyWinners, albums, albumTracks } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql, gte } from "drizzle-orm";
 
@@ -56,6 +56,16 @@ export interface IStorage {
   addWeeklyWinner(winner: InsertWeeklyWinner): Promise<WeeklyWinner>;
   getLatestWeeklyWinner(): Promise<WeeklyWinner | undefined>;
   checkAndCrownWeeklyWinner(): Promise<WeeklyWinner | null>;
+  createAlbum(album: InsertAlbum): Promise<Album>;
+  getAlbum(id: number): Promise<Album | undefined>;
+  getAlbumsByCreator(creatorId: number): Promise<Album[]>;
+  getAllAlbums(): Promise<Album[]>;
+  updateAlbumCover(albumId: number, coverUrl: string): Promise<void>;
+  deleteAlbum(albumId: number): Promise<void>;
+  addTrackToAlbum(albumId: number, trackId: number, trackOrder: number): Promise<AlbumTrack>;
+  removeTrackFromAlbum(albumId: number, trackId: number): Promise<void>;
+  getAlbumTracks(albumId: number): Promise<Track[]>;
+  getAlbumTrackEntries(albumId: number): Promise<AlbumTrack[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -381,6 +391,55 @@ export class DatabaseStorage implements IStorage {
     });
 
     return winner;
+  }
+
+  async createAlbum(album: InsertAlbum): Promise<Album> {
+    const [created] = await db.insert(albums).values(album).returning();
+    return created;
+  }
+
+  async getAlbum(id: number): Promise<Album | undefined> {
+    const [album] = await db.select().from(albums).where(eq(albums.id, id));
+    return album;
+  }
+
+  async getAlbumsByCreator(creatorId: number): Promise<Album[]> {
+    return db.select().from(albums).where(eq(albums.creatorId, creatorId)).orderBy(desc(albums.createdAt));
+  }
+
+  async getAllAlbums(): Promise<Album[]> {
+    return db.select().from(albums).orderBy(desc(albums.createdAt));
+  }
+
+  async updateAlbumCover(albumId: number, coverUrl: string): Promise<void> {
+    await db.update(albums).set({ coverUrl }).where(eq(albums.id, albumId));
+  }
+
+  async deleteAlbum(albumId: number): Promise<void> {
+    await db.delete(albumTracks).where(eq(albumTracks.albumId, albumId));
+    await db.delete(albums).where(eq(albums.id, albumId));
+  }
+
+  async addTrackToAlbum(albumId: number, trackId: number, trackOrder: number): Promise<AlbumTrack> {
+    const [entry] = await db.insert(albumTracks).values({ albumId, trackId, trackOrder }).returning();
+    return entry;
+  }
+
+  async removeTrackFromAlbum(albumId: number, trackId: number): Promise<void> {
+    await db.delete(albumTracks).where(and(eq(albumTracks.albumId, albumId), eq(albumTracks.trackId, trackId)));
+  }
+
+  async getAlbumTracks(albumId: number): Promise<Track[]> {
+    const entries = await db.select().from(albumTracks).where(eq(albumTracks.albumId, albumId)).orderBy(asc(albumTracks.trackOrder));
+    if (entries.length === 0) return [];
+    const trackIds = entries.map(e => e.trackId);
+    const allTracks = await db.select().from(tracks).where(sql`${tracks.id} = ANY(${trackIds})`);
+    const trackMap = new Map(allTracks.map(t => [t.id, t]));
+    return entries.map(e => trackMap.get(e.trackId)).filter((t): t is Track => !!t);
+  }
+
+  async getAlbumTrackEntries(albumId: number): Promise<AlbumTrack[]> {
+    return db.select().from(albumTracks).where(eq(albumTracks.albumId, albumId)).orderBy(asc(albumTracks.trackOrder));
   }
 }
 

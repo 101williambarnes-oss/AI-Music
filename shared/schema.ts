@@ -125,6 +125,25 @@ export const studioClicks = pgTable("studio_clicks", {
   clickedAt: timestamp("clicked_at").notNull().defaultNow(),
 });
 
+export const albums = pgTable("albums", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  coverUrl: text("cover_url"),
+  creatorId: integer("creator_id").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const albumTracks = pgTable("album_tracks", {
+  id: serial("id").primaryKey(),
+  albumId: integer("album_id").notNull(),
+  trackId: integer("track_id").notNull(),
+  trackOrder: integer("track_order").notNull().default(0),
+});
+
+export const insertAlbumSchema = createInsertSchema(albums).omit({ id: true, createdAt: true });
+export const insertAlbumTrackSchema = createInsertSchema(albumTracks).omit({ id: true });
+
 export const insertWeeklyWinnerSchema = createInsertSchema(weeklyWinners).omit({ id: true, createdAt: true });
 export const insertGenreSchema = createInsertSchema(genres).omit({ id: true });
 export const insertTrackSchema = createInsertSchema(tracks).omit({ id: true, createdAt: true });
@@ -167,3 +186,7 @@ export type Follow = typeof follows.$inferSelect;
 export type Comment = typeof comments.$inferSelect;
 export type WeeklyWinner = typeof weeklyWinners.$inferSelect;
 export type InsertWeeklyWinner = z.infer<typeof insertWeeklyWinnerSchema>;
+export type Album = typeof albums.$inferSelect;
+export type InsertAlbum = z.infer<typeof insertAlbumSchema>;
+export type AlbumTrack = typeof albumTracks.$inferSelect;
+export type InsertAlbumTrack = z.infer<typeof insertAlbumTrackSchema>;

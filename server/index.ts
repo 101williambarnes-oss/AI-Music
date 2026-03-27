@@ -155,8 +155,26 @@ app.use((req, res, next) => {
     await ensurePool.query(`ALTER TABLE creators ADD COLUMN IF NOT EXISTS city TEXT`);
     await ensurePool.query(`ALTER TABLE creators ADD COLUMN IF NOT EXISTS state TEXT`);
     await ensurePool.query(`ALTER TABLE creators ADD COLUMN IF NOT EXISTS dj_name TEXT`);
+    await ensurePool.query(`
+      CREATE TABLE IF NOT EXISTS albums (
+        id SERIAL PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        cover_url TEXT,
+        creator_id INTEGER NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+    await ensurePool.query(`
+      CREATE TABLE IF NOT EXISTS album_tracks (
+        id SERIAL PRIMARY KEY,
+        album_id INTEGER NOT NULL,
+        track_id INTEGER NOT NULL,
+        track_order INTEGER NOT NULL DEFAULT 0
+      )
+    `);
     await ensurePool.end();
-    console.log("weekly_winners table, explicit column, password_reset_tokens, site_visits, studio_clicks, and DJ columns ensured");
+    console.log("weekly_winners table, explicit column, password_reset_tokens, site_visits, studio_clicks, DJ columns, and albums tables ensured");
 
     await registerRoutes(httpServer, app);
     console.log("Routes registered");
