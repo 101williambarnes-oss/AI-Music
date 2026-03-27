@@ -12,12 +12,29 @@ export default function Albums() {
   return (
     <div className="hwm-app mockup-bg">
       <div className="wrap" style={{ paddingTop: 40, paddingBottom: 120, maxWidth: 1100, margin: "0 auto", padding: "40px 24px 120px" }}>
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#a06bff", textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>Hit Wave Media</div>
-          <h1 style={{ fontSize: 40, fontWeight: 900, color: "#eaf0ff", marginBottom: 8, lineHeight: 1.1 }} data-testid="text-albums-title">
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <div style={{
+            display: "inline-block",
+            padding: "6px 18px",
+            background: "linear-gradient(135deg, rgba(160,107,255,.15), rgba(255,79,216,.1))",
+            border: "1px solid rgba(160,107,255,.25)",
+            borderRadius: 20,
+            fontSize: 12, fontWeight: 700, color: "#c9a0ff", textTransform: "uppercase", letterSpacing: 3,
+            marginBottom: 16,
+          }}>Hit Wave Media</div>
+          <h1 style={{
+            fontSize: 52, fontWeight: 900, color: "#fff", marginBottom: 12, lineHeight: 1.05,
+            background: "linear-gradient(135deg, #eaf0ff 0%, #6cf0ff 40%, #a06bff 70%, #ff4fd8 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+          }} data-testid="text-albums-title">
             Albums
           </h1>
-          <p style={{ fontSize: 15, color: "rgba(170,182,232,.5)", maxWidth: 500, margin: "0 auto" }}>
+          <p style={{
+            fontSize: 17, color: "rgba(170,182,232,.6)", maxWidth: 520, margin: "0 auto",
+            lineHeight: 1.5, fontWeight: 500,
+          }}>
             Full-length albums from the best AI music creators on the platform
           </p>
         </div>
