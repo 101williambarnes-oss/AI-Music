@@ -223,6 +223,7 @@ export default function Home() {
             <a href="/trending" data-testid="link-quick-trending">Trending</a>
             <a href="/new-songs" data-testid="link-quick-new-songs">New Songs</a>
             <a href="/new-creators" data-testid="link-quick-new-creators">New Creators</a>
+            <a href="/albums" data-testid="link-quick-albums">Albums</a>
             <a href="/playlist" data-testid="link-quick-playlist">My Playlist</a>
             {user && user.creatorId && (
               <a href={`/creator/${user.creatorId}`} data-testid="link-mobile-my-library">My Library</a>
@@ -374,6 +375,55 @@ export default function Home() {
                       )}
                     </div>
                     <span className="mockup-creator-name">{creator.name}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="mockup-panel" data-testid="section-albums">
+            <div className="mockup-panel-header">
+              <span className="mockup-panel-title">New Albums</span>
+              <a href="/albums" className="mockup-see-all" data-testid="link-albums-see-all">See All <ChevronRight size={13} /></a>
+            </div>
+            {isLoading ? (
+              <div className="mockup-loading">Loading...</div>
+            ) : albums.length === 0 ? (
+              <div style={{ padding: "20px 16px", textAlign: "center", color: "rgba(170,182,232,.4)", fontSize: 13 }}>No albums yet</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, padding: "8px 0" }}>
+                {albums.map((album) => (
+                  <a
+                    key={album.id}
+                    href={`/album/${album.id}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "8px 14px",
+                      textDecoration: "none",
+                      borderRadius: 8,
+                      transition: "background .2s",
+                    }}
+                    className="mockup-album-row"
+                    data-testid={`album-card-${album.id}`}
+                  >
+                    <div style={{
+                      width: 48, height: 48, borderRadius: 8, overflow: "hidden",
+                      background: "rgba(160,107,255,.08)", flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      border: "1px solid rgba(108,240,255,.1)",
+                    }}>
+                      {album.coverUrl ? (
+                        <img src={album.coverUrl} alt={album.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <Disc3 size={22} style={{ color: "rgba(160,107,255,.3)" }} />
+                      )}
+                    </div>
+                    <div style={{ flex: 1, overflow: "hidden" }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{album.title}</div>
+                      <div style={{ fontSize: 11, color: "rgba(170,182,232,.5)" }}>{album.creatorName} · {album.trackCount} track{album.trackCount !== 1 ? "s" : ""}</div>
+                    </div>
                   </a>
                 ))}
               </div>
