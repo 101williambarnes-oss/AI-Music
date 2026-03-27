@@ -523,6 +523,10 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
 
+  app.get("/api/version", (_req, res) => {
+    res.json({ version: "2026.03.27.v2", hasAudioTransform: true });
+  });
+
   app.post("/api/auth/signup", rateLimit("signup", 5, 3600000), async (req, res) => {
     try {
       const parsed = signupSchema.safeParse(req.body);
