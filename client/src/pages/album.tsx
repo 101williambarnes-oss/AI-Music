@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
 import { type Track, type Creator, type Album } from "@shared/schema";
-import { Disc3, Play, Pause, Music, User, Calendar, ChevronRight } from "lucide-react";
+import { Disc3, Play, Pause, Music, User, Calendar, ChevronRight, Trash2 } from "lucide-react";
 import { useAudioPlayer } from "@/lib/audioPlayer";
 import { useCallback, useState, useEffect, useRef } from "react";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+
+type AuthUser = { id: number; creatorId?: number };
 
 type AlbumData = {
   album: Album;
@@ -105,8 +108,17 @@ export default function AlbumPage() {
   const [djPlaying, setDjPlaying] = useState(false);
   const [djLoading, setDjLoading] = useState(false);
   const [djPlayed, setDjPlayed] = useState(false);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const djAudioRef = useRef<HTMLAudioElement | null>(null);
   const albumTracksRef = useRef<Track[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("hwm_user");
+      if (stored) setUser(JSON.parse(stored));
+    } catch {}
+  }, []);
 
   const { data, isLoading } = useQuery<AlbumData>({
     queryKey: ["/api/albums", albumId],
@@ -350,6 +362,37 @@ export default function AlbumPage() {
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#a06bff", animation: "pulse 1s infinite" }} />
                   DJ William Allen introducing...
                 </div>
+              )}
+              {user && creator && user.creatorId === creator.id && (
+                <button
+                  onClick={async () => {
+                    if (!confirm("Are you sure you want to delete this album? This cannot be undone.")) return;
+                    setDeleting(true);
+                    try {
+                      await apiRequest("DELETE", `/api/albums/${album.id}`);
+                      queryClient.invalidateQueries({ queryKey: ["/api/albums"] });
+                      navigate("/albums");
+                    } catch (err) {
+                      console.error("Failed to delete album:", err);
+                      alert("Failed to delete album. Please try again.");
+                    } finally {
+                      setDeleting(false);
+                    }
+                  }}
+                  disabled={deleting}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "10px 20px",
+                    background: "rgba(255,79,79,.1)",
+                    border: "1px solid rgba(255,79,79,.3)",
+                    borderRadius: 20, color: "#ff6b6b", fontWeight: 600, fontSize: 13,
+                    cursor: deleting ? "wait" : "pointer",
+                    transition: "all .2s",
+                  }}
+                  data-testid="button-delete-album"
+                >
+                  <Trash2 size={14} /> {deleting ? "Deleting..." : "Delete Album"}
+                </button>
               )}
             </div>
           </div>
