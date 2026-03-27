@@ -2021,25 +2021,34 @@ ONLY output the spoken words. No quotes, no stage directions.`;
   });
 
   app.post("/api/albums", upload.single("cover"), async (req: Request, res: Response) => {
-    const userId = req.session.userId;
-    if (!userId) return res.status(401).json({ message: "Not authenticated" });
-    const creator = await storage.getCreatorByUserId(userId);
-    if (!creator) return res.status(403).json({ message: "You must be a creator to make albums" });
+    try {
+      console.log("Album creation request - session userId:", req.session.userId, "file:", req.file?.originalname, "title:", req.body?.title);
+      const userId = req.session.userId;
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+      const creator = await storage.getCreatorByUserId(userId);
+      if (!creator) return res.status(403).json({ message: "You must be a creator to make albums" });
 
-    const { title, description } = req.body;
-    if (!title) return res.status(400).json({ message: "Album title is required" });
-    if (!req.file) return res.status(400).json({ message: "Album cover image is required" });
+      const { title, description } = req.body;
+      if (!title) return res.status(400).json({ message: "Album title is required" });
+      if (!req.file) return res.status(400).json({ message: "Album cover image is required" });
 
-    const coverUrl = await uploadToCloudinary(req.file.path, "image");
+      console.log("Uploading album cover to Cloudinary:", req.file.path);
+      const coverUrl = await uploadToCloudinary(req.file.path, "image");
+      console.log("Album cover uploaded:", coverUrl);
 
-    const album = await storage.createAlbum({
-      title,
-      description: description || null,
-      coverUrl,
-      creatorId: creator.id,
-    });
+      const album = await storage.createAlbum({
+        title,
+        description: description || null,
+        coverUrl,
+        creatorId: creator.id,
+      });
 
-    res.json(album);
+      console.log("Album created successfully:", album.id, album.title);
+      res.json(album);
+    } catch (err: any) {
+      console.error("Album creation error:", err);
+      res.status(500).json({ message: err?.message || "Failed to create album. Please try again." });
+    }
   });
 
   app.post("/api/albums/:id/tracks", async (req: Request, res: Response) => {
