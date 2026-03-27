@@ -363,7 +363,7 @@ export default function CreateAlbum() {
                     <input
                       ref={bulkFileInputRef}
                       type="file"
-                      accept=".mp3,.wav,.ogg,.flac,.m4a,.aac,.mp4,.webm"
+                      accept=".mp3,.wav,.ogg,.flac,.m4a,.m4v,.aac,.mp4,.webm,.mov"
                       multiple
                       onChange={(e) => {
                         const files = e.target.files;
@@ -424,7 +424,7 @@ export default function CreateAlbum() {
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept=".mp3,.wav,.ogg,.flac,.m4a,.aac,.mp4,.webm"
+                        accept=".mp3,.wav,.ogg,.flac,.m4a,.m4v,.aac,.mp4,.webm,.mov"
                         onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
                         style={{ width: "100%", padding: "6px 0", color: "rgba(170,182,232,.5)", fontSize: 11 }}
                         data-testid="input-upload-file"

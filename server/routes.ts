@@ -463,12 +463,12 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-const ALLOWED_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".mp4", ".webm", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
+const ALLOWED_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".m4v", ".aac", ".mp4", ".webm", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
 
 const ALLOWED_MIMES = [
   "audio/mpeg", "audio/wav", "audio/wave", "audio/x-wav", "audio/ogg", "audio/flac", "audio/x-flac",
   "audio/mp4", "audio/x-m4a", "audio/aac", "audio/x-aac",
-  "video/mp4", "video/webm", "video/quicktime",
+  "video/mp4", "video/webm", "video/quicktime", "video/x-m4v",
   "image/jpeg", "image/png", "image/gif", "image/webp",
 ];
 
