@@ -178,6 +178,16 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     const audio = document.createElement("audio");
     audio.preload = "auto";
+    audio.setAttribute("playsinline", "");
+    audio.setAttribute("webkit-playsinline", "");
+    audio.setAttribute("x-webkit-airplay", "allow");
+    audio.style.display = "none";
+    audio.style.width = "0";
+    audio.style.height = "0";
+    audio.style.position = "absolute";
+    audio.style.opacity = "0";
+    audio.style.pointerEvents = "none";
+    document.body.appendChild(audio);
     audioRef.current = audio;
 
     audio.addEventListener("ended", () => {
@@ -210,7 +220,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setIsPlaying(true);
     });
 
-    return () => { audio.pause(); };
+    return () => { audio.pause(); try { document.body.removeChild(audio); } catch {} };
   }, [loadAndPlay]);
 
   const countPlay = useCallback((trackId: number) => {
