@@ -15,6 +15,7 @@ export default function Upload() {
   const [ownsRights, setOwnsRights] = useState(false);
   const [agreesTerms, setAgreesTerms] = useState(false);
   const [error, setError] = useState("");
+  const [uploadStatus, setUploadStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -134,6 +135,30 @@ export default function Upload() {
     }
   }
 
+  async function uploadToCloudinaryDirect(f: File, resourceType: string): Promise<string> {
+    const signRes = await fetch("/api/cloudinary/sign", { method: "POST" });
+    if (!signRes.ok) throw new Error("Failed to get upload signature");
+    const { signature, timestamp, folder, cloudName, apiKey } = await signRes.json();
+
+    const fd = new FormData();
+    fd.append("file", f);
+    fd.append("api_key", apiKey);
+    fd.append("timestamp", String(timestamp));
+    fd.append("signature", signature);
+    fd.append("folder", folder);
+
+    const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
+      method: "POST",
+      body: fd,
+    });
+    if (!uploadRes.ok) {
+      const errData = await uploadRes.json().catch(() => ({}));
+      throw new Error(errData?.error?.message || "Upload to cloud storage failed");
+    }
+    const result = await uploadRes.json();
+    return result.secure_url;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -151,17 +176,34 @@ export default function Upload() {
       const stored = localStorage.getItem("hwm_user");
       const userData = stored ? JSON.parse(stored) : null;
 
+      const fileExt = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
+      const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(fileExt);
+      const fileResourceType = isImage ? "image" : "video";
+
+      setUploadStatus("Uploading file to cloud...");
+      const cloudinaryFileUrl = await uploadToCloudinaryDirect(file, fileResourceType);
+
+      let cloudinaryCoverUrl = "";
+      if (coverFile) {
+        const coverExt = coverFile.name.substring(coverFile.name.lastIndexOf(".")).toLowerCase();
+        const isCoverImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(coverExt);
+        setUploadStatus("Uploading cover...");
+        cloudinaryCoverUrl = await uploadToCloudinaryDirect(coverFile, isCoverImage ? "image" : "video");
+      }
+
+      setUploadStatus("Saving track...");
+
       const formData = new FormData();
       formData.append("title", title);
       formData.append("genre", genre);
       formData.append("aiTools", JSON.stringify(aiTools));
-      formData.append("file", file);
       formData.append("explicit", String(isExplicit));
+      formData.append("cloudinaryFileUrl", cloudinaryFileUrl);
+      if (cloudinaryCoverUrl) formData.append("cloudinaryCoverUrl", cloudinaryCoverUrl);
       if (songDescription.trim()) formData.append("songDescription", songDescription.trim());
       if (djName.trim()) formData.append("djName", djName.trim());
       if (city.trim()) formData.append("city", city.trim());
       if (state.trim()) formData.append("state", state.trim());
-      if (coverFile) formData.append("cover", coverFile);
       if (userData?.id) formData.append("userId", String(userData.id));
 
       const res = await fetch("/api/tracks/upload", {
@@ -179,6 +221,7 @@ export default function Upload() {
       setError(err.message);
     } finally {
       setLoading(false);
+      setUploadStatus("");
     }
   }
 
@@ -244,6 +287,12 @@ export default function Upload() {
           {error && (
             <div style={{ marginBottom: 16, padding: "10px 14px", background: "rgba(255,79,216,.12)", border: "1px solid rgba(255,79,216,.3)", borderRadius: 6, color: "#ff4fd8", fontSize: 14 }} data-testid="text-upload-error">
               {error}
+            </div>
+          )}
+
+          {loading && uploadStatus && (
+            <div style={{ marginBottom: 16, padding: "10px 14px", background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.2)", borderRadius: 6, color: "#6cf0ff", fontSize: 14, textAlign: "center" }} data-testid="text-upload-status">
+              {uploadStatus}
             </div>
           )}
 

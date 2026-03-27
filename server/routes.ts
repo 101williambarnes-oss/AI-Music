@@ -839,6 +839,29 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/cloudinary/sign", async (req, res) => {
+    const userId = req.session.userId;
+    if (!userId) {
+      return res.status(401).json({ message: "You must be signed in to upload" });
+    }
+    try {
+      const timestamp = Math.round(Date.now() / 1000);
+      const folder = "hitwavemedia";
+      const params: Record<string, string | number> = { timestamp, folder };
+      const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET!);
+      res.json({
+        signature,
+        timestamp,
+        folder,
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+        apiKey: process.env.CLOUDINARY_API_KEY,
+      });
+    } catch (error) {
+      console.error("Sign error:", error);
+      res.status(500).json({ message: "Failed to generate upload signature" });
+    }
+  });
+
   app.post("/api/tracks/upload", rateLimit("upload", 10, 3600000), (req, res, next) => {
     upload.fields([
       { name: "file", maxCount: 1 },
@@ -861,7 +884,7 @@ export async function registerRoutes(
       return res.status(401).json({ message: "You must be signed in to upload" });
     }
     try {
-      const { title, genre, aiTools, explicit: explicitFlag, songDescription, city, state, djName } = req.body;
+      const { title, genre, aiTools, explicit: explicitFlag, songDescription, city, state, djName, cloudinaryFileUrl, cloudinaryCoverUrl } = req.body;
       if (!title || !genre) {
         return res.status(400).json({ message: "Title and genre are required" });
       }
@@ -884,20 +907,12 @@ export async function registerRoutes(
         await storage.updateUserCreatorId(user.id, creator.id);
       }
 
+      let fileUrl: string | null = cloudinaryFileUrl || null;
+      let coverUrl: string | null = cloudinaryCoverUrl || null;
+
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
-      let fileUrl: string | null = null;
-      let coverUrl: string | null = null;
-
-      if (files?.cover?.[0]) {
-        const coverFile = files.cover[0];
-        const coverExt = path.extname(coverFile.originalname).toLowerCase();
-        const isCoverImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(coverExt);
-        const coverResourceType = isCoverImage ? "image" as const : "video" as const;
-        coverUrl = await uploadToCloudinary(coverFile.path, coverResourceType);
-      }
-
-      if (files?.file?.[0]) {
+      if (!fileUrl && files?.file?.[0]) {
         const mainFile = files.file[0];
         const ext = path.extname(mainFile.originalname).toLowerCase();
         const isAudio = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"].includes(ext);
@@ -909,6 +924,14 @@ export async function registerRoutes(
         }
 
         fileUrl = await uploadToCloudinary(mainFile.path, resourceType);
+      }
+
+      if (!coverUrl && files?.cover?.[0]) {
+        const coverFile = files.cover[0];
+        const coverExt = path.extname(coverFile.originalname).toLowerCase();
+        const isCoverImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(coverExt);
+        const coverResourceType = isCoverImage ? "image" as const : "video" as const;
+        coverUrl = await uploadToCloudinary(coverFile.path, coverResourceType);
       }
 
       if (city && state && (!creator.city || !creator.state)) {
