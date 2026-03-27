@@ -155,6 +155,7 @@ app.use((req, res, next) => {
     await ensurePool.query(`ALTER TABLE creators ADD COLUMN IF NOT EXISTS city TEXT`);
     await ensurePool.query(`ALTER TABLE creators ADD COLUMN IF NOT EXISTS state TEXT`);
     await ensurePool.query(`ALTER TABLE creators ADD COLUMN IF NOT EXISTS dj_name TEXT`);
+    await ensurePool.query(`ALTER TABLE creators ADD COLUMN IF NOT EXISTS bio TEXT`);
     await ensurePool.query(`
       CREATE TABLE IF NOT EXISTS albums (
         id SERIAL PRIMARY KEY,
