@@ -368,6 +368,7 @@ async function generateAlbumDjIntro(albumId: number): Promise<string | null> {
         const totalPlays = creatorAllTracks.reduce((sum, t) => sum + (t.plays || 0), 0);
         const followerCount = await storage.getFollowerCount(creator.id);
         const statsLines: string[] = [];
+        if (creator.bio) statsLines.push(`Artist bio: ${creator.bio}`);
         if (totalPlays > 0) statsLines.push(`Their music has been played ${totalPlays} total times.`);
         if (followerCount > 0) statsLines.push(`They have ${followerCount} follower${followerCount !== 1 ? "s" : ""}.`);
         if (creatorAllTracks.length > 0) statsLines.push(`They have ${creatorAllTracks.length} total songs on Hit Wave Media.`);
@@ -1373,6 +1374,69 @@ export async function registerRoutes(
 </head>
 <body>
   <h1>${track.title}</h1>
+  <p>by ${creatorName}</p>
+  <p>${ogDesc}</p>
+  <a href="${ogUrl}">Listen on Hit Wave Media</a>
+</body>
+</html>`;
+
+      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    } catch {
+      next();
+    }
+  });
+
+  app.get("/album/:id", async (req, res, next) => {
+    const ua = (req.headers["user-agent"] || "").toLowerCase();
+    const isCrawler = /facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegrambot|discordbot|slackbot|pinterest|redditbot|embedly|quora|outbrain|vkshare|tumblr|skypeuripreview|nuzzel/i.test(ua);
+    if (!isCrawler) return next();
+
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return next();
+
+      const album = await db.select().from(albums).where(eq(albums.id, id));
+      if (!album || album.length === 0) return next();
+      const a = album[0];
+
+      let creatorName = "Unknown Artist";
+      if (a.creatorId) {
+        const creator = await storage.getCreatorById(a.creatorId);
+        if (creator) creatorName = creator.name;
+      }
+
+      const albumTrackRows = await db.select().from(albumTracks).where(eq(albumTracks.albumId, id));
+      const trackCount = albumTrackRows.length;
+
+      const host = req.get("host") || "hitwavemedia.com";
+      const protocol = req.protocol === "https" || host.includes("hitwavemedia.com") ? "https" : req.protocol;
+      const baseUrl = `${protocol}://${host}`;
+      const ogImage = a.coverUrl || `${baseUrl}/images/og-preview.png`;
+      const ogTitle = `${a.title} by ${creatorName}`;
+      const ogDesc = a.description ? `${a.description} — ${trackCount} track${trackCount !== 1 ? "s" : ""} on Hit Wave Media.` : `Listen to "${a.title}" by ${creatorName} — ${trackCount} track${trackCount !== 1 ? "s" : ""} on Hit Wave Media.`;
+      const ogUrl = `${baseUrl}/album/${id}`;
+
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>${ogTitle} — Hit Wave Media</title>
+  <meta name="description" content="${ogDesc}" />
+  <meta property="og:title" content="${ogTitle}" />
+  <meta property="og:description" content="${ogDesc}" />
+  <meta property="og:url" content="${ogUrl}" />
+  <meta property="og:type" content="music.album" />
+  <meta property="og:site_name" content="Hit Wave Media" />
+  <meta property="og:image" content="${ogImage}" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${ogTitle}" />
+  <meta name="twitter:description" content="${ogDesc}" />
+  <meta name="twitter:image" content="${ogImage}" />
+</head>
+<body>
+  <h1>${a.title}</h1>
   <p>by ${creatorName}</p>
   <p>${ogDesc}</p>
   <a href="${ogUrl}">Listen on Hit Wave Media</a>
