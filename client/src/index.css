@@ -2887,33 +2887,42 @@
   font-variant-numeric: tabular-nums;
   margin-top: 1px;
 }
+@keyframes progressGlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 .player-bar-progress-wide {
   flex: 1;
-  height: 5px;
-  border-radius: 3px;
+  height: 6px;
+  border-radius: 4px;
   position: relative;
   cursor: pointer;
-  background: rgba(170,182,232,.12);
+  background: rgba(170,182,232,.15);
   min-width: 80px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.3);
 }
 .player-bar-progress-wide .player-bar-progress-fill {
   position: absolute;
   top: 0;
   left: 0;
   height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, #6cf0ff, #a06bff, #ff4fd8);
+  border-radius: 4px;
+  background: linear-gradient(90deg, #00e5ff, #6cf0ff, #a06bff, #ff4fd8, #ff6b35, #ffcc00, #00e5ff);
+  background-size: 300% 100%;
+  animation: progressGlow 4s ease infinite;
   transition: width .1s linear;
+  box-shadow: 0 0 10px rgba(108,240,255,.35), 0 0 20px rgba(160,107,255,.2), 0 0 6px rgba(255,79,216,.25);
 }
 .player-bar-progress-wide .player-bar-progress-thumb {
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 8px rgba(108,240,255,.4);
+  background: radial-gradient(circle, #fff 40%, #6cf0ff 100%);
+  box-shadow: 0 0 10px rgba(108,240,255,.6), 0 0 20px rgba(160,107,255,.3);
   opacity: 0;
   transition: opacity .2s;
 }
@@ -2977,8 +2986,14 @@
 
 @media (max-width: 768px) {
   .player-bar-inner {
-    padding: 8px 12px;
-    gap: 10px;
+    padding: 4px 12px 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .player-bar-left-section {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 6px;
   }
   .player-bar-art {
     width: 38px;
@@ -2986,19 +3001,26 @@
     border-radius: 6px;
   }
   .player-bar-info {
-    max-width: 100px;
+    max-width: none;
+    flex: 1;
+    min-width: 0;
   }
   .player-bar-title {
     font-size: 11px;
   }
   .player-bar-time-text {
-    font-size: 9px;
+    font-size: 10px;
+    color: rgba(170,182,232,.6);
   }
   .player-bar-right-section {
     display: none;
   }
   .player-bar-progress-wide {
-    display: none;
+    display: block;
+    width: 100%;
+    order: 10;
+    height: 5px;
+    margin-top: 2px;
   }
   .player-bar-play {
     width: 36px;
