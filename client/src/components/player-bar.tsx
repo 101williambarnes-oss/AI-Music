@@ -13,7 +13,7 @@ function formatTime(seconds: number): string {
 export function PlayerBar() {
   const {
     currentTrackId, currentFileUrl, isPlaying, isPlayingIntro,
-    pause, resume, getCurrentTime, getDuration, seek,
+    pause, resume, getAudioElement, seek,
     setVolume: setAudioVolume, getVolume,
   } = useAudioPlayer();
   const [progress, setProgress] = useState(0);
@@ -45,15 +45,57 @@ export function PlayerBar() {
   }, [currentTrackId]);
 
   useEffect(() => {
+    let lastAudio: HTMLAudioElement | null = null;
+
+    const onTimeUpdate = () => {
+      if (lastAudio) {
+        const t = lastAudio.currentTime;
+        const d = lastAudio.duration;
+        if (isFinite(t)) setProgress(t);
+        if (d && isFinite(d) && d > 0) setDuration(d);
+      }
+    };
+
+    const onMetadata = () => {
+      if (lastAudio) {
+        const d = lastAudio.duration;
+        if (d && isFinite(d) && d > 0) setDuration(d);
+      }
+    };
+
     const tick = () => {
-      const curTime = getCurrentTime();
-      setProgress(curTime);
-      setDuration(getDuration());
+      const audio = getAudioElement();
+      if (audio !== lastAudio) {
+        if (lastAudio) {
+          lastAudio.removeEventListener("timeupdate", onTimeUpdate);
+          lastAudio.removeEventListener("loadedmetadata", onMetadata);
+          lastAudio.removeEventListener("durationchange", onMetadata);
+        }
+        lastAudio = audio;
+        if (audio) {
+          audio.addEventListener("timeupdate", onTimeUpdate);
+          audio.addEventListener("loadedmetadata", onMetadata);
+          audio.addEventListener("durationchange", onMetadata);
+        }
+      }
+      if (audio) {
+        const t = audio.currentTime;
+        const d = audio.duration;
+        if (isFinite(t)) setProgress(t);
+        if (d && isFinite(d) && d > 0) setDuration(d);
+      }
       animRef.current = requestAnimationFrame(tick);
     };
     animRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animRef.current);
-  }, [getCurrentTime, getDuration]);
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      if (lastAudio) {
+        lastAudio.removeEventListener("timeupdate", onTimeUpdate);
+        lastAudio.removeEventListener("loadedmetadata", onMetadata);
+        lastAudio.removeEventListener("durationchange", onMetadata);
+      }
+    };
+  }, [getAudioElement]);
 
   const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!progressRef.current || !duration) return;

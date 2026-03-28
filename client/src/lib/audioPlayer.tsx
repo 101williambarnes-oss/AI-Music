@@ -28,6 +28,7 @@ type AudioPlayerState = {
   seek: (time: number) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
+  getAudioElement: () => HTMLAudioElement | null;
   setOnEnded: (cb: OnEndedCallback | null) => void;
   setVolume: (v: number) => void;
   getVolume: () => number;
@@ -46,6 +47,7 @@ const AudioPlayerContext = createContext<AudioPlayerState>({
   seek: () => {},
   getCurrentTime: () => 0,
   getDuration: () => 0,
+  getAudioElement: () => null,
   setOnEnded: () => {},
   setVolume: () => {},
   getVolume: () => 1,
@@ -460,8 +462,12 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     return audioRef.current?.volume ?? 1;
   }, []);
 
+  const getAudioElement = useCallback(() => {
+    return audioRef.current;
+  }, []);
+
   return (
-    <AudioPlayerContext.Provider value={{ currentTrackId, currentFileUrl, isPlaying, isPlayingIntro, play, pause, resume, stop, toggle, seek, getCurrentTime, getDuration, setOnEnded, setVolume, getVolume }}>
+    <AudioPlayerContext.Provider value={{ currentTrackId, currentFileUrl, isPlaying, isPlayingIntro, play, pause, resume, stop, toggle, seek, getCurrentTime, getDuration, getAudioElement, setOnEnded, setVolume, getVolume }}>
       {children}
     </AudioPlayerContext.Provider>
   );
