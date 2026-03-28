@@ -13,16 +13,14 @@ function formatTime(seconds: number): string {
 export function PlayerBar() {
   const {
     currentTrackId, currentFileUrl, isPlaying, isPlayingIntro,
-    pause, resume, getAudioElement, seek,
+    currentTime: progress, audioDuration: duration,
+    pause, resume, seek,
     setVolume: setAudioVolume, getVolume,
   } = useAudioPlayer();
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
   const [trackMeta, setTrackMeta] = useState<{ title: string; artist: string; coverUrl: string | null } | null>(null);
   const progressRef = useRef<HTMLDivElement>(null);
-  const animRef = useRef<number>(0);
   const lastTrackIdRef = useRef<number | null>(null);
   const prevVolumeRef = useRef(1);
 
@@ -44,65 +42,11 @@ export function PlayerBar() {
     }
   }, [currentTrackId]);
 
-  useEffect(() => {
-    let lastAudio: HTMLAudioElement | null = null;
-
-    const onTimeUpdate = () => {
-      if (lastAudio) {
-        const t = lastAudio.currentTime;
-        const d = lastAudio.duration;
-        if (isFinite(t)) setProgress(t);
-        if (d && isFinite(d) && d > 0) setDuration(d);
-      }
-    };
-
-    const onMetadata = () => {
-      if (lastAudio) {
-        const d = lastAudio.duration;
-        if (d && isFinite(d) && d > 0) setDuration(d);
-      }
-    };
-
-    const tick = () => {
-      const audio = getAudioElement();
-      if (audio !== lastAudio) {
-        if (lastAudio) {
-          lastAudio.removeEventListener("timeupdate", onTimeUpdate);
-          lastAudio.removeEventListener("loadedmetadata", onMetadata);
-          lastAudio.removeEventListener("durationchange", onMetadata);
-        }
-        lastAudio = audio;
-        if (audio) {
-          audio.addEventListener("timeupdate", onTimeUpdate);
-          audio.addEventListener("loadedmetadata", onMetadata);
-          audio.addEventListener("durationchange", onMetadata);
-        }
-      }
-      if (audio) {
-        const t = audio.currentTime;
-        const d = audio.duration;
-        if (isFinite(t)) setProgress(t);
-        if (d && isFinite(d) && d > 0) setDuration(d);
-      }
-      animRef.current = requestAnimationFrame(tick);
-    };
-    animRef.current = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(animRef.current);
-      if (lastAudio) {
-        lastAudio.removeEventListener("timeupdate", onTimeUpdate);
-        lastAudio.removeEventListener("loadedmetadata", onMetadata);
-        lastAudio.removeEventListener("durationchange", onMetadata);
-      }
-    };
-  }, [getAudioElement]);
-
   const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!progressRef.current || !duration) return;
     const rect = progressRef.current.getBoundingClientRect();
     const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     seek(pct * duration);
-    setProgress(pct * duration);
   }, [duration, seek]);
 
   const toggleMute = useCallback(() => {
@@ -125,7 +69,7 @@ export function PlayerBar() {
 
   if (!currentTrackId || !trackMeta) return null;
 
-  const pct = duration > 0 ? (progress / duration) * 100 : 0;
+  const safePct = (duration > 0 && isFinite(duration) && isFinite(progress)) ? Math.min(100, Math.max(0, (progress / duration) * 100)) : 0;
   const displayTitle = isPlayingIntro ? "DJ William Allen" : trackMeta.title;
   const displayArtist = isPlayingIntro ? `Introducing: ${trackMeta.title}` : trackMeta.artist;
 
@@ -151,8 +95,8 @@ export function PlayerBar() {
             </div>
           </div>
           <div className="player-bar-progress-wide" ref={progressRef} onClick={handleProgressClick} data-testid="player-bar-progress">
-            <div className="player-bar-progress-fill" style={{ width: `${pct}%` }} />
-            <div className="player-bar-progress-thumb" style={{ left: `${pct}%` }} />
+            <div className="player-bar-progress-fill" style={{ transform: `scaleX(${safePct / 100})` }} />
+            <div className="player-bar-progress-thumb" style={{ left: `${safePct}%` }} />
           </div>
         </div>
 

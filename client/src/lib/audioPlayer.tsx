@@ -20,6 +20,8 @@ type AudioPlayerState = {
   currentFileUrl: string | null;
   isPlaying: boolean;
   isPlayingIntro: boolean;
+  currentTime: number;
+  audioDuration: number;
   play: (trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => void;
   pause: () => void;
   resume: () => void;
@@ -39,6 +41,8 @@ const AudioPlayerContext = createContext<AudioPlayerState>({
   currentFileUrl: null,
   isPlaying: false,
   isPlayingIntro: false,
+  currentTime: 0,
+  audioDuration: 0,
   play: () => {},
   pause: () => {},
   resume: () => {},
@@ -73,11 +77,38 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const loadingRef = useRef(false);
   const primedRef = useRef(false);
 
+  const [currentTime, setCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const progressRafRef = useRef<number>(0);
+
   const setOnEnded = useCallback((cb: OnEndedCallback | null) => {
     onEndedRef.current = cb;
   }, []);
 
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
+  useEffect(() => {
+    let prevTime = -1;
+    let prevDur = -1;
+    const updateProgress = () => {
+      const audio = audioRef.current;
+      if (audio) {
+        const t = audio.currentTime;
+        const d = audio.duration;
+        if (isFinite(t) && t !== prevTime) {
+          prevTime = t;
+          setCurrentTime(t);
+        }
+        if (isFinite(d) && d > 0 && d !== prevDur) {
+          prevDur = d;
+          setAudioDuration(d);
+        }
+      }
+      progressRafRef.current = requestAnimationFrame(updateProgress);
+    };
+    progressRafRef.current = requestAnimationFrame(updateProgress);
+    return () => cancelAnimationFrame(progressRafRef.current);
+  }, []);
 
   const primeAudio = useCallback((audio: HTMLAudioElement) => {
     if (primedRef.current) return;
@@ -467,7 +498,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   return (
-    <AudioPlayerContext.Provider value={{ currentTrackId, currentFileUrl, isPlaying, isPlayingIntro, play, pause, resume, stop, toggle, seek, getCurrentTime, getDuration, getAudioElement, setOnEnded, setVolume, getVolume }}>
+    <AudioPlayerContext.Provider value={{ currentTrackId, currentFileUrl, isPlaying, isPlayingIntro, currentTime, audioDuration, play, pause, resume, stop, toggle, seek, getCurrentTime, getDuration, getAudioElement, setOnEnded, setVolume, getVolume }}>
       {children}
     </AudioPlayerContext.Provider>
   );

@@ -2906,12 +2906,14 @@
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
   height: 100%;
   border-radius: 4px;
   background: linear-gradient(90deg, #00e5ff, #6cf0ff, #a06bff, #ff4fd8, #ff6b35, #ffcc00, #00e5ff);
   background-size: 300% 100%;
   animation: progressGlow 4s ease infinite;
-  transition: width .1s linear;
+  transform-origin: left center;
+  transition: transform .1s linear;
   box-shadow: 0 0 10px rgba(108,240,255,.35), 0 0 20px rgba(160,107,255,.2), 0 0 6px rgba(255,79,216,.25);
 }
 .player-bar-progress-wide .player-bar-progress-thumb {
