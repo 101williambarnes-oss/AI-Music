@@ -2731,16 +2731,16 @@
 
 @media (max-width: 768px) {
   .floating-home-btn {
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 24px 12px 18px;
-    font-size: 1rem;
+    bottom: 70px;
+    left: 16px;
+    transform: none;
+    padding: 8px 14px 8px 10px;
+    font-size: 0.75rem;
     border: 1.5px solid rgba(108,240,255,.5);
     box-shadow: 0 4px 24px rgba(0,0,0,.7), 0 0 16px rgba(108,240,255,.25);
   }
   .floating-home-btn:hover {
-    transform: translateX(-50%) scale(1.05);
+    transform: scale(1.05);
   }
 }
 
