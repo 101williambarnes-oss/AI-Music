@@ -10,6 +10,28 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function getVisitorId(): string {
+  let vid = localStorage.getItem("hwm_visitor_id");
+  if (!vid) {
+    vid = "v_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem("hwm_visitor_id", vid);
+  }
+  return vid;
+}
+
+function getLikeHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  try {
+    const stored = localStorage.getItem("hwm_user");
+    if (stored) {
+      const u = JSON.parse(stored);
+      if (u?.id) headers["x-user-id"] = String(u.id);
+    }
+  } catch {}
+  headers["x-visitor-id"] = getVisitorId();
+  return headers;
+}
+
 export function PlayerBar() {
   const {
     currentTrackId, currentFileUrl, isPlaying, isPlayingIntro,
@@ -23,10 +45,13 @@ export function PlayerBar() {
   const progressRef = useRef<HTMLDivElement>(null);
   const lastTrackIdRef = useRef<number | null>(null);
   const prevVolumeRef = useRef(1);
+  const [liked, setLiked] = useState(false);
+  const likeLockRef = useRef(false);
 
   useEffect(() => {
     if (currentTrackId && currentTrackId !== lastTrackIdRef.current) {
       lastTrackIdRef.current = currentTrackId;
+      setLiked(false);
       fetch(`/api/track/${currentTrackId}`)
         .then(r => r.json())
         .then(data => {
@@ -39,8 +64,24 @@ export function PlayerBar() {
           }
         })
         .catch(() => {});
+      fetch(`/api/tracks/${currentTrackId}/likes`, { headers: getLikeHeaders(), credentials: "include" })
+        .then(r => r.json())
+        .then((data: { liked: boolean }) => setLiked(data.liked))
+        .catch(() => {});
     }
   }, [currentTrackId]);
+
+  const togglePlayerLike = useCallback(() => {
+    if (!currentTrackId || likeLockRef.current) return;
+    likeLockRef.current = true;
+    const newLiked = !liked;
+    setLiked(newLiked);
+    fetch(`/api/tracks/${currentTrackId}/likes`, { method: "POST", headers: getLikeHeaders(), credentials: "include" })
+      .then(r => r.json())
+      .then((data: { liked: boolean }) => setLiked(data.liked))
+      .catch(() => setLiked(!newLiked))
+      .finally(() => { setTimeout(() => { likeLockRef.current = false; }, 500); });
+  }, [currentTrackId, liked]);
 
   const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!progressRef.current || !duration) return;
@@ -123,7 +164,7 @@ export function PlayerBar() {
         </div>
 
         <div className="player-bar-right-section">
-          <Heart size={20} className="player-bar-heart-icon" fill="#ff4fd8" color="#ff4fd8" />
+          <Heart size={20} className="player-bar-heart-icon" fill={liked ? "#ff4fd8" : "none"} color="#ff4fd8" onClick={togglePlayerLike} style={{ cursor: "pointer" }} data-testid="button-player-like" />
           <Monitor size={18} className="player-bar-ctrl-icon" />
           <button onClick={toggleMute} className="player-bar-btn player-bar-ctrl-btn" data-testid="button-player-mute-right">
             {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
