@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
-import { Headphones, Heart, Users, Flame, Trophy, TrendingUp, Clock, Disc3, Plus, Download, MapPin, Check } from "lucide-react";
+import { Headphones, Heart, Users, Flame, Trophy, TrendingUp, Clock, Disc3, Plus, MapPin, Check, ChevronDown, ChevronUp, X, Music } from "lucide-react";
 import { type Album } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -17,6 +17,157 @@ type DashboardData = {
 };
 
 type AlbumWithCount = Album & { trackCount: number };
+
+type SimpleTrack = { id: number; title: string };
+
+function AlbumManagerCard({ album, creatorTracks, userId }: { album: AlbumWithCount; creatorTracks: SimpleTrack[]; userId: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const [albumTracks, setAlbumTracks] = useState<SimpleTrack[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [removing, setRemoving] = useState<number | null>(null);
+
+  const loadAlbumTracks = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/albums/${album.id}/tracks`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setAlbumTracks(data);
+      }
+    } catch {}
+    setLoading(false);
+  }, [album.id]);
+
+  useEffect(() => {
+    if (expanded) loadAlbumTracks();
+  }, [expanded, loadAlbumTracks]);
+
+  const albumTrackIds = new Set(albumTracks.map(t => t.id));
+  const availableTracks = creatorTracks.filter(t => !albumTrackIds.has(t.id));
+
+  const [error, setError] = useState<string | null>(null);
+
+  const addTrack = async (trackId: number) => {
+    setAdding(true);
+    setError(null);
+    try {
+      await apiRequest("POST", `/api/albums/${album.id}/tracks`, { trackId, userId });
+      await loadAlbumTracks();
+      queryClient.invalidateQueries({ queryKey: ["/api/creators"] });
+    } catch (e: any) {
+      setError(e?.message || "Failed to add track");
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const removeTrack = async (trackId: number) => {
+    setRemoving(trackId);
+    setError(null);
+    try {
+      await apiRequest("DELETE", `/api/albums/${album.id}/tracks/${trackId}`);
+      await loadAlbumTracks();
+      queryClient.invalidateQueries({ queryKey: ["/api/creators"] });
+    } catch (e: any) {
+      setError(e?.message || "Failed to remove track");
+    } finally {
+      setRemoving(null);
+    }
+  };
+
+  return (
+    <div style={{ background: "rgba(255,255,255,.02)", border: "1px solid rgba(108,240,255,.08)", borderRadius: 8, overflow: "hidden" }} data-testid={`dashboard-album-${album.id}`}>
+      <div
+        onClick={() => setExpanded(!expanded)}
+        style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", cursor: "pointer" }}
+        data-testid={`button-expand-album-${album.id}`}
+      >
+        <div style={{ width: 48, height: 48, borderRadius: 6, overflow: "hidden", background: "rgba(160,107,255,.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {album.coverUrl ? (
+            <img src={album.coverUrl} alt={album.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <Disc3 size={20} style={{ color: "rgba(160,107,255,.3)" }} />
+          )}
+        </div>
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{album.title}</div>
+          <div style={{ fontSize: 11, color: "rgba(170,182,232,.4)" }}>{album.trackCount} track{album.trackCount !== 1 ? "s" : ""}</div>
+        </div>
+        {expanded ? <ChevronUp size={16} style={{ color: "rgba(170,182,232,.4)", flexShrink: 0 }} /> : <ChevronDown size={16} style={{ color: "rgba(170,182,232,.4)", flexShrink: 0 }} />}
+      </div>
+
+      {expanded && (
+        <div style={{ borderTop: "1px solid rgba(108,240,255,.06)", padding: "12px 14px" }}>
+          {loading ? (
+            <div style={{ color: "rgba(170,182,232,.4)", fontSize: 13, textAlign: "center", padding: 8 }}>Loading tracks...</div>
+          ) : (
+            <>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#aab6e8", marginBottom: 8 }}>Songs in this album:</div>
+              {albumTracks.length === 0 ? (
+                <div style={{ color: "rgba(170,182,232,.3)", fontSize: 13, padding: "8px 0" }}>No songs added yet</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
+                  {albumTracks.map((track, i) => (
+                    <div key={track.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 6, background: "rgba(255,255,255,.02)" }} data-testid={`album-track-${album.id}-${track.id}`}>
+                      <span style={{ fontSize: 12, color: "rgba(170,182,232,.35)", width: 20, textAlign: "right", flexShrink: 0 }}>{i + 1}.</span>
+                      <Music size={13} style={{ color: "rgba(160,107,255,.4)", flexShrink: 0 }} />
+                      <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.title}</span>
+                      <button
+                        onClick={() => removeTrack(track.id)}
+                        disabled={removing === track.id}
+                        style={{ background: "rgba(255,79,216,.08)", border: "1px solid rgba(255,79,216,.2)", borderRadius: 4, padding: "3px 8px", color: "#ff4fd8", fontSize: 11, fontWeight: 600, cursor: removing === track.id ? "wait" : "pointer", display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}
+                        data-testid={`button-remove-track-${album.id}-${track.id}`}
+                      >
+                        <X size={11} /> {removing === track.id ? "..." : "Remove"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {availableTracks.length > 0 && (
+                <>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#6cf0ff", marginBottom: 8, marginTop: 4 }}>Add a song:</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {availableTracks.map((track) => (
+                      <div key={track.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 8px", borderRadius: 6, background: "rgba(108,240,255,.03)" }} data-testid={`available-track-${album.id}-${track.id}`}>
+                        <Music size={13} style={{ color: "rgba(108,240,255,.3)", flexShrink: 0 }} />
+                        <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: "rgba(234,240,255,.7)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.title}</span>
+                        <button
+                          onClick={() => addTrack(track.id)}
+                          disabled={adding}
+                          style={{ background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.2)", borderRadius: 4, padding: "3px 10px", color: "#6cf0ff", fontSize: 11, fontWeight: 600, cursor: adding ? "wait" : "pointer", display: "flex", alignItems: "center", gap: 3, flexShrink: 0 }}
+                          data-testid={`button-add-track-${album.id}-${track.id}`}
+                        >
+                          <Plus size={11} /> Add
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {error && (
+                <div style={{ marginTop: 8, padding: "6px 10px", background: "rgba(255,79,216,.08)", border: "1px solid rgba(255,79,216,.2)", borderRadius: 6, color: "#ff4fd8", fontSize: 12, fontWeight: 600 }} data-testid={`album-error-${album.id}`}>{error}</div>
+              )}
+
+              <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+                <a
+                  href={`/album/${album.id}`}
+                  style={{ padding: "6px 14px", background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.2)", borderRadius: 6, color: "#6cf0ff", fontWeight: 600, fontSize: 12, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}
+                  data-testid={`button-view-album-${album.id}`}
+                >
+                  View Album Page
+                </a>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function CreatorDashboard() {
   const [, params] = useRoute("/creator/:id/dashboard");
@@ -320,26 +471,12 @@ export default function CreatorDashboard() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {myAlbums.map((album) => (
-                <div key={album.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 10px", borderRadius: 8, background: "rgba(255,255,255,.02)" }} data-testid={`dashboard-album-${album.id}`}>
-                  <div style={{ width: 48, height: 48, borderRadius: 6, overflow: "hidden", background: "rgba(160,107,255,.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    {album.coverUrl ? (
-                      <img src={album.coverUrl} alt={album.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      <Disc3 size={20} style={{ color: "rgba(160,107,255,.3)" }} />
-                    )}
-                  </div>
-                  <div style={{ flex: 1, overflow: "hidden" }}>
-                    <a href={`/album/${album.id}`} style={{ fontSize: 14, fontWeight: 600, color: "#eaf0ff", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{album.title}</a>
-                    <div style={{ fontSize: 11, color: "rgba(170,182,232,.4)" }}>{album.trackCount} track{album.trackCount !== 1 ? "s" : ""}</div>
-                  </div>
-                  <a
-                    href={`/album/${album.id}`}
-                    style={{ padding: "6px 14px", background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.2)", borderRadius: 6, color: "#6cf0ff", fontWeight: 600, fontSize: 12, textDecoration: "none", display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}
-                    data-testid={`button-view-album-${album.id}`}
-                  >
-                    <Download size={12} /> Download Album
-                  </a>
-                </div>
+                <AlbumManagerCard
+                  key={album.id}
+                  album={album}
+                  creatorTracks={data.tracks.map(t => ({ id: t.id, title: t.title }))}
+                  userId={user!.id}
+                />
               ))}
             </div>
           )}
