@@ -162,10 +162,11 @@ export default function AlbumPage() {
   function handleAlbumShare() {
     const shareUrl = `${window.location.origin}/album/${albumId}`;
     const shareText = data ? `Check out "${data.album.title}" on Hit Wave Media!` : "Check out this album on Hit Wave Media!";
-    if (typeof navigator !== "undefined" && navigator.share) {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile && navigator.share) {
       navigator.share({ title: data ? `${data.album.title} — Hit Wave Media` : "Hit Wave Media", text: shareText, url: shareUrl }).catch(() => {});
-    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(shareUrl).then(() => alert("Album link copied!")).catch(() => prompt("Copy this link:", shareUrl));
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).then(() => alert("Album link copied to clipboard!")).catch(() => prompt("Copy this link:", shareUrl));
     } else {
       prompt("Copy this link:", shareUrl);
     }
