@@ -849,6 +849,31 @@ export async function registerRoutes(
     }
   });
 
+  app.patch("/api/tracks/:id/cover", upload.single("cover"), async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.userId || (req.body?.userId ? parseInt(req.body.userId) : undefined);
+      if (!userId) return res.status(401).json({ message: "Not authenticated" });
+
+      const trackId = parseInt(req.params.id);
+      if (isNaN(trackId)) return res.status(400).json({ message: "Invalid track ID" });
+
+      const track = await storage.getTrack(trackId);
+      if (!track) return res.status(404).json({ message: "Track not found" });
+
+      const creator = await storage.getCreatorByUserId(userId);
+      if (!creator || creator.id !== track.creatorId) return res.status(403).json({ message: "Not your track" });
+
+      if (!req.file) return res.status(400).json({ message: "Cover image is required" });
+
+      const coverUrl = await uploadToCloudinary(req.file.path, "image");
+      await storage.updateTrackCoverUrl(trackId, coverUrl);
+      res.json({ coverUrl });
+    } catch (err: any) {
+      console.error("Track cover update error:", err);
+      res.status(500).json({ message: err?.message || "Failed to update cover" });
+    }
+  });
+
   app.post("/api/cloudinary/sign", express.json(), async (_req, res) => {
     try {
       const timestamp = Math.round(Date.now() / 1000);
@@ -1709,6 +1734,8 @@ export async function registerRoutes(
           plays: track.plays,
           likes: likeCount,
           status,
+          fileUrl: track.fileUrl,
+          coverUrl: track.coverUrl,
         });
       }
 

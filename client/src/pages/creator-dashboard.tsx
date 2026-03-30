@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
-import { Headphones, Heart, Users, Flame, Trophy, TrendingUp, Clock, Disc3, Plus, MapPin, Check, ChevronDown, ChevronUp, X, Music } from "lucide-react";
+import { Headphones, Heart, Users, Flame, Trophy, TrendingUp, Clock, Disc3, Plus, MapPin, Check, ChevronDown, ChevronUp, X, Music, Download, ImagePlus } from "lucide-react";
 import { type Album } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -11,7 +11,7 @@ type AuthUser = { id: number; name: string; email: string; creatorId: number | n
 type DashboardData = {
   thisWeek: { plays: number; likes: number; followers: number; rankStatus: string };
   performance: { mostPlayedTrack: { title: string; plays: number }; mostLikedTrack: { title: string; likes: number }; conversionRate: number };
-  tracks: { id: number; title: string; plays: number; likes: number; status: string }[];
+  tracks: { id: number; title: string; plays: number; likes: number; status: string; fileUrl: string | null; coverUrl: string | null }[];
   motivation: { likesAwayFromTop25: number; inTop25: boolean };
   nextReset: { days: number; hours: number; minutes: number };
 };
@@ -165,6 +165,94 @@ function AlbumManagerCard({ album, creatorTracks, userId }: { album: AlbumWithCo
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+type DashboardTrack = DashboardData["tracks"][number];
+
+function TrackManagerRow({ track, userId }: { track: DashboardTrack; userId: number }) {
+  const [uploading, setUploading] = useState(false);
+  const [coverUrl, setCoverUrl] = useState(track.coverUrl);
+  const [coverMsg, setCoverMsg] = useState<string | null>(null);
+  const fileInputRef = useCallback((node: HTMLInputElement | null) => {
+    if (node) node.value = "";
+  }, []);
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setCoverMsg(null);
+    try {
+      const formData = new FormData();
+      formData.append("cover", file);
+      formData.append("userId", String(userId));
+      const res = await fetch(`/api/tracks/${track.id}/cover`, { method: "PATCH", body: formData });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Upload failed");
+      }
+      const data = await res.json();
+      setCoverUrl(data.coverUrl);
+      setCoverMsg("Cover updated!");
+      queryClient.invalidateQueries({ queryKey: ["/api/creators"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tracks/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/home-data"] });
+      setTimeout(() => setCoverMsg(null), 3000);
+    } catch (err: any) {
+      setCoverMsg(err?.message || "Failed to upload cover");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(108,240,255,.06)" }} data-testid={`row-track-${track.id}`}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 6, overflow: "hidden", background: "rgba(160,107,255,.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {coverUrl ? (
+            <img src={coverUrl} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <Music size={18} style={{ color: "rgba(160,107,255,.3)" }} />
+          )}
+        </div>
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.title}</div>
+          <div style={{ fontSize: 11, color: "rgba(170,182,232,.4)", display: "flex", gap: 10 }}>
+            <span>{track.plays} plays</span>
+            <span>{track.likes} likes</span>
+            {track.status !== "-" && <span>{track.status}</span>}
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap", alignItems: "center" }}>
+        {track.fileUrl && (
+          <a
+            href={`/api/tracks/${track.id}/download`}
+            style={{ padding: "5px 12px", background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.2)", borderRadius: 6, color: "#6cf0ff", fontWeight: 600, fontSize: 12, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}
+            data-testid={`button-download-track-${track.id}`}
+          >
+            <Download size={12} /> Download
+          </a>
+        )}
+        <label
+          style={{ padding: "5px 12px", background: "rgba(160,107,255,.08)", border: "1px solid rgba(160,107,255,.2)", borderRadius: 6, color: "#a06bff", fontWeight: 600, fontSize: 12, cursor: uploading ? "wait" : "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}
+          data-testid={`button-cover-track-${track.id}`}
+        >
+          <ImagePlus size={12} /> {coverUrl ? "Change Cover" : "Add Cover"}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleCoverUpload}
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            disabled={uploading}
+          />
+        </label>
+        {uploading && <span style={{ fontSize: 11, color: "rgba(170,182,232,.4)" }}>Uploading...</span>}
+        {coverMsg && <span style={{ fontSize: 11, color: coverMsg.includes("fail") || coverMsg.includes("Failed") ? "#ff4fd8" : "#4ade80", fontWeight: 600 }}>{coverMsg}</span>}
+      </div>
     </div>
   );
 }
@@ -440,19 +528,8 @@ export default function CreatorDashboard() {
 
         <div style={sectionTitleStyle}>Your Tracks:</div>
         <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(108,240,255,.1)", borderRadius: 8, overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 70px 90px", padding: "10px 14px", background: "rgba(108,240,255,.06)", fontSize: 11, fontWeight: 700, color: "rgba(170,182,232,.6)", textTransform: "uppercase", letterSpacing: 0.5 }}>
-            <span>Track Name</span>
-            <span style={{ textAlign: "center" }}>Plays</span>
-            <span style={{ textAlign: "center" }}>Likes</span>
-            <span style={{ textAlign: "center" }}>Status</span>
-          </div>
           {data.tracks.map((track) => (
-            <div key={track.id} style={{ display: "grid", gridTemplateColumns: "1fr 70px 70px 90px", padding: "10px 14px", borderTop: "1px solid rgba(108,240,255,.06)", alignItems: "center" }} data-testid={`row-track-${track.id}`}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: "#eaf0ff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{track.title}</span>
-              <span style={{ textAlign: "center", fontSize: 14, fontWeight: 700, color: "#eaf0ff" }}>{track.plays}</span>
-              <span style={{ textAlign: "center", fontSize: 14, fontWeight: 700, color: "#eaf0ff" }}>{track.likes}</span>
-              <span style={{ textAlign: "center" }}>{getStatusBadge(track.status)}</span>
-            </div>
+            <TrackManagerRow key={track.id} track={track} userId={user!.id} />
           ))}
           {data.tracks.length === 0 && (
             <div style={{ padding: 20, textAlign: "center", color: "rgba(170,182,232,.4)", fontSize: 14 }}>No tracks uploaded yet</div>
