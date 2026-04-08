@@ -117,6 +117,18 @@ export default function AlbumPage() {
   const albumTracksRef = useRef<Track[]>([]);
 
   useEffect(() => {
+    const stopDj = () => {
+      if (djAudioRef.current) {
+        djAudioRef.current.pause();
+        djAudioRef.current = null;
+        setDjPlaying(false);
+      }
+    };
+    window.addEventListener("hwm-stop-all-audio", stopDj);
+    return () => window.removeEventListener("hwm-stop-all-audio", stopDj);
+  }, []);
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem("hwm_user");
       if (stored) setUser(JSON.parse(stored));

@@ -122,6 +122,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const loadAndPlay = useCallback((audio: HTMLAudioElement, url: string) => {
+    audio.pause();
     audio.oncanplay = null;
     audio.onerror = null;
     audio.onloadeddata = null;
@@ -260,6 +261,15 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     cancelPendingFetch();
 
     const isNewTrack = currentTrackIdRef.current !== trackId;
+
+    if (isNewTrack) {
+      audio.pause();
+      audio.oncanplay = null;
+      audio.onerror = null;
+      audio.onloadeddata = null;
+      window.dispatchEvent(new CustomEvent("hwm-stop-all-audio"));
+    }
+
     currentTrackIdRef.current = trackId;
     setCurrentTrackId(trackId);
     setCurrentFileUrl(fileUrl);
