@@ -45,3 +45,7 @@ waitForPort = 5000
 CLOUDINARY_CLOUD_NAME = "dc1fkoosp"
 CLOUDINARY_API_KEY = "653566921657838"
 ELEVENLABS_VOICE_ID = "nF3LfwDKm2NpoSYUrBwg"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 20000
