@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { Upload as UploadIcon } from "lucide-react";
+import { Upload as UploadIcon, ImagePlus, X } from "lucide-react";
 import { PageNav } from "@/components/page-nav";
 import { ALL_GENRES } from "@/lib/genres";
 
-const ALLOWED_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".m4v", ".aac", ".mp4", ".webm", ".mov", ".jpg", ".jpeg", ".png", ".gif", ".webp"];
-const ACCEPT = ALLOWED_EXTS.join(",");
+const SONG_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".m4v", ".aac", ".mp4", ".webm", ".mov"];
+const SONG_ACCEPT = SONG_EXTS.join(",");
+const COVER_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+const COVER_ACCEPT = COVER_EXTS.join(",");
 
 export default function Upload() {
   const [title, setTitle] = useState("");
@@ -20,7 +22,6 @@ export default function Upload() {
   const [authChecking, setAuthChecking] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [songDescription, setSongDescription] = useState("");
@@ -30,6 +31,7 @@ export default function Upload() {
   const [needsLocation, setNeedsLocation] = useState(false);
   const [needsDjName, setNeedsDjName] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
   const TOOLS = ["Suno", "Udio", "Beatoven.ai", "Soundraw", "Stable Audio", "Mubert", "Riffusion", "Uberduck AI", "MusicGen", "Producer AI", "Boomy", "Ecrett Music", "Soundful", "Other"];
@@ -73,66 +75,61 @@ export default function Upload() {
     }
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (coverPreview) URL.revokeObjectURL(coverPreview);
+    };
+  }, [coverPreview]);
+
   function toggleTool(tool: string) {
     setAiTools((prev) =>
       prev.includes(tool) ? prev.filter((t) => t !== tool) : [...prev, tool]
     );
   }
 
-  const AUDIO_EXTS = [".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"];
-  const VIDEO_EXTS = [".mp4", ".webm", ".mov", ".m4v"];
-  const IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleSongFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFiles = e.target.files;
     if (!selectedFiles || selectedFiles.length === 0) return;
 
-    if (preview) URL.revokeObjectURL(preview);
-    if (coverPreview && coverPreview !== "video") URL.revokeObjectURL(coverPreview);
-    setPreview(null);
+    const f = selectedFiles[0];
+    const ext = f.name.substring(f.name.lastIndexOf(".")).toLowerCase();
+    if (!SONG_EXTS.includes(ext)) {
+      setError("Unsupported file type. Please select an audio or video file.");
+      return;
+    }
+    if (f.size > 200 * 1024 * 1024) {
+      setError("File too large: " + f.name + " (max 200MB)");
+      return;
+    }
+    setError("");
+    setFile(f);
+  }
+
+  function handleCoverFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selectedFiles = e.target.files;
+    if (!selectedFiles || selectedFiles.length === 0) return;
+
+    const f = selectedFiles[0];
+    const ext = f.name.substring(f.name.lastIndexOf(".")).toLowerCase();
+    if (!COVER_EXTS.includes(ext)) {
+      setError("Unsupported image type. Please select a JPG, PNG, GIF, or WebP file.");
+      return;
+    }
+    if (f.size > 10 * 1024 * 1024) {
+      setError("Cover image too large: " + f.name + " (max 10MB)");
+      return;
+    }
+    setError("");
+    if (coverPreview) URL.revokeObjectURL(coverPreview);
+    setCoverFile(f);
+    setCoverPreview(URL.createObjectURL(f));
+  }
+
+  function removeCover() {
+    if (coverPreview) URL.revokeObjectURL(coverPreview);
     setCoverFile(null);
     setCoverPreview(null);
-
-    let audioFile: File | null = null;
-    let videoFile: File | null = null;
-    let imageFile: File | null = null;
-
-    for (let i = 0; i < selectedFiles.length; i++) {
-      const f = selectedFiles[i];
-      const ext = f.name.substring(f.name.lastIndexOf(".")).toLowerCase();
-      if (!ALLOWED_EXTS.includes(ext)) {
-        setError("Unsupported file: " + f.name);
-        return;
-      }
-      if (f.size > 200 * 1024 * 1024) {
-        setError("File too large: " + f.name + " (max 200MB)");
-        return;
-      }
-      if (AUDIO_EXTS.includes(ext)) audioFile = f;
-      else if (VIDEO_EXTS.includes(ext)) videoFile = f;
-      else if (IMAGE_EXTS.includes(ext)) imageFile = f;
-    }
-
-    setError("");
-
-    if (audioFile && (imageFile || videoFile)) {
-      setFile(audioFile);
-      const cover = imageFile || videoFile!;
-      setCoverFile(cover);
-      const coverExt = cover.name.substring(cover.name.lastIndexOf(".")).toLowerCase();
-      setCoverPreview(IMAGE_EXTS.includes(coverExt) ? URL.createObjectURL(cover) : "video");
-    } else if (audioFile) {
-      setFile(audioFile);
-    } else if (videoFile) {
-      setFile(videoFile);
-    } else if (imageFile) {
-      setFile(imageFile);
-      setPreview(URL.createObjectURL(imageFile));
-    } else if (selectedFiles.length === 1) {
-      setFile(selectedFiles[0]);
-      const ext = selectedFiles[0].name.substring(selectedFiles[0].name.lastIndexOf(".")).toLowerCase();
-      if (IMAGE_EXTS.includes(ext)) setPreview(URL.createObjectURL(selectedFiles[0]));
-    }
+    if (coverInputRef.current) coverInputRef.current.value = "";
   }
 
   async function uploadToCloudinaryDirect(f: File, resourceType: string): Promise<string> {
@@ -176,19 +173,15 @@ export default function Upload() {
       const stored = localStorage.getItem("hwm_user");
       const userData = stored ? JSON.parse(stored) : null;
 
-      const fileExt = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-      const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(fileExt);
-      const fileResourceType = isImage ? "image" : "video";
+      const fileResourceType = "video";
 
       setUploadStatus("Uploading file to cloud...");
       const cloudinaryFileUrl = await uploadToCloudinaryDirect(file, fileResourceType);
 
       let cloudinaryCoverUrl = "";
       if (coverFile) {
-        const coverExt = coverFile.name.substring(coverFile.name.lastIndexOf(".")).toLowerCase();
-        const isCoverImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(coverExt);
-        setUploadStatus("Uploading cover...");
-        cloudinaryCoverUrl = await uploadToCloudinaryDirect(coverFile, isCoverImage ? "image" : "video");
+        setUploadStatus("Uploading cover art...");
+        cloudinaryCoverUrl = await uploadToCloudinaryDirect(coverFile, "image");
       }
 
       setUploadStatus("Saving track...");
@@ -271,8 +264,7 @@ export default function Upload() {
   function getFileLabel(f: File) {
     const ext = f.name.substring(f.name.lastIndexOf(".")).toLowerCase();
     if ([".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac"].includes(ext)) return "Audio";
-    if ([".mp4", ".webm", ".mov"].includes(ext)) return "Video";
-    return "Image";
+    return "Video";
   }
 
   return (
@@ -348,13 +340,12 @@ export default function Upload() {
             )}
 
             <div style={{ marginBottom: 16 }}>
-              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Upload File *</label>
+              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>Upload Song *</label>
               <input
                 ref={fileInputRef}
                 type="file"
-                accept={ACCEPT}
-                multiple
-                onChange={handleFileChange}
+                accept={SONG_ACCEPT}
+                onChange={handleSongFileChange}
                 style={{ display: "none" }}
                 data-testid="input-file"
               />
@@ -377,36 +368,121 @@ export default function Upload() {
               >
                 {file ? (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-                    {coverPreview && coverPreview !== "video" && (
-                      <img src={coverPreview} alt="Cover" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6 }} />
-                    )}
-                    {preview && !coverFile && (
-                      <img src={preview} alt="Preview" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 6 }} data-testid="img-file-preview" />
-                    )}
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
                       <span style={{ background: "rgba(108,240,255,.15)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600 }}>{getFileLabel(file)}</span>
                       <span>{file.name}</span>
                       <span style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(file.size / (1024 * 1024)).toFixed(1)} MB)</span>
                     </div>
-                    {coverFile && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ background: "rgba(160,107,255,.15)", padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, color: "#c9a0ff" }}>
-                          {coverPreview === "video" ? "Video" : "Image"}
-                        </span>
-                        <span style={{ fontSize: 13 }}>{coverFile.name}</span>
-                      </div>
-                    )}
-                    <div style={{ color: "rgba(170,182,232,.4)", fontSize: 12, marginTop: 2 }}>Click to change files</div>
+                    <div style={{ color: "rgba(170,182,232,.4)", fontSize: 12, marginTop: 2 }}>Click to change file</div>
                   </div>
                 ) : (
                   <div>
                     <UploadIcon size={28} style={{ marginBottom: 8, opacity: 0.5 }} />
-                    <div style={{ fontSize: 15, marginBottom: 4 }}>Click to upload your files</div>
-                    <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)" }}>Select your song + image or video together</div>
-                    <div style={{ fontSize: 11, marginTop: 6, color: "rgba(170,182,232,.3)" }}>You can select multiple files at once (max 50MB each)</div>
+                    <div style={{ fontSize: 15, marginBottom: 4 }}>Click to upload your song</div>
+                    <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)" }}>MP3, WAV, OGG, FLAC, AAC, MP4, M4V, WebM, MOV</div>
+                    <div style={{ fontSize: 11, marginTop: 6, color: "rgba(170,182,232,.3)" }}>Max 200MB</div>
                   </div>
                 )}
               </div>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", color: "#aab6e8", fontSize: 13, marginBottom: 6 }}>
+                Add Cover Art <span style={{ color: "rgba(170,182,232,.4)", fontWeight: 400 }}>(optional)</span>
+              </label>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept={COVER_ACCEPT}
+                onChange={handleCoverFileChange}
+                style={{ display: "none" }}
+                data-testid="input-cover"
+              />
+              {coverFile && coverPreview ? (
+                <div
+                  style={{
+                    width: "100%",
+                    padding: "16px 14px",
+                    background: "rgba(160,107,255,.08)",
+                    border: "2px dashed rgba(160,107,255,.4)",
+                    borderRadius: 6,
+                    boxSizing: "border-box" as const,
+                  }}
+                  data-testid="cover-art-preview"
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <img
+                      src={coverPreview}
+                      alt="Cover art preview"
+                      style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 6, flexShrink: 0 }}
+                      data-testid="img-cover-preview"
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ color: "#c9a0ff", fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{coverFile.name}</div>
+                      <div style={{ color: "rgba(170,182,232,.5)", fontSize: 12 }}>({(coverFile.size / (1024 * 1024)).toFixed(1)} MB)</div>
+                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => coverInputRef.current?.click()}
+                          style={{
+                            padding: "4px 12px",
+                            background: "rgba(160,107,255,.15)",
+                            border: "1px solid rgba(160,107,255,.3)",
+                            borderRadius: 4,
+                            color: "#c9a0ff",
+                            fontSize: 12,
+                            cursor: "pointer",
+                          }}
+                          data-testid="button-change-cover"
+                        >
+                          Change
+                        </button>
+                        <button
+                          type="button"
+                          onClick={removeCover}
+                          style={{
+                            padding: "4px 12px",
+                            background: "rgba(255,79,216,.1)",
+                            border: "1px solid rgba(255,79,216,.25)",
+                            borderRadius: 4,
+                            color: "#ff4fd8",
+                            fontSize: 12,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                          data-testid="button-remove-cover"
+                        >
+                          <X size={12} /> Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => coverInputRef.current?.click()}
+                  style={{
+                    width: "100%",
+                    padding: "20px 14px",
+                    background: "rgba(255,255,255,.04)",
+                    border: "2px dashed rgba(160,107,255,.15)",
+                    borderRadius: 6,
+                    color: "rgba(170,182,232,.5)",
+                    fontSize: 14,
+                    textAlign: "center",
+                    cursor: "pointer",
+                    boxSizing: "border-box" as const,
+                    transition: "border-color 0.2s, background 0.2s",
+                  }}
+                  data-testid="button-choose-cover"
+                >
+                  <ImagePlus size={24} style={{ marginBottom: 6, opacity: 0.5 }} />
+                  <div style={{ fontSize: 14, marginBottom: 4 }}>Click to add cover art</div>
+                  <div style={{ fontSize: 12, color: "rgba(170,182,232,.4)" }}>JPG, PNG, GIF, or WebP (max 10MB)</div>
+                </div>
+              )}
             </div>
 
             <div style={{ marginBottom: 16 }}>
