@@ -123,22 +123,21 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
           }}>
             {thumbSrc ? (
               <img src={thumbSrc} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            ) : null}
-            <div style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: isCurrentlyPlaying ? "rgba(0,0,0,.15)" : "rgba(0,0,0,.35)",
-              transition: "background 0.2s",
-            }}>
-              {isCurrentlyPlaying ? (
-                <span style={{ fontSize: "2rem", color: "#fff", letterSpacing: 4 }}>{"\u275A\u275A"}</span>
-              ) : (
-                <span style={{ fontSize: "2.5rem", color: "#fff", marginLeft: 4 }}>{"\u25B6"}</span>
-              )}
-            </div>
+            ) : (
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                {isCurrentlyPlaying ? (
+                  <span style={{ fontSize: "2rem", color: "#fff", letterSpacing: 4 }}>{"\u275A\u275A"}</span>
+                ) : (
+                  <span style={{ fontSize: "2.5rem", color: "#fff", marginLeft: 4 }}>{"\u25B6"}</span>
+                )}
+              </div>
+            )}
           </div>
           <div style={{ textAlign: "center", width: "100%" }}>
             <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#eaf0ff", marginBottom: 3, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} data-testid={`text-track-title-${track.id}`}>
