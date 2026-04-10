@@ -230,23 +230,16 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setIsPlaying(true);
     });
 
-    const stopAudio = () => {
+    const stopOnLeave = () => {
       audio.pause();
     };
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        audio.pause();
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("pagehide", stopAudio);
-    window.addEventListener("beforeunload", stopAudio);
+    window.addEventListener("pagehide", stopOnLeave);
+    window.addEventListener("beforeunload", stopOnLeave);
 
     return () => {
       audio.pause();
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("pagehide", stopAudio);
-      window.removeEventListener("beforeunload", stopAudio);
+      window.removeEventListener("pagehide", stopOnLeave);
+      window.removeEventListener("beforeunload", stopOnLeave);
     };
   }, [loadAndPlay]);
 
@@ -270,6 +263,18 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
   }, []);
 
+  const stopAllPageAudio = useCallback(() => {
+    document.querySelectorAll("audio, video").forEach((el) => {
+      const media = el as HTMLMediaElement;
+      if (media !== audioRef.current) {
+        media.pause();
+        media.src = "";
+        media.load();
+      }
+    });
+    window.dispatchEvent(new CustomEvent("hwm-stop-all-audio"));
+  }, []);
+
   const play = useCallback((trackId: number, fileUrl: string, meta?: TrackMeta, options?: PlayOptions) => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -279,12 +284,13 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
     const isNewTrack = currentTrackIdRef.current !== trackId;
 
+    audio.pause();
+    audio.oncanplay = null;
+    audio.onerror = null;
+    audio.onloadeddata = null;
+
     if (isNewTrack) {
-      audio.pause();
-      audio.oncanplay = null;
-      audio.onerror = null;
-      audio.onloadeddata = null;
-      window.dispatchEvent(new CustomEvent("hwm-stop-all-audio"));
+      stopAllPageAudio();
     }
 
     currentTrackIdRef.current = trackId;
@@ -326,9 +332,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       return;
     }
 
-    audio.pause();
-    audio.oncanplay = null;
-    audio.onerror = null;
     playingIntroRef.current = false;
     setIsPlayingIntro(false);
     pendingSongUrlRef.current = null;
@@ -426,7 +429,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
 
     loadAndPlay(audio, fileUrl);
-  }, [loadAndPlay, countPlay, cancelPendingFetch, primeAudio]);
+  }, [loadAndPlay, countPlay, cancelPendingFetch, primeAudio, stopAllPageAudio]);
 
   const pause = useCallback(() => {
     const audio = audioRef.current;
@@ -442,13 +445,14 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       audio.oncanplay = null;
       audio.onerror = null;
     }
+    stopAllPageAudio();
     cancelPendingFetch();
     playingIntroRef.current = false;
     setIsPlaying(false);
     setIsPlayingIntro(false);
     pendingSongUrlRef.current = null;
     loadingRef.current = false;
-  }, [cancelPendingFetch]);
+  }, [cancelPendingFetch, stopAllPageAudio]);
 
   const toggle = useCallback((trackId?: number, fileUrl?: string, meta?: TrackMeta, options?: PlayOptions) => {
     const audio = audioRef.current;

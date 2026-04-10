@@ -1393,8 +1393,6 @@ export async function registerRoutes(
   <meta property="og:image" content="${ogImage}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="1200" />
-  ${track.fileUrl ? `<meta property="og:audio" content="${track.fileUrl}" />
-  <meta property="og:audio:type" content="audio/mpeg" />` : ""}
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${ogTitle}" />
   <meta name="twitter:description" content="${ogDesc}" />
