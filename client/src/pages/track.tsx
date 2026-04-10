@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "wouter";
 import { type Track, type Creator } from "@shared/schema";
@@ -5,9 +6,12 @@ import { TrackRow } from "@/components/track-row";
 import { Music, Share2, Download } from "lucide-react";
 import { PageNav } from "@/components/page-nav";
 import { getTrackThumbnail } from "@/lib/utils";
+import { useAudioPlayer } from "@/lib/audioPlayer";
 
 export default function TrackPage() {
   const { id } = useParams<{ id: string }>();
+  const { play, currentTrackId } = useAudioPlayer();
+  const autoPlayedRef = useRef(false);
 
   const { data, isLoading, error } = useQuery<{ track: Track; creator: Creator | null }>({
     queryKey: ["/api/track", id],
@@ -15,6 +19,18 @@ export default function TrackPage() {
 
   const track = data?.track;
   const creator = data?.creator;
+
+  useEffect(() => {
+    if (track && track.fileUrl && !autoPlayedRef.current && currentTrackId !== track.id) {
+      autoPlayedRef.current = true;
+      play(track.id, track.fileUrl, {
+        title: track.title,
+        artist: track.artist,
+        coverUrl: track.coverUrl,
+        djIntroUrl: (track as any).djIntroUrl,
+      });
+    }
+  }, [track, play, currentTrackId]);
 
   function handleShare() {
     const shareUrl = `${window.location.origin}/track/${id}`;
