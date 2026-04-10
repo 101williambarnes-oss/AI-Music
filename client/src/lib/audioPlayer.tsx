@@ -230,7 +230,17 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setIsPlaying(true);
     });
 
-    return () => { audio.pause(); };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        audio.pause();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      audio.pause();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [loadAndPlay]);
 
   const countPlay = useCallback((trackId: number) => {

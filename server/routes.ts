@@ -1371,7 +1371,10 @@ export async function registerRoutes(
       const host = req.get("host") || "hitwavemedia.com";
       const protocol = req.protocol === "https" || host.includes("hitwavemedia.com") ? "https" : req.protocol;
       const baseUrl = `${protocol}://${host}`;
-      const ogImage = track.coverUrl || `${baseUrl}/images/og-preview.png`;
+      let ogImage = track.coverUrl || `${baseUrl}/images/og-preview.png`;
+      if (ogImage.includes("res.cloudinary.com") && ogImage.includes("/upload/")) {
+        ogImage = ogImage.replace("/upload/", "/upload/c_fill,w_1200,h_1200,q_auto,f_auto/");
+      }
       const ogTitle = `${track.title} by ${creatorName}`;
       const ogDesc = `Listen to "${track.title}" by ${creatorName} on Hit Wave Media — The Home of AI Music. Tap to play.`;
       const ogUrl = `${baseUrl}/track/${id}`;
@@ -1388,8 +1391,8 @@ export async function registerRoutes(
   <meta property="og:type" content="music.song" />
   <meta property="og:site_name" content="Hit Wave Media" />
   <meta property="og:image" content="${ogImage}" />
-  <meta property="og:image:width" content="512" />
-  <meta property="og:image:height" content="512" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="1200" />
   ${track.fileUrl ? `<meta property="og:audio" content="${track.fileUrl}" />
   <meta property="og:audio:type" content="audio/mpeg" />` : ""}
   <meta name="twitter:card" content="summary_large_image" />
@@ -1436,7 +1439,10 @@ export async function registerRoutes(
       const host = req.get("host") || "hitwavemedia.com";
       const protocol = req.protocol === "https" || host.includes("hitwavemedia.com") ? "https" : req.protocol;
       const baseUrl = `${protocol}://${host}`;
-      const ogImage = a.coverUrl || `${baseUrl}/images/og-preview.png`;
+      let ogImage = a.coverUrl || `${baseUrl}/images/og-preview.png`;
+      if (ogImage.includes("res.cloudinary.com") && ogImage.includes("/upload/")) {
+        ogImage = ogImage.replace("/upload/", "/upload/c_fill,w_1200,h_1200,q_auto,f_auto/");
+      }
       const ogTitle = `${a.title} by ${creatorName}`;
       const ogDesc = a.description ? `${a.description} — ${trackCount} track${trackCount !== 1 ? "s" : ""} on Hit Wave Media.` : `Listen to "${a.title}" by ${creatorName} — ${trackCount} track${trackCount !== 1 ? "s" : ""} on Hit Wave Media.`;
       const ogUrl = `${baseUrl}/album/${id}`;
@@ -1453,8 +1459,8 @@ export async function registerRoutes(
   <meta property="og:type" content="music.album" />
   <meta property="og:site_name" content="Hit Wave Media" />
   <meta property="og:image" content="${ogImage}" />
-  <meta property="og:image:width" content="512" />
-  <meta property="og:image:height" content="512" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="1200" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${ogTitle}" />
   <meta name="twitter:description" content="${ogDesc}" />

@@ -92,11 +92,11 @@ export default function TrackPage() {
       <div className="wrap" style={{ paddingTop: 16, maxWidth: 900, margin: "0 auto" }}>
         <PageNav />
         <section className="panel" style={{ padding: "20px 24px" }}>
-          <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
             <div style={{
-              width: 220,
-              height: 220,
-              borderRadius: 12,
+              width: 320,
+              height: 320,
+              borderRadius: 14,
               overflow: "hidden",
               background: "rgba(160,107,255,.08)",
               flexShrink: 0,
@@ -105,6 +105,7 @@ export default function TrackPage() {
               justifyContent: "center",
               border: "1px solid rgba(108,240,255,.1)",
               margin: "0 auto",
+              boxShadow: "0 4px 24px rgba(0,0,0,.4)",
             }} data-testid="img-track-cover">
               {coverSrc ? (
                 <img src={coverSrc} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
