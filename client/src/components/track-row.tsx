@@ -80,9 +80,100 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
       .finally(() => setGeneratingReel(false));
   }
 
+  const isActive = currentTrackId === track.id;
+  const thumbSrc = getTrackThumbnail(track) || creatorData?.creator?.avatarUrl || null;
+
   return (
-    <div data-testid={`track-row-${track.id}`}>
-      <div style={{ display: "flex", alignItems: "stretch", gap: 0 }}>
+    <div data-testid={`track-row-${track.id}`} style={{ transition: "all 0.3s ease" }}>
+      {isActive && (
+        <div
+          onClick={handleRowClick}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "16px 12px 12px",
+            borderRadius: 16,
+            background: "linear-gradient(180deg, rgba(160,107,255,.1) 0%, rgba(15,20,40,.5) 100%)",
+            border: "1px solid rgba(160,107,255,.25)",
+            boxShadow: "0 4px 24px rgba(160,107,255,.12), 0 0 40px rgba(108,240,255,.06)",
+            marginBottom: 10,
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+          }}
+          data-testid={`expanded-player-${track.id}`}
+        >
+          <div style={{
+            width: "100%",
+            maxWidth: 220,
+            aspectRatio: "1",
+            borderRadius: 14,
+            overflow: "hidden",
+            background: "radial-gradient(circle at 30% 30%, rgba(108,240,255,.8), rgba(160,107,255,.35) 55%, rgba(255,79,216,.25))",
+            border: "1px solid rgba(108,240,255,.15)",
+            boxShadow: isCurrentlyPlaying
+              ? "0 0 30px rgba(160,107,255,.25), 0 0 60px rgba(108,240,255,.1)"
+              : "0 0 12px rgba(0,0,0,.3)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+            margin: "0 auto 12px",
+            transition: "box-shadow 0.3s ease",
+          }}>
+            {thumbSrc ? (
+              <img src={thumbSrc} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : null}
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: isCurrentlyPlaying ? "rgba(0,0,0,.15)" : "rgba(0,0,0,.35)",
+              transition: "background 0.2s",
+            }}>
+              {isCurrentlyPlaying ? (
+                <span style={{ fontSize: "2rem", color: "#fff", letterSpacing: 4 }}>{"\u275A\u275A"}</span>
+              ) : (
+                <span style={{ fontSize: "2.5rem", color: "#fff", marginLeft: 4 }}>{"\u25B6"}</span>
+              )}
+            </div>
+          </div>
+          <div style={{ textAlign: "center", width: "100%" }}>
+            <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#eaf0ff", marginBottom: 3, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} data-testid={`text-track-title-${track.id}`}>
+              {track.title}
+              {track.explicit && (
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 16, height: 16, borderRadius: 3, background: "rgba(255,79,216,.15)", border: "1px solid rgba(255,79,216,.3)", color: "#ff4fd8", fontSize: 9, fontWeight: 800, flexShrink: 0, lineHeight: 1 }} data-testid={`badge-explicit-${track.id}`}>E</span>
+              )}
+            </div>
+            <div style={{ fontSize: "0.85rem", color: "rgba(170,182,232,.7)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }} data-testid={`text-track-artist-${track.id}`}>
+              {track.artist}
+              {track.creatorId && !hideLibrary && (
+                <a
+                  href={`/creator/${track.creatorId}`}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 3,
+                    fontSize: "0.65rem", color: "#6cf0ff", textDecoration: "none",
+                    padding: "1px 6px", borderRadius: 4,
+                    background: "rgba(108,240,255,.08)", border: "1px solid rgba(108,240,255,.15)",
+                  }}
+                  data-testid={`link-library-${track.id}`}
+                >
+                  <Library size={10} /> Library
+                </a>
+              )}
+            </div>
+            {track.aiTool && (
+              <div style={{ fontSize: "0.65rem", color: "rgba(160,107,255,.7)", marginTop: 2 }} data-testid={`text-track-aitool-${track.id}`}>
+                Created with {track.aiTool}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      <div style={{ display: isActive ? "none" : "flex", alignItems: "stretch", gap: 0 }}>
         <div className="row" onClick={handleRowClick} style={{ cursor: hasAudio ? "pointer" : "default", flex: 1, minWidth: 0, marginBottom: 0 }} data-testid={`button-play-${track.id}`}>
           <div className="thumb" style={{ position: "relative", overflow: "hidden", flexShrink: 0 }}>
             {(() => {
@@ -121,13 +212,9 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
                   height: "100%",
                 }}
               >
-                {isCurrentlyPlaying ? (
-                  <span style={{ color: "#ff4fd8", fontSize: "1.2rem" }}>{"\u275A\u275A"}</span>
-                ) : (
-                  <span className="rankBadge" data-testid={`text-rank-${track.rank}`}>#{track.rank}</span>
-                )}
+                <span className="rankBadge" data-testid={`text-rank-${track.rank}`}>#{track.rank}</span>
               </div>
-            ) : !isCurrentlyPlaying ? (
+            ) : (
                 <div
                   className="play-btn"
                   style={{
@@ -138,7 +225,7 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
                 >
                   {"\u25B6"}
                 </div>
-            ) : null}
+            )}
           </div>
           <div className="meta" style={{ minWidth: 0, overflow: "hidden" }}>
             <div className="title" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }} data-testid={`text-track-title-${track.id}`}>
