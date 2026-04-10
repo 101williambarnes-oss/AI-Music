@@ -81,11 +81,13 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
   }
 
   const isActive = currentTrackId === track.id;
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const showExpanded = isActive && !isMobile;
   const thumbSrc = getTrackThumbnail(track) || creatorData?.creator?.avatarUrl || null;
 
   return (
     <div data-testid={`track-row-${track.id}`} style={{ transition: "all 0.3s ease" }}>
-      {isActive && (
+      {showExpanded && (
         <div
           onClick={handleRowClick}
           style={{
@@ -172,7 +174,15 @@ export function TrackRow({ track, showRank, hideComments, onDelete, showDownload
           </div>
         </div>
       )}
-      <div style={{ display: isActive ? "none" : "flex", alignItems: "stretch", gap: 0 }}>
+      <div style={{
+        display: showExpanded ? "none" : "flex",
+        alignItems: "stretch",
+        gap: 0,
+        borderRadius: 8,
+        border: isActive && isMobile ? "1px solid rgba(108,240,255,.25)" : "1px solid transparent",
+        background: isActive && isMobile ? "rgba(108,240,255,.06)" : "transparent",
+        transition: "border 0.2s, background 0.2s",
+      }}>
         <div className="row" onClick={handleRowClick} style={{ cursor: hasAudio ? "pointer" : "default", flex: 1, minWidth: 0, marginBottom: 0 }} data-testid={`button-play-${track.id}`}>
           <div className="thumb" style={{ position: "relative", overflow: "hidden", flexShrink: 0 }}>
             {(() => {

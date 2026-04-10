@@ -224,10 +224,6 @@ export default function TrackPage() {
             </div>
           </div>
 
-          <div style={{ marginTop: 20 }}>
-            <TrackRow track={track} showDownload />
-          </div>
-
           {creator && (
             <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(108,240,255,.08)" }}>
               <a
