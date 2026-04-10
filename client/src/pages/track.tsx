@@ -10,7 +10,7 @@ import { useAudioPlayer } from "@/lib/audioPlayer";
 
 export default function TrackPage() {
   const { id } = useParams<{ id: string }>();
-  const { play, currentTrackId } = useAudioPlayer();
+  const { play, toggle, currentTrackId, isPlaying } = useAudioPlayer();
   const autoPlayedRef = useRef(false);
 
   const { data, isLoading, error } = useQuery<{ track: Track; creator: Creator | null }>({
@@ -101,6 +101,21 @@ export default function TrackPage() {
   }
 
   const coverSrc = track.coverUrl || getTrackThumbnail(track);
+  const isThisTrackPlaying = currentTrackId === track.id && isPlaying;
+
+  function handleCoverTap() {
+    if (!track.fileUrl) return;
+    if (currentTrackId === track.id) {
+      toggle();
+    } else {
+      play(track.id, track.fileUrl, {
+        title: track.title,
+        artist: track.artist,
+        coverUrl: track.coverUrl,
+        djIntroUrl: (track as any).djIntroUrl,
+      });
+    }
+  }
 
   return (
     <div className="hwm-app">
@@ -109,7 +124,9 @@ export default function TrackPage() {
         <PageNav />
         <section className="panel" style={{ padding: "24px 24px 28px" }}>
           <div style={{ textAlign: "center", marginBottom: 20 }}>
-            <div style={{
+            <div
+              onClick={handleCoverTap}
+              style={{
               width: "100%",
               maxWidth: 480,
               aspectRatio: "1",
@@ -119,9 +136,14 @@ export default function TrackPage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              border: "1px solid rgba(108,240,255,.12)",
+              border: isThisTrackPlaying ? "2px solid rgba(108,240,255,.35)" : "1px solid rgba(108,240,255,.12)",
               margin: "0 auto",
-              boxShadow: "0 8px 40px rgba(0,0,0,.5), 0 0 60px rgba(160,107,255,.08)",
+              boxShadow: isThisTrackPlaying
+                ? "0 8px 40px rgba(0,0,0,.5), 0 0 60px rgba(160,107,255,.15), 0 0 30px rgba(108,240,255,.08)"
+                : "0 8px 40px rgba(0,0,0,.5), 0 0 60px rgba(160,107,255,.08)",
+              cursor: "pointer",
+              position: "relative",
+              transition: "box-shadow 0.3s ease, border 0.3s ease",
             }} data-testid="img-track-cover">
               {coverSrc ? (
                 <img src={coverSrc} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
