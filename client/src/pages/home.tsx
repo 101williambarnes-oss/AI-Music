@@ -1,74 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { type Track, type Creator, type Album } from "@shared/schema";
-import { Search, Music, User, X, Library, ListMusic, Heart, Play, ChevronRight, Info, Disc3, GripVertical, LogOut, Shield } from "lucide-react";
+import { Search, Music, User, X, ChevronRight, Disc3, LogOut, Shield } from "lucide-react";
 import siteLogo from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 import { useLocation } from "wouter";
-import { useAudioPlayer } from "@/lib/audioPlayer";
-import { getTrackThumbnail } from "@/lib/utils";
-
-function getVisitorId(): string {
-  let vid = localStorage.getItem("hwm_visitor_id");
-  if (!vid) {
-    vid = "v_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-    localStorage.setItem("hwm_visitor_id", vid);
-  }
-  return vid;
-}
-
-function getLikeHeaders(): Record<string, string> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  try {
-    const stored = localStorage.getItem("hwm_user");
-    if (stored) {
-      const u = JSON.parse(stored);
-      if (u?.id) headers["x-user-id"] = String(u.id);
-    }
-  } catch {}
-  headers["x-visitor-id"] = getVisitorId();
-  return headers;
-}
-
-function useLikeState(trackId: number) {
-  const [liked, setLiked] = useState(false);
-  const [count, setCount] = useState(0);
-  const lockRef = useRef(false);
-  const qc = useQueryClient();
-
-  useEffect(() => {
-    fetch(`/api/tracks/${trackId}/likes`, { headers: getLikeHeaders(), credentials: "include" })
-      .then(r => r.json())
-      .then((data: { count: number; liked: boolean }) => {
-        setCount(data.count);
-        setLiked(data.liked);
-      })
-      .catch(() => {});
-  }, [trackId]);
-
-  const toggleLike = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (lockRef.current) return;
-    lockRef.current = true;
-    const newLiked = !liked;
-    setLiked(newLiked);
-    setCount(prev => newLiked ? prev + 1 : Math.max(0, prev - 1));
-
-    fetch(`/api/tracks/${trackId}/likes`, { method: "POST", headers: getLikeHeaders(), credentials: "include" })
-      .then(r => r.json())
-      .then((data: { count: number; liked: boolean }) => {
-        setCount(data.count);
-        setLiked(data.liked);
-        qc.invalidateQueries({ queryKey: ["/api/home-data"] });
-      })
-      .catch(() => {
-        setLiked(!newLiked);
-        setCount(prev => newLiked ? Math.max(0, prev - 1) : prev + 1);
-      })
-      .finally(() => { setTimeout(() => { lockRef.current = false; }, 500); });
-  }, [trackId, liked, qc]);
-
-  return { liked, count, toggleLike };
-}
+import { TrackRow } from "@/components/track-row";
 
 type AuthUser = { id: number; name: string; email: string; creatorId: number | null };
 
@@ -83,130 +19,6 @@ type HomeData = {
   newCreators: Creator[];
   albums: AlbumWithInfo[];
 };
-
-function Top25Row({ track, index }: { track: TrackWithLikes; index: number }) {
-  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
-  const isActive = currentTrackId === track.id && isPlaying;
-  const { liked, count, toggleLike } = useLikeState(track.id);
-
-  const handleClick = useCallback(() => {
-    if (!track.fileUrl) return;
-    if (currentTrackId === track.id) {
-      toggle();
-    } else {
-      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: getTrackThumbnail(track), djIntroUrl: (track as any).djIntroUrl });
-    }
-  }, [track, play, toggle, currentTrackId]);
-
-  return (
-    <div
-      onClick={handleClick}
-      className="mockup-top25-row"
-      style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined, cursor: "pointer" }}
-      data-testid={`home-track-${track.id}`}
-    >
-      <span className="mockup-rank" style={{ color: index < 3 ? "#ff4fd8" : "rgba(255,255,255,.45)" }} data-testid={`text-rank-${index + 1}`}>
-        {index + 1}.
-      </span>
-      <div className="mockup-top25-info">
-        <div className="mockup-top25-title" data-testid={`text-title-${track.id}`}>{track.title}</div>
-        <div className="mockup-top25-artist">{track.artist}</div>
-      </div>
-      <span className="mockup-plays">{(track.plays || 0).toLocaleString()}</span>
-      <span className="mockup-likes" onClick={toggleLike} style={{ cursor: "pointer" }} data-testid={`button-like-top25-${track.id}`}>
-        <Heart size={11} fill={liked ? "#ff4fd8" : "none"} color="#ff4fd8" />
-        {count.toLocaleString()}
-      </span>
-    </div>
-  );
-}
-
-function NewSongRow({ track }: { track: TrackWithLikes }) {
-  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
-  const isActive = currentTrackId === track.id && isPlaying;
-  const { liked, toggleLike } = useLikeState(track.id);
-  const { data: creatorData } = useQuery<{ creator: { avatarUrl: string | null } }>({
-    queryKey: ["/api/creators", track.creatorId],
-    enabled: !!track.creatorId,
-  });
-
-  const handleClick = useCallback(() => {
-    if (!track.fileUrl) return;
-    if (currentTrackId === track.id) {
-      toggle();
-    } else {
-      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: getTrackThumbnail(track), djIntroUrl: (track as any).djIntroUrl });
-    }
-  }, [track, play, toggle, currentTrackId]);
-
-  const thumbSrc = getTrackThumbnail(track) || creatorData?.creator?.avatarUrl || null;
-
-  return (
-    <div
-      onClick={handleClick}
-      className="mockup-newsong-row"
-      style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined, cursor: "pointer" }}
-      data-testid={`new-song-card-${track.id}`}
-    >
-      <div className="mockup-newsong-thumb">
-        {thumbSrc ? (
-          <img src={thumbSrc} alt={track.title} />
-        ) : (
-          <div className="mockup-newsong-thumb-placeholder">
-            <Music size={24} style={{ color: "rgba(160,107,255,.4)" }} />
-          </div>
-        )}
-        {isActive && (
-          <div className="mockup-newsong-playing">
-            <span style={{ color: "#fff", fontSize: 12 }}>{"\u275A\u275A"}</span>
-          </div>
-        )}
-      </div>
-      <div className="mockup-newsong-info">
-        <div className="mockup-newsong-title">
-          {track.title} - <span style={{ color: "rgba(108,240,255,.7)" }}>{track.artist}</span>
-        </div>
-        <div className="mockup-newsong-artist">{track.artist}</div>
-      </div>
-      <span className="mockup-newsong-plays">{(track.plays || 0).toLocaleString()} Plays</span>
-      <Heart size={14} className="mockup-newsong-heart" onClick={toggleLike} fill={liked ? "#ff4fd8" : "none"} color="#ff4fd8" style={{ cursor: "pointer" }} data-testid={`button-like-newsong-${track.id}`} />
-      <GripVertical size={14} className="mockup-newsong-menu" />
-    </div>
-  );
-}
-
-function TrendingRow({ track, index }: { track: TrackWithLikes; index: number }) {
-  const { currentTrackId, isPlaying, play, toggle } = useAudioPlayer();
-  const isActive = currentTrackId === track.id && isPlaying;
-  const { liked, toggleLike } = useLikeState(track.id);
-
-  const handleClick = useCallback(() => {
-    if (!track.fileUrl) return;
-    if (currentTrackId === track.id) {
-      toggle();
-    } else {
-      play(track.id, track.fileUrl, { title: track.title, artist: track.artist, coverUrl: getTrackThumbnail(track), djIntroUrl: (track as any).djIntroUrl });
-    }
-  }, [track, play, toggle, currentTrackId]);
-
-  return (
-    <div
-      onClick={handleClick}
-      className="mockup-trending-row"
-      style={{ background: isActive ? "rgba(160,107,255,.1)" : undefined, cursor: "pointer" }}
-      data-testid={`trending-track-${track.id}`}
-    >
-      <span className="mockup-rank" style={{ color: "rgba(255,255,255,.45)" }}>{index + 1}.</span>
-      <div className="mockup-trending-info">
-        <span className="mockup-trending-title">{track.title}</span>
-        <span className="mockup-trending-sep"> - </span>
-        <span className="mockup-trending-artist">{track.artist}</span>
-      </div>
-      <Heart size={13} className="mockup-trending-heart" onClick={toggleLike} fill={liked ? "#ff4fd8" : "none"} color="#ff4fd8" style={{ cursor: "pointer" }} data-testid={`button-like-trending-${track.id}`} />
-      <GripVertical size={13} className="mockup-trending-menu" />
-    </div>
-  );
-}
 
 export default function Home() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -400,8 +212,8 @@ export default function Home() {
             <div className="mockup-loading">Loading...</div>
           ) : (
             <div className="mockup-top25-list">
-              {top25.map((track, i) => (
-                <Top25Row key={track.id} track={track} index={i} />
+              {top25.map((track) => (
+                <TrackRow key={track.id} track={track} showRank hideLibrary hidePlaylistBtn />
               ))}
             </div>
           )}
@@ -417,7 +229,7 @@ export default function Home() {
           ) : (
             <div className="mockup-newsong-list">
               {newSongs.map((track) => (
-                <NewSongRow key={track.id} track={track} />
+                <TrackRow key={track.id} track={track} hidePlaylistBtn />
               ))}
             </div>
           )}
@@ -512,8 +324,8 @@ export default function Home() {
               <div className="mockup-loading">Loading...</div>
             ) : (
               <div className="mockup-trending-list">
-                {trending.map((track, i) => (
-                  <TrendingRow key={track.id} track={track} index={i} />
+                {trending.map((track) => (
+                  <TrackRow key={track.id} track={track} hideLibrary hidePlaylistBtn />
                 ))}
               </div>
             )}
