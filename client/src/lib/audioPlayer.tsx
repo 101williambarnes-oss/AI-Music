@@ -230,16 +230,23 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
       setIsPlaying(true);
     });
 
+    const stopAudio = () => {
+      audio.pause();
+    };
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
         audio.pause();
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", stopAudio);
+    window.addEventListener("beforeunload", stopAudio);
 
     return () => {
       audio.pause();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", stopAudio);
+      window.removeEventListener("beforeunload", stopAudio);
     };
   }, [loadAndPlay]);
 

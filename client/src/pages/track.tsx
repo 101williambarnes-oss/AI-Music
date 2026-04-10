@@ -91,99 +91,98 @@ export default function TrackPage() {
       <div className="bg-lines" />
       <div className="wrap" style={{ paddingTop: 16, maxWidth: 900, margin: "0 auto" }}>
         <PageNav />
-        <section className="panel" style={{ padding: "20px 24px" }}>
-          <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <section className="panel" style={{ padding: "24px 24px 28px" }}>
+          <div style={{ textAlign: "center", marginBottom: 20 }}>
             <div style={{
-              width: 320,
-              height: 320,
-              borderRadius: 14,
+              width: "100%",
+              maxWidth: 480,
+              aspectRatio: "1",
+              borderRadius: 16,
               overflow: "hidden",
               background: "rgba(160,107,255,.08)",
-              flexShrink: 0,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              border: "1px solid rgba(108,240,255,.1)",
+              border: "1px solid rgba(108,240,255,.12)",
               margin: "0 auto",
-              boxShadow: "0 4px 24px rgba(0,0,0,.4)",
+              boxShadow: "0 8px 40px rgba(0,0,0,.5), 0 0 60px rgba(160,107,255,.08)",
             }} data-testid="img-track-cover">
               {coverSrc ? (
                 <img src={coverSrc} alt={track.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               ) : (
-                <Music size={64} style={{ color: "rgba(160,107,255,.2)" }} />
+                <Music size={96} style={{ color: "rgba(160,107,255,.2)" }} />
               )}
             </div>
+          </div>
 
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#eaf0ff", margin: "0 0 6px 0" }} data-testid="text-track-page-title">
-                {track.title}
-              </h1>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
-                <span style={{ color: "rgba(170,182,232,.7)", fontSize: "0.95rem" }} data-testid="text-track-page-artist">
-                  by {track.artist}
+          <div style={{ textAlign: "center", marginBottom: 16 }}>
+            <h1 style={{ fontSize: "1.8rem", fontWeight: 800, color: "#eaf0ff", margin: "0 0 8px 0" }} data-testid="text-track-page-title">
+              {track.title}
+            </h1>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+              <span style={{ color: "rgba(170,182,232,.7)", fontSize: "1rem" }} data-testid="text-track-page-artist">
+                by {track.artist}
+              </span>
+              {track.genre && (
+                <span style={{
+                  fontSize: "0.7rem",
+                  padding: "2px 8px",
+                  borderRadius: 4,
+                  background: "rgba(160,107,255,.15)",
+                  border: "1px solid rgba(160,107,255,.2)",
+                  color: "#a06bff",
+                  fontWeight: 600,
+                }} data-testid="text-track-page-genre">
+                  {track.genre}
                 </span>
-                {track.genre && (
-                  <span style={{
-                    fontSize: "0.7rem",
-                    padding: "2px 8px",
-                    borderRadius: 4,
-                    background: "rgba(160,107,255,.15)",
-                    border: "1px solid rgba(160,107,255,.2)",
-                    color: "#a06bff",
-                    fontWeight: 600,
-                  }} data-testid="text-track-page-genre">
-                    {track.genre}
-                  </span>
-                )}
-                {track.aiTool && (
-                  <span style={{ fontSize: "0.7rem", color: "rgba(160,107,255,.7)" }} data-testid="text-track-page-aitool">
-                    Created with {track.aiTool}
-                  </span>
-                )}
-              </div>
+              )}
+              {track.aiTool && (
+                <span style={{ fontSize: "0.7rem", color: "rgba(160,107,255,.7)" }} data-testid="text-track-page-aitool">
+                  Created with {track.aiTool}
+                </span>
+              )}
+            </div>
+            <div style={{ color: "rgba(170,182,232,.5)", fontSize: "0.85rem", marginBottom: 14 }}>
+              <span data-testid="text-track-plays">{track.plays} plays</span>
+            </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 16, color: "rgba(170,182,232,.5)", fontSize: "0.85rem", marginBottom: 14 }}>
-                <span data-testid="text-track-plays">{track.plays} plays</span>
-              </div>
-
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  onClick={handleShare}
+            <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
+              <button
+                onClick={handleShare}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "10px 20px",
+                  background: "rgba(108,240,255,.08)",
+                  border: "1px solid rgba(108,240,255,.2)",
+                  borderRadius: 8,
+                  color: "#6cf0ff",
+                  fontWeight: 600,
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                }}
+                data-testid="button-share-track"
+              >
+                <Share2 size={15} /> Share
+              </button>
+              {track.fileUrl && (
+                <a
+                  href={`/api/tracks/${track.id}/download`}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 6,
-                    padding: "10px 18px",
-                    background: "rgba(108,240,255,.08)",
-                    border: "1px solid rgba(108,240,255,.2)",
+                    padding: "10px 20px",
+                    background: "rgba(160,107,255,.08)",
+                    border: "1px solid rgba(160,107,255,.2)",
                     borderRadius: 8,
-                    color: "#6cf0ff",
+                    color: "#a06bff",
                     fontWeight: 600,
                     fontSize: "0.85rem",
-                    cursor: "pointer",
+                    textDecoration: "none",
                   }}
-                  data-testid="button-share-track"
+                  data-testid="button-download-track"
                 >
-                  <Share2 size={15} /> Share
-                </button>
-                {track.fileUrl && (
-                  <a
-                    href={`/api/tracks/${track.id}/download`}
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 6,
-                      padding: "10px 18px",
-                      background: "rgba(160,107,255,.08)",
-                      border: "1px solid rgba(160,107,255,.2)",
-                      borderRadius: 8,
-                      color: "#a06bff",
-                      fontWeight: 600,
-                      fontSize: "0.85rem",
-                      textDecoration: "none",
-                    }}
-                    data-testid="button-download-track"
-                  >
-                    <Download size={15} /> Download
-                  </a>
-                )}
-              </div>
+                  <Download size={15} /> Download
+                </a>
+              )}
             </div>
           </div>
 
