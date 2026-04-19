@@ -19,6 +19,10 @@ type AdminStats = {
     visitorsToday: number;
     totalVisits: number;
   };
+  visitorTimeline: {
+    daily: { bucket: string; uniqueVisitors: number; visits: number }[];
+    halfDay: { bucket: string; uniqueVisitors: number; visits: number }[];
+  };
   topTracksByPlays: { id: number; title: string; artist: string; plays: number }[];
   topTracksByLikes: { id: number; title: string; artist: string; likes: number; plays: number }[];
   creatorStats: { id: number; name: string; trackCount: number; totalPlays: number; totalLikes: number; followers: number }[];
@@ -42,6 +46,7 @@ export default function Admin() {
   const [user] = useState<AuthUser | null>(getUser);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [trackSearch, setTrackSearch] = useState("");
+  const [timelineMode, setTimelineMode] = useState<"daily" | "halfDay">("daily");
 
   const { data, isLoading, isError } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
@@ -215,6 +220,90 @@ export default function Admin() {
             <div style={valueStyle}>{overview.studioClicks ?? 0}</div>
           </div>
         </div>
+
+        {data.visitorTimeline && (
+          <>
+            <div style={sectionTitleStyle}>
+              <Eye size={18} style={{ color: "#6cf0ff" }} />
+              Visitor Timeline
+              <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+                <button
+                  onClick={() => setTimelineMode("daily")}
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: 6,
+                    border: "1px solid rgba(108,240,255,.2)",
+                    background: timelineMode === "daily" ? "rgba(108,240,255,.18)" : "transparent",
+                    color: timelineMode === "daily" ? "#6cf0ff" : "rgba(170,182,232,.6)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                  data-testid="button-timeline-daily"
+                >
+                  Daily (14d)
+                </button>
+                <button
+                  onClick={() => setTimelineMode("halfDay")}
+                  style={{
+                    padding: "4px 12px",
+                    borderRadius: 6,
+                    border: "1px solid rgba(108,240,255,.2)",
+                    background: timelineMode === "halfDay" ? "rgba(108,240,255,.18)" : "transparent",
+                    color: timelineMode === "halfDay" ? "#6cf0ff" : "rgba(170,182,232,.6)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                  data-testid="button-timeline-halfday"
+                >
+                  Every 12h (7d)
+                </button>
+              </div>
+            </div>
+            <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(108,240,255,.1)", borderRadius: 8, padding: 16 }}>
+              {(() => {
+                const buckets = data.visitorTimeline[timelineMode] ?? [];
+                if (buckets.length === 0) {
+                  return <div style={{ color: "rgba(170,182,232,.5)", fontSize: 13, textAlign: "center", padding: "12px 0" }}>No visitor data yet for this range.</div>;
+                }
+                const max = Math.max(...buckets.map(b => b.visits), 1);
+                return (
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 160, overflowX: "auto", paddingBottom: 4 }}>
+                    {buckets.map((b) => {
+                      const visitsPct = (b.visits / max) * 100;
+                      const uniquePct = (b.uniqueVisitors / max) * 100;
+                      const labelDate = new Date(b.bucket.replace(" ", "T"));
+                      const label = timelineMode === "daily"
+                        ? labelDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+                        : labelDate.toLocaleString(undefined, { month: "numeric", day: "numeric", hour: "2-digit" });
+                      return (
+                        <div key={b.bucket} style={{ flex: "0 0 auto", display: "flex", flexDirection: "column", alignItems: "center", minWidth: timelineMode === "daily" ? 38 : 50 }} data-testid={`bar-visitor-${b.bucket}`}>
+                          <div style={{ fontSize: 10, color: "#6cf0ff", fontWeight: 700, marginBottom: 4 }}>{b.visits}</div>
+                          <div style={{ width: "100%", height: 110, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 2 }}>
+                            <div title={`${b.visits} total visits`} style={{ width: "44%", height: `${Math.max(visitsPct, 2)}%`, background: "linear-gradient(180deg, #6cf0ff, #3a8aa3)", borderRadius: "3px 3px 0 0" }} />
+                            <div title={`${b.uniqueVisitors} unique visitors`} style={{ width: "44%", height: `${Math.max(uniquePct, 2)}%`, background: "linear-gradient(180deg, #a06bff, #6440a3)", borderRadius: "3px 3px 0 0" }} />
+                          </div>
+                          <div style={{ fontSize: 9, color: "rgba(170,182,232,.6)", marginTop: 6, whiteSpace: "nowrap", transform: timelineMode === "halfDay" ? "rotate(-30deg)" : "none", transformOrigin: "center top" }}>{label}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+              <div style={{ display: "flex", gap: 18, marginTop: 14, justifyContent: "center", fontSize: 11, color: "rgba(170,182,232,.7)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ width: 12, height: 12, background: "linear-gradient(180deg, #6cf0ff, #3a8aa3)", borderRadius: 2, display: "inline-block" }} />
+                  Total Visits
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ width: 12, height: 12, background: "linear-gradient(180deg, #a06bff, #6440a3)", borderRadius: 2, display: "inline-block" }} />
+                  Unique Visitors
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
           <div style={statBoxStyle} data-testid="stat-total-plays">

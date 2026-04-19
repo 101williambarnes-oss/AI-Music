@@ -1865,6 +1865,27 @@ export async function registerRoutes(
       const studioClicksRows = await db.execute(sql`SELECT COUNT(*)::int as count FROM studio_clicks`);
       const [totalPlayEventsResult] = await db.select({ count: sql<number>`count(*)::int` }).from(trackPlays);
 
+      const dailyVisitorsRows = await db.execute(sql`
+        SELECT to_char(date_trunc('day', visited_at), 'YYYY-MM-DD') as bucket,
+               COUNT(DISTINCT visitor_id)::int as unique_visitors,
+               COUNT(*)::int as visits
+        FROM site_visits
+        WHERE visited_at >= NOW() - INTERVAL '14 days'
+        GROUP BY bucket
+        ORDER BY bucket ASC
+      `);
+      const halfDayVisitorsRows = await db.execute(sql`
+        SELECT to_char(date_trunc('hour', visited_at) - (EXTRACT(HOUR FROM visited_at)::int % 12) * INTERVAL '1 hour', 'YYYY-MM-DD HH24:00') as bucket,
+               COUNT(DISTINCT visitor_id)::int as unique_visitors,
+               COUNT(*)::int as visits
+        FROM site_visits
+        WHERE visited_at >= NOW() - INTERVAL '7 days'
+        GROUP BY bucket
+        ORDER BY bucket ASC
+      `);
+      const dailyVisitors = ((dailyVisitorsRows as any)?.rows ?? (dailyVisitorsRows as any) ?? []).map((r: any) => ({ bucket: r.bucket, uniqueVisitors: Number(r.unique_visitors), visits: Number(r.visits) }));
+      const halfDayVisitors = ((halfDayVisitorsRows as any)?.rows ?? (halfDayVisitorsRows as any) ?? []).map((r: any) => ({ bucket: r.bucket, uniqueVisitors: Number(r.unique_visitors), visits: Number(r.visits) }));
+
       const topTracksByPlays = [...allTracks].sort((a, b) => b.plays - a.plays).slice(0, 10);
       const trackLikeCounts: { id: number; title: string; artist: string; likes: number; plays: number }[] = [];
       for (const t of allTracks) {
@@ -1908,6 +1929,7 @@ export async function registerRoutes(
           totalVisits,
           studioClicks: totalStudioClicks,
         },
+        visitorTimeline: { daily: dailyVisitors, halfDay: halfDayVisitors },
         topTracksByPlays,
         topTracksByLikes,
         creatorStats,
