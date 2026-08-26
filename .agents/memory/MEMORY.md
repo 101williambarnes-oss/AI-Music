@@ -1,0 +1,1 @@
+- [Audio player "ended" callback](audio-player-ended-callback.md) — must be stackable across features (playlist + album auto-advance) or one unregister wipes the other's handler.

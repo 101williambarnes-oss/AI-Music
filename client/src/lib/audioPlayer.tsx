@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useRef, useCallback, useEffect } from "react";
 import { queryClient } from "@/lib/queryClient";
+import { toast } from "@/hooks/use-toast";
 import defaultArtwork from "@assets/ChatGPT_Image_Feb_25,_2026,_02_42_25_AM_1772012848904.png";
 
 type TrackMeta = {
@@ -70,6 +71,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const playedIntrosRef = useRef<Set<number>>(new Set());
   const generatedIntrosRef = useRef<Map<number, string>>(new Map());
   const onEndedRef = useRef<OnEndedCallback | null>(null);
+  const onEndedStackRef = useRef<OnEndedCallback[]>([]);
   const pendingSongUrlRef = useRef<string | null>(null);
   const playingIntroRef = useRef(false);
   const isPlayingRef = useRef(false);
@@ -81,8 +83,20 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [audioDuration, setAudioDuration] = useState(0);
   const progressRafRef = useRef<number>(0);
 
+  // Callers register a "track ended" handler for as long as they need it
+  // (e.g. the global playlist auto-advance, or an album page's track-order
+  // handler) and unregister with setOnEnded(null) on cleanup. Multiple
+  // callers can be registered at once (e.g. visiting an album page while a
+  // playlist handler is already registered); this stack ensures that
+  // unregistering one handler restores whichever handler was active before
+  // it, instead of clearing all handlers.
   const setOnEnded = useCallback((cb: OnEndedCallback | null) => {
-    onEndedRef.current = cb;
+    if (cb === null) {
+      onEndedStackRef.current.pop();
+    } else {
+      onEndedStackRef.current.push(cb);
+    }
+    onEndedRef.current = onEndedStackRef.current[onEndedStackRef.current.length - 1] ?? null;
   }, []);
 
   useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
@@ -121,6 +135,19 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }).catch(() => {});
   }, []);
 
+  const notifyPlaybackFailed = useCallback(() => {
+    if (playingIntroRef.current) return;
+    toast({
+      title: "Couldn't play this track",
+      description: "The audio failed to load. Skipping to the next song if you're playing a playlist.",
+      variant: "destructive",
+    });
+    const tid = currentTrackIdRef.current;
+    if (tid !== null && onEndedRef.current) {
+      onEndedRef.current(tid);
+    }
+  }, []);
+
   const loadAndPlay = useCallback((audio: HTMLAudioElement, url: string) => {
     audio.pause();
     audio.oncanplay = null;
@@ -151,6 +178,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         console.warn("[HWM Player] play() rejected:", err?.message);
         setIsPlaying(false);
         loadingRef.current = false;
+        notifyPlaybackFailed();
       });
     };
 
@@ -174,6 +202,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         }
       }
       setIsPlaying(false);
+      notifyPlaybackFailed();
     };
 
     setTimeout(() => {
@@ -186,6 +215,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         loadingRef.current = false;
         audio.play().catch(() => {
           setIsPlaying(false);
+          notifyPlaybackFailed();
         });
       }
     }, 30000);
@@ -193,7 +223,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     audio.oncanplay = doPlay;
     audio.onloadeddata = doPlay;
     audio.onerror = onError;
-  }, []);
+  }, [notifyPlaybackFailed]);
 
   useEffect(() => {
     const audio = document.createElement("audio");
@@ -313,18 +343,19 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
     if (!isNewTrack) {
       if (audio.src && !audio.src.startsWith("data:") && audio.readyState >= 2) {
-        audio.play().catch(() => setIsPlaying(false));
+        audio.play().catch(() => { setIsPlaying(false); notifyPlaybackFailed(); });
       } else if (audio.src && !audio.src.startsWith("data:")) {
         audio.oncanplay = () => {
           audio.oncanplay = null;
           audio.onerror = null;
-          audio.play().catch(() => setIsPlaying(false));
+          audio.play().catch(() => { setIsPlaying(false); notifyPlaybackFailed(); });
         };
         audio.onerror = () => {
           audio.oncanplay = null;
           audio.onerror = null;
           loadingRef.current = false;
           setIsPlaying(false);
+          notifyPlaybackFailed();
         };
       } else {
         loadAndPlay(audio, fileUrl);
@@ -429,7 +460,7 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     }
 
     loadAndPlay(audio, fileUrl);
-  }, [loadAndPlay, countPlay, cancelPendingFetch, primeAudio, stopAllPageAudio]);
+  }, [loadAndPlay, countPlay, cancelPendingFetch, primeAudio, stopAllPageAudio, notifyPlaybackFailed]);
 
   const pause = useCallback(() => {
     const audio = audioRef.current;

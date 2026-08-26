@@ -10,10 +10,12 @@ export default function Playlist() {
 
   function playAll() {
     if (tracks.length === 0) return;
-    const first = tracks[0];
-    if (first.fileUrl) {
-      play(first.id, first.fileUrl, { title: first.title, artist: first.artist, coverUrl: first.coverUrl, djIntroUrl: (first as any).djIntroUrl });
+    const first = tracks.find((t) => t.fileUrl);
+    if (!first) {
+      alert("None of the songs in this playlist have a playable audio file.");
+      return;
     }
+    play(first.id, first.fileUrl!, { title: first.title, artist: first.artist, coverUrl: first.coverUrl, djIntroUrl: (first as any).djIntroUrl });
   }
 
   return (

@@ -55,10 +55,15 @@ export function PlaylistProvider({ children }: { children: React.ReactNode }) {
     const cb = (trackId: number) => {
       const current = tracksRef.current;
       const idx = current.findIndex((t) => t.id === trackId);
-      if (idx !== -1 && idx < current.length - 1) {
-        const next = current[idx + 1];
+      if (idx === -1) return;
+      // Advance to the next track in the playlist, skipping over any that
+      // have no playable file so one broken/missing track doesn't stop
+      // the whole playlist.
+      for (let i = idx + 1; i < current.length; i++) {
+        const next = current[i];
         if (next.fileUrl) {
           play(next.id, next.fileUrl, { title: next.title, artist: next.artist, coverUrl: next.coverUrl }, { skipIntro: true });
+          return;
         }
       }
     };
